@@ -47,13 +47,14 @@ button {
 }
 
 /* Kopf unter der Statusleiste. Prototyp: 52 px = 47 px Statusleiste + 5 px.
-   Installierte App: Safe Area + 5 px (die Statusleiste liegt darüber).
-   Im Browser (Desktop, Chrome-Handyansicht) gibt es keine Statusleiste und die
-   Safe Area ist 0 – dann mindestens 52 px, sonst klebt der Titel am Rand. */
+   Im Browser (Desktop, Chrome-Handyansicht) ist die Safe Area 0 – dann 52 px.
+   Installierte App: iOS 26 legt einen Unschärfe-Streifen ca. 40 pt unter die
+   Statusleiste (nicht abschaltbar). Der Titel muss darunter beginnen, daher
+   Safe Area + 44 px statt + 5 px (bewusste Abweichung vom Prototyp). */
 @utility pt-safe-header {
   padding-top: max(calc(env(safe-area-inset-top) + 5px), 52px);
   @media (display-mode: standalone) {
-    padding-top: calc(env(safe-area-inset-top) + 5px);
+    padding-top: calc(env(safe-area-inset-top) + 44px);
   }
 }
 
