@@ -10,7 +10,7 @@ import { Statistik } from '../screens/Statistik.tsx'
 import { Tagebuch } from '../screens/Tagebuch.tsx'
 import { Vorschau } from '../screens/Vorschau.tsx'
 import { Navigation } from './Navigation.tsx'
-import { useRoute, type Route } from './router.ts'
+import { useRoute, useSubPath, type Route } from './router.ts'
 import { initTheme } from './theme.ts'
 
 const screens: Record<Route, ComponentType> = {
@@ -23,6 +23,8 @@ const screens: Record<Route, ComponentType> = {
 
 export function App() {
   const route = useRoute()
+  // Unterseiten (z. B. Produktdetail) zeigen keine schwebende Navigation (Produkt.dc.html)
+  const isSubPage = useSubPath().length > 0
   const [addOpen, setAddOpen] = useState(false)
   const closeAdd = useCallback(() => setAddOpen(false), [])
 
@@ -36,7 +38,7 @@ export function App() {
       <OverlayProvider>
         <ToastProvider>
           <CurrentScreen key={route} />
-          <Navigation current={route} onAdd={() => setAddOpen(true)} />
+          {!isSubPage && <Navigation current={route} onAdd={() => setAddOpen(true)} />}
           {/* Inhalt (Suche, Mengen-Schritt) kommt in Phase 3 */}
           <Sheet open={addOpen} onClose={closeAdd} title="Hinzufügen" />
         </ToastProvider>

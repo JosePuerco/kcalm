@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatNumber, UNKNOWN } from './format.ts'
+import { formatAmount, formatNumber, UNKNOWN } from './format.ts'
 
 describe('formatNumber', () => {
   it('setzt Tausenderpunkte', () => {
@@ -37,5 +37,16 @@ describe('formatNumber', () => {
     expect(formatNumber(-0.2)).toBe('0')
     expect(formatNumber(-0.04, 1)).toBe('0,0')
     expect(formatNumber(0)).toBe('0')
+  })
+})
+
+describe('formatAmount', () => {
+  it('ganze Mengen ohne Komma, sonst eine Stelle', () => {
+    expect(formatAmount(450)).toBe('450')
+    expect(formatAmount(1500)).toBe('1.500')
+    expect(formatAmount(12.5)).toBe('12,5')
+    expect(formatAmount(0.5)).toBe('0,5')
+    expect(formatAmount(99.96)).toBe('100')
+    expect(formatAmount(12.25)).toBe('12,3')
   })
 })

@@ -1,8 +1,9 @@
 // Hell/Dunkel: Standard folgt dem System, manuell über data-theme am <html>.
 // Die Farben selbst kommen aus tokens.css; hier wird nur umgeschaltet.
-// Gespeichert wird die Wahl erst ab Phase 1 (settings-Tabelle).
+// Die Wahl wird in der settings-Tabelle gespeichert (Schlüssel „theme“).
 import { useSyncExternalStore } from 'react'
 import tokens from '../../design/tokens.json'
+import { getSetting, setSetting } from '../db/settings.ts'
 
 export type ThemePref = 'system' | 'light' | 'dark'
 
@@ -32,13 +33,24 @@ export function initTheme() {
   const query = darkQuery()
   query.addEventListener('change', updateThemeColor)
   apply()
+  getSetting<ThemePref>('theme').then(
+    (saved) => {
+      if (saved === 'light' || saved === 'dark') change(saved)
+    },
+    (error: unknown) => console.error('Theme nicht lesbar', error),
+  )
   return () => query.removeEventListener('change', updateThemeColor)
 }
 
-export function setThemePref(next: ThemePref) {
+function change(next: ThemePref) {
   pref = next
   apply()
   listeners.forEach((l) => l())
+}
+
+export function setThemePref(next: ThemePref) {
+  change(next)
+  setSetting('theme', next).catch((error: unknown) => console.error('Theme nicht gespeichert', error))
 }
 
 export function useThemePref(): ThemePref {

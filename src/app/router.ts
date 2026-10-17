@@ -41,6 +41,8 @@ export function useSubPath(): string[] {
   return useMemo(() => parseSubPath(hash), [hash])
 }
 
-export function navigate(to: string) {
-  window.location.hash = to
+/** replace: aktuellen Eintrag im Verlauf ersetzen (z. B. nach dem Sichern zurück zur Ansicht) */
+export function navigate(to: string, { replace = false } = {}) {
+  if (replace) window.location.replace(to)
+  else window.location.hash = to
 }

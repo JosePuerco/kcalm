@@ -60,6 +60,7 @@ Der wichtigste Ablauf ist: beim Essen App öffnen, Slot wählen, Produkt scannen
 - Herkunft: OFF, BLS oder eigenes Produkt
 - **Verifizieren (optional):** eigene Werte als Korrekturschicht über dem Original, Status „geprüft“ mit Datum; Tabelle Original gegen Meine Werte mit markierten Abweichungen; pro Produkt umschaltbar, welche Werte genutzt werden (gilt für künftige Einträge); ein späteres OFF-Update ändert nur das Original
 - Fehlende Werte werden als „unbekannt“ geführt, nie als 0; Summen zeigen dann „mind. …“
+- Pflichtangaben beim Anlegen eigener Produkte und beim Prüfen: Name und alle Werte der EU-Nährwerttabelle (Energie, Fett, davon gesättigte Fettsäuren, Kohlenhydrate, davon Zucker, Eiweiß, Salz); Ballaststoffe, Wasser und Alkohol optional
 - Archivieren statt löschen, wenn das Produkt im Tagebuch verwendet wurde
 - Lebensmittel-Liste mit Reitern Produkte / Mahlzeiten / Rezepte und Filtern Alle / Geprüft / Eigene / BLS; BLS-Lebensmittel erscheinen dort erst mit eigener Portion oder Prüfung
 - Quellenhinweis auf OFF (ODbL) und BLS im Bereich „Über“
@@ -267,9 +268,9 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 
 - [x] Datenmodell (alle Tabellen, sync-fähige Felder) mit Tests
 - [x] BLS-Skript: Excel → JSON, mit Tests für fehlende Werte
-- [ ] Eigene Produkte anlegen, bearbeiten, archivieren; Portionsgrößen
-- [ ] Lebensmittel-Liste mit Reitern, Filtern und Suche
-- [ ] Lokale Suche über eigene Produkte und BLS
+- [x] Eigene Produkte anlegen, bearbeiten, archivieren; Portionsgrößen
+- [x] Lebensmittel-Liste mit Reitern, Filtern und Suche
+- [x] Lokale Suche über eigene Produkte und BLS
 - [x] Rechenfunktion Nährwert pro Menge inkl. „unbekannt“ mit Tests
 
 ### Phase 2 – Backup
@@ -308,6 +309,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 ### Phase 6 – Verifizieren
 
 - [ ] Korrekturschicht für OFF- und BLS-Werte, Status „geprüft“, Tabelle mit Abweichungen, Umschalter Meine/Original
+- [ ] „Als geprüft markieren“ nur, wenn alle Pflichtangaben der Nährwerttabelle vorhanden sind (`REQUIRED_NUTRIENTS`)
 - [ ] OFF-Aktualisierung überschreibt Korrekturen nicht (Test)
 
 ### Phase 7 – Wasser
@@ -349,6 +351,8 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 | Basis für Makros in % | Festes Tagesziel (Wochenbudget ÷ 7) |
 | Mehrere Wiegungen an einem Tag | Erste Messung des Tages zählt |
 | Energiedichte Verbrauchsschätzung | Fest 7.700 kcal/kg |
+| Pflichtfelder eigener Produkte | Name + alle Werte der EU-Nährwerttabelle (LMIV Art. 30); gilt auch beim Prüfen (Jan, 17.10.2026) |
+| BLS-Kürzel „TR“, „<LOD“, „<LOQ“ | Als 0 übernehmen; nur „-“ (fehlender Wert) wird `null` |
 | Spalten „Monatsauswertung Claude“ | Ebene Tage, JSON: Datum, Vollständig, kcal, Eiweiß, Kohlenhydrate, Fett, Ballaststoffe, Budget, Gewicht |
 
 Offen nur noch:
@@ -358,6 +362,12 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**17.10.2026 · Phase 1 umgesetzt, noch nicht abgeschlossen** – alle Punkte erledigt und deployt; offen ist Jans Test auf dem iPhone. Erst danach Phase 1 als abgeschlossen markieren und mit Phase 2 (Backup) beginnen.
+
+- Erledigt: Datenmodell (`src/db/`), BLS-Skript (`npm run bls` → `public/bls.json`), Nährwert pro Menge, Suche, Lebensmittel-Liste, Produkt anlegen/bearbeiten/archivieren/löschen, Produkt- und BLS-Detail mit Portionen, Theme-Wahl gespeichert. 183 Tests grün.
+- Abweichungen (mit Jan abgestimmt): Formular als eigener Screen (kein Prototyp), Zahlen über iPhone-Zifferntastatur, BLS-Treffer als eigener Abschnitt in der Listen-Suche, Pflichtangaben nach LMIV.
+- Zu testen auf dem iPhone: Formular (Tastatur mit Komma, kein Zoom beim Antippen), Sheet für Portionen mit Tastatur, BLS-Suche offline (Flugmodus).
 
 **17.10.2026 · Phase 0 abgeschlossen** – nächster Schritt: Phase 1 (Produkte und BLS). Vorher BLS-Excel nach `data/bls/` legen.
 

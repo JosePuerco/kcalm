@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { NUTRIENT_KEYS, unknownNutrients } from '../db/records.ts'
-import { formatNutrient } from './nutrientInfo.ts'
+import { unknownNutrients } from '../db/records.ts'
+import { formatNutrient, REQUIRED_NUTRIENTS } from './nutrientInfo.ts'
 import {
   emptyProductForm,
   parseDecimal,
   productToForm,
+  validatePortion,
   validateProductForm,
   type ProductFormData,
   type ProductFormValues,
@@ -16,7 +17,18 @@ function form(changes: Partial<Omit<ProductFormValues, 'nutrients'>> & { nutrien
     ...base,
     name: 'Skyr natur',
     ...changes,
-    nutrients: { ...base.nutrients, kcal: '63', ...changes.nutrients },
+    // Alle Pflichtwerte vom Etikett ausgefüllt (Skyr)
+    nutrients: {
+      ...base.nutrients,
+      kcal: '63',
+      fat: '0,2',
+      satFat: '0,1',
+      carbs: '4',
+      sugar: '4',
+      protein: '11',
+      salt: '0,13',
+      ...changes.nutrients,
+    },
   }
 }
 
@@ -52,13 +64,23 @@ describe('parseDecimal', () => {
 })
 
 describe('validateProductForm', () => {
-  it('Minimalprodukt: Name + kcal, Rest unbekannt', () => {
+  it('Minimalprodukt: Name + Pflichtwerte vom Etikett, Rest unbekannt', () => {
     const r = validateProductForm(form())
     expect(r.ok).toBe(true)
     if (!r.ok) return
     expect(r.data.name).toBe('Skyr natur')
-    expect(r.data.per100.kcal).toBe(63)
-    for (const key of NUTRIENT_KEYS.filter((k) => k !== 'kcal')) expect(r.data.per100[key]).toBeNull()
+    expect(r.data.per100).toEqual({
+      kcal: 63,
+      fat: 0.2,
+      satFat: 0.1,
+      carbs: 4,
+      sugar: 4,
+      fiber: null,
+      protein: 11,
+      salt: 0.13,
+      water: null,
+      alcohol: null,
+    })
     expect(r.data.brand).toBeNull()
     expect(r.data.barcode).toBeNull()
     expect(r.data.portions).toEqual([])
@@ -85,8 +107,25 @@ describe('validateProductForm', () => {
     expect(r.ok && r.data.name).toBe('Skyr')
   })
 
-  it('kcal ist Pflicht', () => {
-    expect(errorsOf(form({ nutrients: { kcal: '' } }))).toEqual({ kcal: 'Bitte kcal eingeben' })
+  it('alle Pflichtwerte der EU-Nährwerttabelle müssen ausgefüllt sein', () => {
+    expect([...REQUIRED_NUTRIENTS]).toEqual(['kcal', 'fat', 'satFat', 'carbs', 'sugar', 'protein', 'salt'])
+    const empty = Object.fromEntries(REQUIRED_NUTRIENTS.map((k) => [k, '']))
+    const expected = Object.fromEntries(REQUIRED_NUTRIENTS.map((k) => [k, 'Pflichtangabe vom Etikett']))
+    expect(errorsOf(form({ nutrients: empty }))).toEqual(expected)
+    // jeder einzeln
+    for (const key of REQUIRED_NUTRIENTS) {
+      expect(errorsOf(form({ nutrients: { [key]: ' ' } })), key).toEqual({ [key]: 'Pflichtangabe vom Etikett' })
+    }
+  })
+
+  it('Ballaststoffe, Wasser und Alkohol bleiben optional', () => {
+    const r = validateProductForm(form({ nutrients: { fiber: '', water: '', alcohol: '' } }))
+    expect(r.ok && [r.data.per100.fiber, r.data.per100.water, r.data.per100.alcohol]).toEqual([null, null, null])
+  })
+
+  it('0 ist eine gültige Pflichtangabe', () => {
+    const r = validateProductForm(form({ nutrients: { fat: '0', satFat: '0', salt: '0' } }))
+    expect(r.ok && r.data.per100.salt).toBe(0)
   })
 
   it('meldet Tippfehler am richtigen Feld', () => {
@@ -108,9 +147,9 @@ describe('validateProductForm', () => {
     expect(errorsOf(form({ nutrients: { carbs: '4', sugar: '4,5' } }))).toEqual({
       sugar: 'Mehr als Kohlenhydrate gesamt',
     })
-    // Gleich ist erlaubt, unbekannter Oberwert auch
+    // Gleich ist erlaubt; fehlt der Oberwert, kommt nur der Pflicht-Hinweis
     expect(errorsOf(form({ nutrients: { carbs: '4', sugar: '4' } }))).toEqual({})
-    expect(errorsOf(form({ nutrients: { satFat: '6' } }))).toEqual({})
+    expect(errorsOf(form({ nutrients: { fat: '', satFat: '6' } }))).toEqual({ fat: 'Pflichtangabe vom Etikett' })
   })
 
   it('zeigt alle Fehler auf einmal, auch Querprüfungen', () => {
@@ -169,7 +208,7 @@ describe('productToForm', () => {
     brand: null,
     barcode: null,
     unit: 'ml',
-    per100: { ...unknownNutrients(), kcal: 47, fat: 1.5, salt: 0.13 },
+    per100: { ...unknownNutrients(), kcal: 47, fat: 1.5, satFat: 1, carbs: 4.9, sugar: 4.9, protein: 3.4, salt: 0.13 },
     isDrink: true,
     portions: [{ label: '1 Glas', amount: 250 }],
   }
@@ -197,5 +236,31 @@ describe('formatNutrient', () => {
     expect(formatNutrient('salt', 0.125)).toBe('0,13 g')
     expect(formatNutrient('fiber', null)).toBe('–')
     expect(formatNutrient('fiber', 0)).toBe('0,0 g')
+  })
+})
+
+describe('validatePortion', () => {
+  it('liefert eine gültige Portion, getrimmt', () => {
+    expect(validatePortion({ label: ' 1 Becher ', amount: '450' }, [])).toEqual({
+      ok: true,
+      portion: { label: '1 Becher', amount: 450 },
+    })
+    expect(validatePortion({ label: 'Scheibe', amount: '12,5' }, [])).toMatchObject({ portion: { amount: 12.5 } })
+  })
+
+  it('meldet fehlenden Namen und fehlende oder ungültige Menge zusammen', () => {
+    expect(validatePortion({ label: '', amount: '' }, [])).toEqual({
+      ok: false,
+      errors: { label: 'Bitte benennen', amount: 'Bitte Menge eingeben' },
+    })
+    expect(validatePortion({ label: 'A', amount: '0' }, [])).toEqual({ ok: false, errors: { amount: 'Mehr als 0' } })
+    expect(validatePortion({ label: 'A', amount: 'x' }, [])).toEqual({ ok: false, errors: { amount: 'Keine gültige Zahl' } })
+  })
+
+  it('erkennt doppelte Namen ohne Rücksicht auf Groß-/Kleinschreibung', () => {
+    expect(validatePortion({ label: '1 becher', amount: '450' }, ['1 Becher'])).toEqual({
+      ok: false,
+      errors: { label: 'Gibt es schon' },
+    })
   })
 })

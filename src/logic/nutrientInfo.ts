@@ -25,9 +25,15 @@ export const NUTRIENT_INFO: Record<NutrientKey, NutrientInfo> = {
   alcohol: { label: 'Alkohol', unit: 'g', decimals: 1 },
 }
 
-/** Die acht Werte der EU-Nährwerttabelle + Ballaststoffe; Wasser und Alkohol unter „Weitere“ */
+/** Die sieben Werte der EU-Nährwerttabelle + Ballaststoffe; Wasser und Alkohol unter „Weitere“ */
 export const MAIN_NUTRIENTS: readonly NutrientKey[] = ['kcal', 'fat', 'satFat', 'carbs', 'sugar', 'fiber', 'protein', 'salt']
 export const MORE_NUTRIENTS: readonly NutrientKey[] = ['water', 'alcohol']
+
+/**
+ * Pflichtangaben der EU-Nährwerttabelle (LMIV, Art. 30). Müssen beim Anlegen eigener
+ * Produkte und beim Prüfen ausgefüllt sein (Entscheidung Jan, 17.10.2026).
+ */
+export const REQUIRED_NUTRIENTS: readonly NutrientKey[] = ['kcal', 'fat', 'satFat', 'carbs', 'sugar', 'protein', 'salt']
 
 /** „63 kcal“, „0,2 g“, „0,13 g“; unbekannt → „–“ ohne Einheit */
 export function formatNutrient(key: NutrientKey, value: NutrientValue): string {

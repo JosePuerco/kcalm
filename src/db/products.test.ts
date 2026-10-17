@@ -11,6 +11,7 @@ import {
   isFoodUsed,
   restoreProduct,
   saveBlsPortions,
+  saveProductPortions,
   setBlsIsDrink,
   updateProduct,
 } from './products.ts'
@@ -90,6 +91,15 @@ describe('Produkte', () => {
     await db.entries.add(entry)
     await updateProduct(p.id, { ...skyr, per100: { ...skyr.per100, kcal: 100 } })
     expect((await db.entries.get(entry.id))?.nutrients.kcal).toBe(94.5)
+  })
+
+  it('Portionen aus der Detailansicht speichern', async () => {
+    const p = await createProduct(skyr, t0)
+    await saveProductPortions(p.id, [{ label: 'Halber Becher', amount: 225 }], t1)
+    const stored = await getProduct(p.id)
+    expect(stored.portions).toEqual([{ label: 'Halber Becher', amount: 225 }])
+    expect(stored.updatedAt).toBe(t1.toISOString())
+    expect(stored.name).toBe('Skyr natur')
   })
 
   it('archivieren und wiederherstellen', async () => {

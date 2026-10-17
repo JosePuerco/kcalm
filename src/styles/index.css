@@ -41,9 +41,13 @@ textarea {
   user-select: text;
 }
 
-button {
-  cursor: pointer;
-  text-align: left;
+/* In der Ebene base, damit Tailwind-Klassen wie text-center sie überschreiben können
+   (Regeln außerhalb einer Ebene gewinnen sonst immer) */
+@layer base {
+  button {
+    cursor: pointer;
+    text-align: left;
+  }
 }
 
 /* Kopf unter der Statusleiste. Prototyp: 52 px = 47 px Statusleiste + 5 px.

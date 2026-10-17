@@ -24,3 +24,9 @@ export function formatNumber(value: number | null, decimals = 0): string {
   // −0 vermeiden: −0,2 auf 0 Stellen gerundet ergibt sonst „-0“
   return /^-0([,.]0*)?$/.test(text) ? text.slice(1) : text
 }
+
+/** Menge in g/ml: ganze Zahl ohne Nachkommastelle, sonst eine: 450 → „450“, 12,5 → „12,5“ */
+export function formatAmount(value: number): string {
+  // Würde die eine Stelle auf „,0“ runden, ganz ohne Komma zeigen
+  return formatNumber(value, Math.abs(value - Math.round(value)) < 0.05 ? 0 : 1)
+}

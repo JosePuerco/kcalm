@@ -51,6 +51,13 @@ export async function isFoodUsed(ref: FoodRef): Promise<boolean> {
   return recipes > 0
 }
 
+/** Portionen direkt aus der Detailansicht ändern */
+export async function saveProductPortions(id: string, portions: Portion[], now = new Date()): Promise<void> {
+  await db.transaction('rw', db.products, async () => {
+    await db.products.put(touch(await getProduct(id), { portions }, now))
+  })
+}
+
 async function setArchived(id: string, archived: boolean, now: Date) {
   await db.transaction('rw', db.products, async () => {
     await db.products.put(touch(await getProduct(id), { archived }, now))

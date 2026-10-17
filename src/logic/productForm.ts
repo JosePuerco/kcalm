@@ -1,5 +1,5 @@
 // Formular „Produkt anlegen/bearbeiten“: Text-Eingaben ↔ Produktdaten, Prüfung mit Zod.
-// Leeres Nährwert-Feld = unbekannt (null), nie 0.
+// Pflicht: Name und die Werte der EU-Nährwerttabelle. Leeres optionales Feld = unbekannt (null), nie 0.
 
 import { z } from 'zod'
 import { NUTRIENT_KEYS } from '../db/records.ts'
@@ -67,8 +67,17 @@ export function parseDecimal(text: string): number | null | 'invalid' {
 const MAX_KCAL = 900 // reines Fett hat ~900 kcal/100 g
 const MAX_GRAMS = 100
 
-const grams = z.number().max(MAX_GRAMS, `Höchstens ${MAX_GRAMS} g pro 100`).nullable()
+const REQUIRED = 'Pflichtangabe vom Etikett'
+const grams = z.number().max(MAX_GRAMS, `Höchstens ${MAX_GRAMS} g pro 100`)
+const requiredGrams = z.number({ error: REQUIRED }).pipe(grams)
+const optionalGrams = grams.nullable()
 
+const portionSchema = z.object({
+  label: z.string().trim().min(1, 'Bitte benennen').max(40, 'Höchstens 40 Zeichen'),
+  amount: z.number({ error: 'Bitte Menge eingeben' }).positive('Mehr als 0').max(10000, 'Höchstens 10.000'),
+})
+
+// Pflicht sind die Werte der EU-Nährwerttabelle (REQUIRED_NUTRIENTS); Ballaststoffe, Wasser, Alkohol optional
 const schema = z.object({
   name: z.string().trim().min(1, 'Bitte einen Namen eingeben').max(120, 'Höchstens 120 Zeichen'),
   brand: z.string().trim().max(80, 'Höchstens 80 Zeichen'),
@@ -78,24 +87,19 @@ const schema = z.object({
     .refine((b) => b === '' || /^\d{6,14}$/.test(b), 'Nur Ziffern, 6 bis 14 Stellen'),
   unit: z.enum(['g', 'ml']),
   per100: z.object({
-    kcal: z.number({ error: 'Bitte kcal eingeben' }).max(MAX_KCAL, `Höchstens ${MAX_KCAL} kcal pro 100`),
-    fat: grams,
-    satFat: grams,
-    carbs: grams,
-    sugar: grams,
-    fiber: grams,
-    protein: grams,
-    salt: grams,
-    water: grams,
-    alcohol: grams,
+    kcal: z.number({ error: REQUIRED }).max(MAX_KCAL, `Höchstens ${MAX_KCAL} kcal pro 100`),
+    fat: requiredGrams,
+    satFat: requiredGrams,
+    carbs: requiredGrams,
+    sugar: requiredGrams,
+    fiber: optionalGrams,
+    protein: requiredGrams,
+    salt: requiredGrams,
+    water: optionalGrams,
+    alcohol: optionalGrams,
   }),
   isDrink: z.boolean(),
-  portions: z.array(
-    z.object({
-      label: z.string().trim().min(1, 'Bitte benennen').max(40, 'Höchstens 40 Zeichen'),
-      amount: z.number({ error: 'Bitte Menge eingeben' }).positive('Mehr als 0').max(10000, 'Höchstens 10.000'),
-    }),
-  ),
+  portions: z.array(portionSchema),
 })
 
 /** Fehlerpfad von Zod → Feldname im Formular (per100.kcal → kcal) */
@@ -162,4 +166,26 @@ export function validateProductForm(values: ProductFormValues): FormResult {
       portions: v.portions.map((p): Portion => ({ label: p.label, amount: p.amount })),
     },
   }
+}
+
+export type PortionResult = { ok: true; portion: Portion } | { ok: false; errors: { label?: string; amount?: string } }
+
+/** Eine Portion aus dem Portionen-Sheet prüfen; otherLabels = die übrigen Portionen */
+export function validatePortion(input: PortionInput, otherLabels: readonly string[]): PortionResult {
+  const errors: { label?: string; amount?: string } = {}
+  const amount = parseDecimal(input.amount)
+  if (amount === 'invalid') errors.amount = 'Keine gültige Zahl'
+
+  const result = portionSchema.safeParse({ label: input.label, amount: amount === 'invalid' ? null : amount })
+  if (!result.success) {
+    for (const issue of result.error.issues) {
+      const key = issue.path[0] as 'label' | 'amount'
+      errors[key] ??= issue.message
+    }
+  }
+  const label = input.label.trim().toLowerCase()
+  if (label && otherLabels.some((l) => l.trim().toLowerCase() === label)) errors.label ??= 'Gibt es schon'
+
+  if (errors.label || errors.amount || !result.success) return { ok: false, errors }
+  return { ok: true, portion: result.data }
 }
