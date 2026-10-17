@@ -6,3 +6,5 @@ dev-dist
 Thumbs.db
 .vscode/*
 !.vscode/extensions.json
+data/bls/*.xlsx
+data/bls/*.pdf
