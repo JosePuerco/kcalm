@@ -270,7 +270,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 - [ ] Eigene Produkte anlegen, bearbeiten, archivieren; Portionsgrößen
 - [ ] Lebensmittel-Liste mit Reitern, Filtern und Suche
 - [ ] Lokale Suche über eigene Produkte und BLS
-- [ ] Rechenfunktion Nährwert pro Menge inkl. „unbekannt“ mit Tests
+- [x] Rechenfunktion Nährwert pro Menge inkl. „unbekannt“ mit Tests
 
 ### Phase 2 – Backup
 
