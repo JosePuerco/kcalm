@@ -46,6 +46,11 @@ button {
   text-align: left;
 }
 
+/* Kopf unter der Statusleiste: Safe Area + 5 px wie im Prototyp (52 px bei 47 px Statusleiste) */
+@utility pt-safe-header {
+  padding-top: calc(env(safe-area-inset-top) + 5px);
+}
+
 /* Der eine Scrollbereich pro Screen: Kinder dürfen nicht schrumpfen */
 @utility scroll-area {
   flex: 1 1 0%;
