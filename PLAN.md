@@ -363,11 +363,11 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**17.10.2026 · Phase 1 umgesetzt, noch nicht abgeschlossen** – alle Punkte erledigt und deployt; offen ist Jans Test auf dem iPhone. Erst danach Phase 1 als abgeschlossen markieren und mit Phase 2 (Backup) beginnen.
+**17.10.2026 · Phase 1 abgeschlossen** – alle Punkte erledigt, deployt und von Jan auf dem iPhone getestet. Nächster Schritt: Phase 2 (Backup).
 
 - Erledigt: Datenmodell (`src/db/`), BLS-Skript (`npm run bls` → `public/bls.json`), Nährwert pro Menge, Suche, Lebensmittel-Liste, Produkt anlegen/bearbeiten/archivieren/löschen, Produkt- und BLS-Detail mit Portionen, Theme-Wahl gespeichert. 183 Tests grün.
 - Abweichungen (mit Jan abgestimmt): Formular als eigener Screen (kein Prototyp), Zahlen über iPhone-Zifferntastatur, BLS-Treffer als eigener Abschnitt in der Listen-Suche, Pflichtangaben nach LMIV.
-- Zu testen auf dem iPhone: Formular (Tastatur mit Komma, kein Zoom beim Antippen), Sheet für Portionen mit Tastatur, BLS-Suche offline (Flugmodus).
+- iPhone-Test durch Jan erledigt: Formular, Portionen-Sheet, BLS-Suche offline.
 
 **17.10.2026 · Phase 0 abgeschlossen** – nächster Schritt: Phase 1 (Produkte und BLS). Vorher BLS-Excel nach `data/bls/` legen.
 
