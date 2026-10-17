@@ -265,7 +265,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 
 ### Phase 1 – Produkte und BLS
 
-- [ ] Datenmodell (alle Tabellen, sync-fähige Felder) mit Tests
+- [x] Datenmodell (alle Tabellen, sync-fähige Felder) mit Tests
 - [ ] BLS-Skript: Excel → JSON, mit Tests für fehlende Werte
 - [ ] Eigene Produkte anlegen, bearbeiten, archivieren; Portionsgrößen
 - [ ] Lebensmittel-Liste mit Reitern, Filtern und Suche
@@ -353,7 +353,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 
 Offen nur noch:
 
-- [ ] BLS-Excel `BLS_4_0_Daten_2025_DE.xlsx` von blsdb.de herunterladen und nach `data/bls/` legen (Jan, vor Phase 1)
+- [x] BLS-Excel `BLS_4_0_Daten_2025_DE.xlsx` von blsdb.de herunterladen und nach `data/bls/` legen (Jan, vor Phase 1)
 
 ## 8. Zwischenstand
 
