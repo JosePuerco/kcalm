@@ -200,3 +200,16 @@ describe('stringifyBlsFile', () => {
     expect(json).toContain('null')
   })
 })
+
+describe('public/bls.json', () => {
+  it('passt zum Leser der App und enthält die echten Daten', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { parseBlsFile } = await import('../src/logic/blsFoods.ts')
+    const foods = parseBlsFile(JSON.parse(readFileSync(new URL('../public/bls.json', import.meta.url), 'utf8')))
+    expect(foods.length).toBe(7140)
+    const oats = foods.find((f) => f.code === 'C133000')
+    expect(oats?.name).toBe('Hafer Flocken')
+    expect(oats?.per100.kcal).toBe(348)
+    expect(foods.find((f) => f.code === 'P355000')?.per100.fiber).toBeNull()
+  })
+})
