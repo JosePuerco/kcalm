@@ -255,12 +255,12 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 
 ### Phase 0 – Fundament
 
-- [ ] Projekt aufsetzen (Vite, React, TypeScript, Tailwind mit Tokens, Motion, Dexie, Zod, Vitest)
-- [ ] PWA unter `/kcalm/` installierbar und offline, Schrift lokal gebündelt
-- [ ] Feste App-Hülle: kein Gummiband-Scrollen, kein Zoomen, Safe Areas, Scrollbereich nach DESIGN.md
-- [ ] Hell/Dunkel über Tokens, Standard System
-- [ ] Schwebende Navigation mit leeren Screens nach DESIGN.md
-- [ ] Bausteine mit Vorschauseite: Karte, Buttons, Chips, Segment-Umschalter, Schalter, Bottom-Sheet, Ziffernblock, Fortschrittsleiste, Ring, Toast
+- [x] Projekt aufsetzen (Vite, React, TypeScript, Tailwind mit Tokens, Motion, Dexie, Zod, Vitest)
+- [x] PWA unter `/kcalm/` installierbar und offline, Schrift lokal gebündelt
+- [x] Feste App-Hülle: kein Gummiband-Scrollen, kein Zoomen, Safe Areas, Scrollbereich nach DESIGN.md
+- [x] Hell/Dunkel über Tokens, Standard System
+- [x] Schwebende Navigation mit leeren Screens nach DESIGN.md
+- [x] Bausteine mit Vorschauseite: Karte, Buttons, Chips, Segment-Umschalter, Schalter, Bottom-Sheet, Ziffernblock, Fortschrittsleiste, Ring, Toast
 - [ ] GitHub Pages per Actions, Installations- und Offline-Test auf dem iPhone
 
 ### Phase 1 – Produkte und BLS
@@ -359,4 +359,9 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-- (noch leer)
+**17.10.2026 · Phase 0 fast fertig**
+
+- Erledigt: Projekt-Setup, Tokens → Tailwind (Generator `scripts/build-tokens.ts`), PWA, App-Hülle, Navigation, leere Screens, Bausteine + Vorschau (Einstellungen → „Bausteine (Vorschau)“), Workflow `.github/workflows/deploy.yml`. 33 Tests grün, Build und Lint sauber.
+- `tokens.json` ergänzt (mit Jans OK): `type.label` 14, `type.unit` 20, Radien `calendar`/`button`/`tile`/`smallButton`, Farben `switchOff`, `segmentActive`, Abschnitt `shadow`.
+- Theme-Wahl wird noch nicht gespeichert (kommt mit der `settings`-Tabelle in Phase 1).
+- Offen: Sichtprüfung im Browser durch Jan (Claude hatte keinen Browserzugriff), GitHub Pages aktivieren, Push, Installations- und Offline-Test auf dem iPhone 16e.
