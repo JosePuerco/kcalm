@@ -266,7 +266,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 ### Phase 1 – Produkte und BLS
 
 - [x] Datenmodell (alle Tabellen, sync-fähige Felder) mit Tests
-- [ ] BLS-Skript: Excel → JSON, mit Tests für fehlende Werte
+- [x] BLS-Skript: Excel → JSON, mit Tests für fehlende Werte
 - [ ] Eigene Produkte anlegen, bearbeiten, archivieren; Portionsgrößen
 - [ ] Lebensmittel-Liste mit Reitern, Filtern und Suche
 - [ ] Lokale Suche über eigene Produkte und BLS
