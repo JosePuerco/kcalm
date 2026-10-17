@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Profile und Ziele</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.kc-press{transition:transform 140ms cubic-bezier(.2,.8,.2,1)}
+.kc-press:active{transform:scale(.95)}
+.kc-scroll>*{flex-shrink:0}
+@media (prefers-reduced-motion: reduce){.kc-press{transition:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F4F6; color: #0D0E12; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; font-feature-settings: 'tnum' 1">
+
+<div style="padding: 50px 8px 0 4px; display: flex; align-items: center; justify-content: space-between">
+<a href="Einstellungen.dc.html" aria-label="Zurück" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #0D0E12"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></a>
+<span style="font-size: 17px; font-weight: 600">Profile und Ziele</span>
+<span style="width: 44px"></span>
+</div>
+
+<div style="display: flex; gap: 6px; padding: 8px 16px 10px; overflow-x: auto">
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="3">
+<button onClick="{{c.pick}}" class="kc-press" style="min-height: 36px; padding: 0 14px; border-radius: 18px; font-size: 14px; font-weight: 600; white-space: nowrap; background: {{c.bg}}; color: {{c.fg}}; display: flex; align-items: center; gap: 6px">{{c.name}}<sc-if value="{{c.active}}" hint-placeholder-val="{{ false }}"><span style="width: 6px; height: 6px; border-radius: 3px; background: {{c.dot}}"></span></sc-if></button>
+</sc-for>
+<button class="kc-press" style="min-height: 36px; padding: 0 14px; border-radius: 18px; font-size: 14px; font-weight: 600; background: #FFFFFF; color: #2F4BE8; white-space: nowrap">+ Neu</button>
+</div>
+
+<div class="kc-scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px">
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px">
+<span style="font-size: 13px; color: #646874">Wochenbudget</span>
+<div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 4px">
+<span style="font-size: 34px; font-weight: 600; letter-spacing: -1px">{{p.week}}<span style="font-size: 16px; font-weight: 500; color: #646874"> kcal</span></span>
+<span style="font-size: 14px; color: #646874">= {{p.day}} / Tag</span>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 8px 16px 4px">
+<span style="display: block; font-size: 15px; font-weight: 600; padding: 6px 0">Makros pro Tag</span>
+<sc-for list="{{p.macros}}" as="m" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; min-height: 52px; border-top: 1px solid #ECEDF0; gap: 10px">
+<span style="flex: 1; font-size: 15px">{{m.label}}</span>
+<span style="font-size: 12px; color: #646874; padding: 4px 8px; border-radius: 8px; background: #F0F1F4">{{m.mode}}</span>
+<span style="font-size: 15px; font-weight: 600; min-width: 40px; text-align: right">{{m.val}}</span>
+<span style="font-size: 13px; color: #646874; min-width: 58px; text-align: right">{{m.res}}</span>
+</div>
+</sc-for>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 4px 16px">
+<div style="display: flex; align-items: center; justify-content: space-between; min-height: 50px; font-size: 15px"><span>Wasser-Ziel</span><span style="font-weight: 600">2,5 l</span></div>
+<div style="display: flex; align-items: center; justify-content: space-between; min-height: 50px; font-size: 15px; border-top: 1px solid #ECEDF0"><span>Körpergewicht für g/kg</span><span style="color: #646874">74,6 kg · Trend</span></div>
+</div>
+
+<sc-if value="{{p.active}}" hint-placeholder-val="{{ true }}">
+<div style="background: #EEF1FF; border-radius: 18px; padding: 14px 16px; font-size: 14px; color: #2F4BE8; line-height: 1.45">Aktiv seit Mo 01.09.2026. Änderungen gelten ab heute; vergangene Tage behalten ihre damaligen Ziele.</div>
+</sc-if>
+<sc-if value="{{p.inactive}}" hint-placeholder-val="{{ false }}">
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px">
+<span style="font-size: 15px; font-weight: 600">Aktivieren</span>
+<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px">
+<sc-for list="{{starts}}" as="s" hint-placeholder-count="2">
+<button onClick="{{s.pick}}" class="kc-press" style="min-height: 56px; border-radius: 14px; padding: 0 14px; display: flex; align-items: center; gap: 12px; border: 1.5px solid {{s.border}}; background: {{s.bg}}">
+<span style="width: 20px; height: 20px; border-radius: 10px; border: 2px solid {{s.border}}; display: flex; align-items: center; justify-content: center; flex: none"><span style="width: 10px; height: 10px; border-radius: 5px; background: {{s.dot}}"></span></span>
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">{{s.title}}</span><span style="font-size: 12px; color: #646874">{{s.sub}}</span></span>
+</button>
+</sc-for>
+</div>
+<a href="Einstellungen.dc.html" class="kc-press" style="margin-top: 12px; min-height: 52px; border-radius: 16px; background: #3D5AFE; color: #FFFFFF; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; text-decoration: none">{{p.name}} aktivieren</a>
+</div>
+</sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var KC_PROF = {
+  a: { name: 'Aufbau', week: 19600, macros: [['Eiweiß', 'g/kg', '1,8', 134], ['Fett', '%', '25', null], ['Kohlenhydrate', 'Rest', '–', null], ['Ballaststoffe', 'g', '30', 30]] },
+  d: { name: 'Diät', week: 15400, macros: [['Eiweiß', 'g/kg', '2,2', 164], ['Fett', '%', '25', null], ['Kohlenhydrate', 'Rest', '–', null], ['Ballaststoffe', 'g', '30', 30]] },
+  e: { name: 'Erhalt', week: 18200, macros: [['Eiweiß', 'g/kg', '1,6', 119], ['Fett', '%', '30', null], ['Kohlenhydrate', 'Rest', '–', null], ['Ballaststoffe', 'g', '30', 30]] }
+};
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sel: 'a', start: 'mon' }; }
+  renderVals() {
+    var self = this;
+    var st = this.state;
+    var fm = function (n) { return Math.round(n).toLocaleString('de-DE'); };
+    var P = KC_PROF[st.sel];
+    var day = P.week / 7;
+    var prot = P.macros[0][3];
+    var fatPct = parseFloat(P.macros[1][2]) / 100;
+    var fat = day * fatPct / 9;
+    var carbs = (day - prot * 4 - fat * 9) / 4;
+    var res = [ '≈ ' + fm(prot) + ' g', '≈ ' + fm(fat) + ' g', '≈ ' + fm(carbs) + ' g', P.macros[3][3] + ' g' ];
+    return {
+      chips: ['a', 'd', 'e'].map(function (k) { var on = st.sel === k; return { name: KC_PROF[k].name, active: k === 'a', dot: on ? '#FFFFFF' : '#3D5AFE', bg: on ? '#0D0E12' : '#FFFFFF', fg: on ? '#FFFFFF' : '#0D0E12', pick: function () { self.setState({ sel: k }); } }; }),
+      p: {
+        name: P.name, week: fm(P.week), day: fm(day), active: st.sel === 'a', inactive: st.sel !== 'a',
+        macros: P.macros.map(function (m, i) { return { label: m[0], mode: m[1], val: m[2], res: res[i] }; })
+      },
+      starts: [['mon', 'Ab nächstem Montag, 19.10.', 'Die laufende Woche bleibt bei Aufbau'], ['now', 'Ab heute', 'Restbudget dieser Woche wird anteilig umgerechnet']].map(function (s) { var on = st.start === s[0]; return { title: s[1], sub: s[2], border: on ? '#3D5AFE' : '#E1E3E8', bg: on ? '#F5F7FF' : '#FFFFFF', dot: on ? '#3D5AFE' : 'transparent', pick: function () { self.setState({ start: s[0] }); } }; })
+    };
+  }
+}
+</script>
+</body>
+</html>

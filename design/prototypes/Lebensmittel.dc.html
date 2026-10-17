@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Lebensmittel</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+input{font:inherit;color:inherit}
+.kc-press{transition:transform 140ms cubic-bezier(.2,.8,.2,1)}
+.kc-press:active{transform:scale(.95)}
+.kc-scroll>*{flex-shrink:0}
+@media (prefers-reduced-motion: reduce){.kc-press{transition:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F4F6; color: #0D0E12; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden; font-feature-settings: 'tnum' 1">
+
+<div style="padding: 52px 8px 6px 20px; display: flex; align-items: center; justify-content: space-between">
+<h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.5px">Lebensmittel</h1>
+<button aria-label="Neu anlegen" class="kc-press" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #2F4BE8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+</div>
+
+<div style="padding: 4px 16px 8px">
+<label style="height: 46px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; gap: 8px; padding: 0 12px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#646874" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+<span style="position: absolute; width: 1px; height: 1px; overflow: hidden">Suchen</span>
+<input value="{{q}}" onInput="{{onQ}}" placeholder="In deinen Lebensmitteln suchen" style="flex: 1; border: 0; outline: none; background: transparent; font-size: 16px; min-width: 0">
+</label>
+</div>
+
+<div role="tablist" style="margin: 0 16px 10px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #E6E8EC; border-radius: 12px; padding: 3px">
+<sc-for list="{{tabs}}" as="tb" hint-placeholder-count="3">
+<button role="tab" onClick="{{tb.pick}}" style="min-height: 36px; border-radius: 9px; font-size: 13px; font-weight: 600; text-align: center; background: {{tb.bg}}; color: {{tb.fg}}">{{tb.label}}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{isProducts}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; gap: 6px; padding: 0 16px 10px">
+<sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+<button onClick="{{f.pick}}" class="kc-press" style="min-height: 32px; padding: 0 12px; border-radius: 16px; font-size: 13px; font-weight: 500; background: {{f.bg}}; color: {{f.fg}}">{{f.label}}</button>
+</sc-for>
+</div>
+</sc-if>
+
+<div class="kc-scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 0 16px 120px; display: flex; flex-direction: column; gap: 10px">
+<div style="background: #FFFFFF; border-radius: 18px; overflow: hidden">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+<a href="{{r.href}}" style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; border-top: {{r.border}}; color: #0D0E12; text-decoration: none">
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</span>
+<span style="font-size: 12px; color: #646874; display: flex; align-items: center; gap: 5px">{{r.meta}}<sc-if value="{{r.verified}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 2px; color: #2F4BE8; font-weight: 500"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>geprüft</span></sc-if></span>
+</span>
+<span style="font-size: 13px; color: #646874; white-space: nowrap">{{r.kcal}}</span>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C5C9D2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+</a>
+</sc-for>
+<sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 28px 20px; text-align: center; font-size: 14px; color: #646874">Keine Treffer. Grundlebensmittel aus dem BLS findest du beim Hinzufügen.</div>
+</sc-if>
+</div>
+<span style="font-size: 12px; color: #646874; padding: 0 4px; line-height: 1.45">{{foot}}</span>
+<button style="min-height: 44px; font-size: 14px; font-weight: 500; color: #646874; text-align: center">Archiviert (3)</button>
+</div>
+
+<nav style="position: absolute; left: 20px; right: 20px; bottom: 26px; height: 62px; border-radius: 31px; background: #FFFFFF; box-shadow: 0 6px 24px rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: space-around; padding: 0 8px">
+<a href="Kern.dc.html" aria-label="Tagebuch" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: #646874"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg></a>
+<a href="Statistik.dc.html" aria-label="Statistik" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: #646874"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg></a>
+<a href="Kern.dc.html" aria-label="Hinzufügen" class="kc-press" style="width: 64px; height: 46px; border-radius: 23px; background: #3D5AFE; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
+<a href="Lebensmittel.dc.html" aria-label="Lebensmittel" aria-current="page" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: #0D0E12"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></a>
+<a href="Einstellungen.dc.html" aria-label="Einstellungen" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: #646874"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"></path><circle cx="16" cy="6" r="2"></circle><circle cx="10" cy="12" r="2"></circle><circle cx="18" cy="18" r="2"></circle></svg></a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var KC_DATA = {
+  p: [
+    { name: 'Skyr natur', meta: 'Arla · Open Food Facts', kcal: '63 kcal', src: 'off', verified: true, href: 'Produkt.dc.html' },
+    { name: 'Haferflocken, zart', meta: 'Kölln · Open Food Facts', kcal: '372 kcal', src: 'off', verified: true, href: 'Produkt.dc.html' },
+    { name: 'Whey Vanille', meta: 'Eigenes Produkt', kcal: '380 kcal', src: 'own', verified: true, href: 'Produkt.dc.html' },
+    { name: 'Milch 1,5 %', meta: 'Open Food Facts', kcal: '47 kcal', src: 'off', verified: false, href: 'Produkt.dc.html' },
+    { name: 'Vollkornbrot', meta: 'Open Food Facts', kcal: '220 kcal', src: 'off', verified: false, href: 'Produkt.dc.html' },
+    { name: 'Erdnussbutter crunchy', meta: 'Open Food Facts', kcal: '610 kcal', src: 'off', verified: false, href: 'Produkt.dc.html' },
+    { name: 'Magerquark', meta: 'Open Food Facts', kcal: '67 kcal', src: 'off', verified: true, href: 'Produkt.dc.html' },
+    { name: 'Banane', meta: 'BLS · eigene Portion', kcal: '93 kcal', src: 'bls', verified: false, href: 'Produkt.dc.html' },
+    { name: 'Hähnchenbrust', meta: 'BLS · eigene Portion', kcal: '110 kcal', src: 'bls', verified: false, href: 'Produkt.dc.html' }
+  ],
+  m: [
+    { name: 'Frühstück-Klassiker', meta: '4 Bestandteile', kcal: '567 kcal', href: 'Mahlzeit.dc.html' },
+    { name: 'Quark-Bowl', meta: '3 Bestandteile', kcal: '412 kcal', href: 'Mahlzeit.dc.html' },
+    { name: 'Post-Workout Shake', meta: '2 Bestandteile', kcal: '231 kcal', href: 'Mahlzeit.dc.html' }
+  ],
+  r: [
+    { name: 'Chili con Carne', meta: '1.400 g fertig · 1 Teller = 450 g', kcal: '135 kcal', href: 'Rezept.dc.html' },
+    { name: 'Overnight Oats', meta: '620 g fertig', kcal: '168 kcal', href: 'Rezept.dc.html' },
+    { name: 'Linsencurry', meta: '1.900 g fertig', kcal: '118 kcal', href: 'Rezept.dc.html' }
+  ]
+};
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'p', filter: 'all', q: '' }; }
+  renderVals() {
+    var self = this;
+    var st = this.state;
+    var list = KC_DATA[st.tab].filter(function (x) {
+      if (st.tab === 'p' && st.filter !== 'all') {
+        if (st.filter === 'ver' && !x.verified) return false;
+        if (st.filter !== 'ver' && x.src !== st.filter) return false;
+      }
+      return !st.q || x.name.toLowerCase().indexOf(st.q.toLowerCase()) >= 0;
+    });
+    var tabDef = [['p', 'Produkte'], ['m', 'Mahlzeiten'], ['r', 'Rezepte']];
+    var fDef = [['all', 'Alle'], ['ver', 'Geprüft'], ['own', 'Eigene'], ['bls', 'BLS']];
+    var foot = { p: 'Produkte aus Open Food Facts landen hier automatisch nach dem ersten Scan. BLS-Lebensmittel erscheinen erst, wenn du eine Portion anlegst oder sie prüfst.', m: 'Mahlzeiten sind Gruppen von Produkten mit Standardmengen.', r: 'Rezepte rechnen pro 100 g über das Endgewicht nach dem Kochen.' };
+    return {
+      q: st.q,
+      onQ: function (e) { self.setState({ q: e.target.value }); },
+      isProducts: st.tab === 'p',
+      tabs: tabDef.map(function (d) { var on = st.tab === d[0]; return { label: d[1], bg: on ? '#FFFFFF' : 'transparent', fg: on ? '#0D0E12' : '#646874', pick: function () { self.setState({ tab: d[0], filter: 'all' }); } }; }),
+      filters: fDef.map(function (d) { var on = st.filter === d[0]; return { label: d[1], bg: on ? '#0D0E12' : '#FFFFFF', fg: on ? '#FFFFFF' : '#0D0E12', pick: function () { self.setState({ filter: d[0] }); } }; }),
+      rows: list.map(function (x, j) { return { name: x.name, meta: x.meta, kcal: x.kcal + ' /100', verified: !!x.verified, href: x.href, border: j === 0 ? '0' : '1px solid #ECEDF0' }; }),
+      empty: list.length === 0,
+      foot: foot[st.tab]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Verbrauchsschätzung</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.kc-press{transition:transform 140ms cubic-bezier(.2,.8,.2,1)}
+.kc-press:active{transform:scale(.95)}
+.kc-scroll>*{flex-shrink:0}
+@media (prefers-reduced-motion: reduce){.kc-press{transition:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F4F6; color: #0D0E12; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden; font-feature-settings: 'tnum' 1">
+
+<div style="padding: 50px 8px 0 4px; display: flex; align-items: center; justify-content: space-between">
+<a href="Einstellungen.dc.html" aria-label="Zurück" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #0D0E12"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></a>
+<span style="font-size: 17px; font-weight: 600">Verbrauchsschätzung</span>
+<span style="width: 44px"></span>
+</div>
+
+<div role="tablist" aria-label="Demo-Zustand" style="margin: 8px 16px 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #E6E8EC; border-radius: 12px; padding: 3px">
+<button role="tab" onClick="{{showReady}}" style="min-height: 34px; border-radius: 9px; font-size: 13px; font-weight: 600; text-align: center; background: {{tA}}; color: {{tAf}}">Ergebnis</button>
+<button role="tab" onClick="{{showColl}}" style="min-height: 34px; border-radius: 9px; font-size: 13px; font-weight: 600; text-align: center; background: {{tB}}; color: {{tBf}}">Sammelt Daten</button>
+</div>
+
+<div class="kc-scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 0 16px 24px; display: flex; flex-direction: column; gap: 10px">
+
+<sc-if value="{{ready}}" hint-placeholder-val="{{ true }}">
+<div style="background: #FFFFFF; border-radius: 22px; padding: 18px 16px">
+<span style="font-size: 13px; color: #646874">Dein geschätzter Verbrauch</span>
+<div style="display: flex; align-items: baseline; gap: 8px; margin-top: 4px">
+<span style="font-size: 44px; font-weight: 600; letter-spacing: -1.5px">2.585</span>
+<span style="font-size: 16px; color: #646874">± 150 kcal/Tag</span>
+</div>
+<div aria-hidden="true" style="position: relative; height: 26px; margin-top: 14px">
+<div style="position: absolute; left: 0; right: 0; top: 11px; height: 4px; border-radius: 2px; background: #E9EBF0"></div>
+<div style="position: absolute; left: 30%; width: 22%; top: 9px; height: 8px; border-radius: 4px; background: #C7D0FF"></div>
+<div style="position: absolute; left: 41%; top: 5px; width: 4px; height: 16px; border-radius: 2px; background: #3D5AFE"></div>
+<div style="position: absolute; left: 66%; top: 3px; height: 20px; border-left: 1.5px dashed #646874"></div>
+</div>
+<div style="display: flex; justify-content: space-between; font-size: 11px; color: #646874"><span>2.000</span><span>Spanne 2.435–2.735 · Budget 2.800 gestrichelt</span><span>3.200</span></div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 15px; font-weight: 600">Im Vergleich zu deinem Budget</span>
+<span style="font-size: 14px; line-height: 1.5">Dein Budget liegt <span style="font-weight: 600">215 kcal/Tag</span> über dem Verbrauch. Das entspricht rechnerisch etwa <span style="font-weight: 600">+0,2 kg pro Woche</span>.</span>
+<span style="font-size: 12px; color: #646874; line-height: 1.45">Die Schätzung ändert dein Ziel nicht. Ob du anpasst, entscheidest du im Profil.</span>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 4px 16px">
+<sc-for list="{{basis}}" as="b" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; justify-content: space-between; min-height: 46px; font-size: 14px; border-top: {{b.border}}"><span style="color: #646874">{{b.l}}</span><span style="font-weight: 600">{{b.v}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{coll}}" hint-placeholder-val="{{ false }}">
+<div style="background: #FFFFFF; border-radius: 22px; padding: 18px 16px">
+<span style="font-size: 13px; color: #646874">Erste Schätzung in</span>
+<div style="display: flex; align-items: baseline; gap: 8px; margin-top: 4px">
+<span style="font-size: 44px; font-weight: 600; letter-spacing: -1.5px">5</span>
+<span style="font-size: 16px; color: #646874">vollständigen Tagen</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 4px; margin-top: 14px">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="14">
+<span style="height: 22px; border-radius: 6px; background: {{d}}"></span>
+</sc-for>
+</div>
+<div style="display: flex; gap: 14px; margin-top: 10px; font-size: 12px; color: #646874">
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #3D5AFE"></span>vollständig + gewogen</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #C9CCD3"></span>zählt nicht</span>
+</div>
+</div>
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px; font-size: 14px; line-height: 1.5">Gezählt werden nur Tage, die du als vollständig markiert hast. Fehlende Wiegetage sind kein Problem, das Gewicht läuft über einen geglätteten Trend.</div>
+</sc-if>
+
+<span style="font-size: 12px; color: #646874; text-transform: uppercase; letter-spacing: 0.6px; padding: 8px 4px 0">Gewicht</span>
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; justify-content: space-between; font-size: 14px"><span style="color: #646874">Letzter Import</span><span style="font-weight: 600">Heute 07:12 · 74,8 kg</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<button onClick="{{paste}}" class="kc-press" style="min-height: 48px; border-radius: 14px; background: #3D5AFE; color: #FFFFFF; font-size: 14px; font-weight: 600; text-align: center">Gewichte einfügen</button>
+<button class="kc-press" style="min-height: 48px; border-radius: 14px; background: #F3F4F6; font-size: 14px; font-weight: 600; text-align: center">Manuell eintragen</button>
+</div>
+<span style="font-size: 12px; color: #646874; line-height: 1.45">Erst den Kurzbefehl „Kcalm Gewichte“ ausführen, dann hier einfügen. <span style="color: #2F4BE8; font-weight: 500">Kurzbefehl einrichten</span></span>
+</div>
+</div>
+
+<sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: 24px; right: 24px; bottom: 34px; background: #0D0E12; color: #FFFFFF; border-radius: 16px; padding: 12px 16px; font-size: 14px; display: flex; align-items: center; gap: 10px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+<span>60 Werte gelesen · 1 neu · 0 doppelt</span>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { ready: true, toast: false }; }
+  componentWillUnmount() { clearTimeout(this.tt); }
+  renderVals() {
+    var self = this;
+    var r = this.state.ready;
+    var days = [];
+    for (var i = 0; i < 14; i++) days.push(i < 10 ? (i === 3 ? '#C9CCD3' : '#3D5AFE') : '#E9EBF0');
+    return {
+      ready: r, coll: !r, toast: this.state.toast,
+      tA: r ? '#FFFFFF' : 'transparent', tAf: r ? '#0D0E12' : '#646874',
+      tB: !r ? '#FFFFFF' : 'transparent', tBf: !r ? '#0D0E12' : '#646874',
+      showReady: function () { self.setState({ ready: true }); },
+      showColl: function () { self.setState({ ready: false }); },
+      days: days,
+      basis: [ ['Zeitraum', '28 Tage'], ['Vollständige Tage', '25 von 28'], ['Wiegungen', '24'], ['Trend', '74,2 → 74,7 kg'] ].map(function (b, i) { return { l: b[0], v: b[1], border: i ? '1px solid #ECEDF0' : '0' }; }),
+      paste: function () { clearTimeout(self.tt); self.setState({ toast: true }); self.tt = setTimeout(function () { self.setState({ toast: false }); }, 2200); }
+    };
+  }
+}
+</script>
+</body>
+</html>

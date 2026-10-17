@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Mahlzeit eintragen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.kc-press{transition:transform 140ms cubic-bezier(.2,.8,.2,1)}
+.kc-press:active{transform:scale(.95)}
+.kc-fade{transition:opacity 200ms ease}
+@media (prefers-reduced-motion: reduce){.kc-press,.kc-fade{transition:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F4F6; color: #0D0E12; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; font-feature-settings: 'tnum' 1">
+<div style="width: 40px; height: 5px; border-radius: 3px; background: #D9DCE3; margin: 58px auto 4px"></div>
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 4px">
+<a href="Kern.dc.html" aria-label="Zurück" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #0D0E12"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></a>
+<span style="font-size: 17px; font-weight: 600">Frühstück-Klassiker</span>
+<button style="min-height: 44px; padding: 0 10px; font-size: 15px; font-weight: 500; color: #2F4BE8">Bearbeiten</button>
+</div>
+
+<div style="padding: 6px 16px 4px; display: flex; align-items: baseline; justify-content: space-between">
+<span style="font-size: 40px; font-weight: 600; letter-spacing: -1.4px">{{sumK}}<span style="font-size: 16px; font-weight: 500; color: #646874"> kcal</span></span>
+<span style="font-size: 13px; color: #646874">{{active}} von {{all}} Bestandteilen</span>
+</div>
+<div style="padding: 0 16px 10px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{sums}}" as="m" hint-placeholder-count="4">
+<div style="background: #FFFFFF; border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #646874">{{m.label}}</span><span style="font-size: 14px; font-weight: 600">{{m.val}}</span></div>
+</sc-for>
+</div>
+
+<div style="padding: 0 16px 10px; display: flex; align-items: center; gap: 6px">
+<span style="font-size: 13px; color: #646874; margin-right: 4px">Menge</span>
+<sc-for list="{{scales}}" as="s" hint-placeholder-count="4">
+<button onClick="{{s.pick}}" class="kc-press" style="min-height: 34px; padding: 0 14px; border-radius: 17px; font-size: 14px; font-weight: 600; background: {{s.bg}}; color: {{s.fg}}">{{s.label}}</button>
+</sc-for>
+</div>
+
+<div style="flex: 1; min-height: 0; overflow-y: auto; padding: 0 16px">
+<div style="background: #FFFFFF; border-radius: 18px; overflow: hidden">
+<sc-for list="{{items}}" as="i" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 4px; min-height: 64px; padding: 0 6px 0 4px; border-top: {{i.border}}">
+<button onClick="{{i.toggle}}" role="checkbox" aria-checked="{{i.on}}" aria-label="{{i.name}} einbeziehen" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex: none">
+<span style="width: 22px; height: 22px; border-radius: 7px; border: 2px solid {{i.boxBorder}}; background: {{i.boxBg}}; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: {{i.tick}}"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span>
+</button>
+<span class="kc-fade" style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; opacity: {{i.dim}}">
+<span style="font-size: 15px; font-weight: 500">{{i.name}}</span>
+<span style="font-size: 12px; color: #646874">{{i.kcal}} kcal</span>
+</span>
+<span class="kc-fade" style="display: flex; align-items: center; opacity: {{i.dim}}">
+<button onClick="{{i.minus}}" aria-label="Weniger {{i.name}}" class="kc-press" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #646874"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+<span style="min-width: 66px; text-align: center; font-size: 15px; font-weight: 600">{{i.amt}}</span>
+<button onClick="{{i.plus}}" aria-label="Mehr {{i.name}}" class="kc-press" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #646874"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+</span>
+</div>
+</sc-for>
+</div>
+<span style="display: block; font-size: 12px; color: #646874; padding: 10px 4px 0; line-height: 1.4">Tipp auf eine Menge öffnet den Ziffernblock. Änderungen gelten nur für diesen Eintrag, die Vorlage bleibt gleich.</span>
+</div>
+
+<div style="padding: 10px 16px 30px">
+<a href="Kern.dc.html" class="kc-press" style="min-height: 54px; border-radius: 16px; background: #3D5AFE; color: #FFFFFF; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; text-decoration: none">{{cta}}</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var KC_MEAL = [
+  { id: 'h', name: 'Haferflocken, zart', unit: 'g', base: 60, step: 10, k: 372, p: 13.5, c: 58.7, f: 7 },
+  { id: 'm', name: 'Milch 1,5 %', unit: 'ml', base: 250, step: 50, k: 47, p: 3.4, c: 4.8, f: 1.5 },
+  { id: 'b', name: 'Banane', unit: 'g', base: 120, step: 10, k: 93, p: 1.2, c: 20, f: 0.2 },
+  { id: 'w', name: 'Whey Vanille', unit: 'g', base: 30, step: 5, k: 380, p: 78, c: 6, f: 6 }
+];
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var amt = {}; KC_MEAL.forEach(function (x) { amt[x.id] = x.base; });
+    this.state = { scale: 1, amt: amt, off: { w: true } };
+  }
+  renderVals() {
+    var self = this;
+    var st = this.state;
+    var f = function (n, d) { return Number(n).toLocaleString('de-DE', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }); };
+    var s = { k: 0, p: 0, c: 0, fat: 0 };
+    var active = 0;
+    var items = KC_MEAL.map(function (x, j) {
+      var a = st.amt[x.id] * st.scale;
+      var on = !st.off[x.id];
+      if (on) { active++; s.k += x.k * a / 100; s.p += x.p * a / 100; s.c += x.c * a / 100; s.fat += x.f * a / 100; }
+      return {
+        name: x.name, on: on ? 'true' : 'false',
+        kcal: f(x.k * a / 100),
+        amt: f(a) + ' ' + x.unit,
+        border: j === 0 ? '0' : '1px solid #ECEDF0',
+        boxBorder: on ? '#3D5AFE' : '#C5C9D2', boxBg: on ? '#3D5AFE' : 'transparent', tick: on ? '1' : '0',
+        dim: on ? '1' : '0.4',
+        toggle: function () { var o = Object.assign({}, self.state.off); o[x.id] = on; self.setState({ off: o }); },
+        minus: function () { var m = Object.assign({}, self.state.amt); m[x.id] = Math.max(x.step, m[x.id] - x.step); self.setState({ amt: m }); },
+        plus: function () { var m = Object.assign({}, self.state.amt); m[x.id] = m[x.id] + x.step; self.setState({ amt: m }); }
+      };
+    });
+    return {
+      sumK: f(s.k), active: active, all: KC_MEAL.length,
+      sums: [ { label: 'Eiweiß', val: f(s.p, 1) + ' g' }, { label: 'Kohlenh.', val: f(s.c, 1) + ' g' }, { label: 'Fett', val: f(s.fat, 1) + ' g' }, { label: 'Ballastst.', val: '8,3 g' } ],
+      scales: [0.5, 1, 1.5, 2].map(function (v) { var on = st.scale === v; return { label: '×' + f(v, v % 1 ? 1 : 0), bg: on ? '#0D0E12' : '#FFFFFF', fg: on ? '#FFFFFF' : '#0D0E12', pick: function () { self.setState({ scale: v }); } }; }),
+      items: items,
+      cta: active + (active === 1 ? ' Eintrag' : ' Einträge') + ' zu Frühstück hinzufügen'
+    };
+  }
+}
+</script>
+</body>
+</html>

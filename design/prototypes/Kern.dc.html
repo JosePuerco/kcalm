@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Kernablauf</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
+input{font:inherit;color:inherit}
+.kc-scroll::-webkit-scrollbar{display:none}
+.kc-scroll>*{flex-shrink:0}
+.kc-chev{transition:transform 240ms cubic-bezier(.2,.8,.2,1)}
+.kc-press{transition:transform 140ms cubic-bezier(.2,.8,.2,1)}
+.kc-press:active{transform:scale(.95)}
+.kc-bar{transition:width 520ms cubic-bezier(.2,.8,.2,1)}
+.kc-row{transition:transform 260ms cubic-bezier(.2,.9,.25,1.15)}
+.kc-row.kc-drag{transition:none}
+.kc-sheet{animation:kcUp 420ms cubic-bezier(.2,1.15,.35,1) both}
+.kc-sheet.kc-out{animation:kcDown 220ms cubic-bezier(.4,0,1,1) both}
+.kc-scrim{animation:kcFadeIn 260ms ease both}
+.kc-scrim.kc-out{animation:kcFadeOut 220ms ease both}
+.kc-step{animation:kcStep 280ms cubic-bezier(.2,.9,.3,1) both}
+.kc-toast{animation:kcPop 360ms cubic-bezier(.2,1.3,.4,1) both}
+.kc-drop{animation:kcDrop 300ms cubic-bezier(.2,.9,.3,1) both}
+@keyframes kcUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes kcDown{from{transform:translateY(0)}to{transform:translateY(100%)}}
+@keyframes kcFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes kcFadeOut{from{opacity:1}to{opacity:0}}
+@keyframes kcStep{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes kcPop{0%{opacity:0;transform:translateY(12px) scale(.94)}100%{opacity:1;transform:none}}
+@keyframes kcDrop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes kcFlash{0%{background:rgba(61,90,254,.18)}100%{background:transparent}}
+@media (prefers-reduced-motion: reduce){
+.kc-chev,.kc-press,.kc-bar,.kc-row{transition:none}
+.kc-sheet,.kc-sheet.kc-out,.kc-scrim,.kc-scrim.kc-out,.kc-step,.kc-toast,.kc-drop{animation:none}
+}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: {{t.bg}}; color: {{t.text}}; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden; font-feature-settings: 'tnum' 1">
+
+<div style="padding: 50px 6px 4px 16px; display: flex; align-items: center; justify-content: space-between">
+<button onClick="{{toggleCal}}" style="min-height: 44px; display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 600">Do 15.10.<span style="font-weight: 400; color: {{t.muted}}">· Heute</span><svg class="kc-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: {{t.muted}}; transform: {{calChev}}"><path d="M6 9l6 6 6-6"></path></svg></button>
+<div style="display: flex">
+<button aria-label="Vorheriger Tag" class="kc-press" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{t.muted}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+<button aria-label="Kalender öffnen" onClick="{{toggleCal}}" class="kc-press" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{calIcon}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></button>
+<button aria-label="Nächster Tag" class="kc-press" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{t.muted}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
+</div>
+</div>
+
+<div class="kc-scroll" style="flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 16px 120px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: none">
+
+<sc-if value="{{calOpen}}" hint-placeholder-val="{{ false }}">
+<div class="kc-drop" style="background: {{t.card}}; border-radius: 22px; padding: 14px 12px 10px">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px 8px"><span style="font-size: 15px; font-weight: 600">Oktober 2026</span><span style="font-size: 12px; color: {{t.muted}}">Punkt = vollständig</span></div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 2px">
+<sc-for list="{{wdays}}" as="w" hint-placeholder-count="7"><span style="text-align: center; font-size: 11px; color: {{t.muted}}; padding-bottom: 4px">{{w}}</span></sc-for>
+<sc-for list="{{cal}}" as="c" hint-placeholder-count="35">
+<button onClick="{{closeCal}}" style="height: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><span style="width: 30px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 14px; background: {{c.bg}}; color: {{c.fg}}">{{c.num}}</span><span style="width: 4px; height: 4px; border-radius: 2px; background: {{c.dot}}"></span></button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<div style="background: {{t.card}}; border-radius: 24px; padding: 16px 16px 4px">
+<div style="display: flex; align-items: center; gap: 18px">
+<div style="position: relative; width: 142px; height: 142px; flex: none">
+<svg width="142" height="142" viewBox="0 0 142 142" aria-hidden="true"><circle cx="71" cy="71" r="62" fill="none" stroke="{{t.track}}" stroke-width="12"></circle><circle cx="71" cy="71" r="62" fill="none" stroke="{{ringColor}}" stroke-width="12" stroke-linecap="round" stroke-dasharray="{{ring}}" transform="rotate(-90 71 71)"></circle></svg>
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center">
+<span style="font-size: 34px; font-weight: 600; letter-spacing: -1px; line-height: 1">{{remain}}</span>
+<span style="font-size: 12px; color: {{t.muted}}; margin-top: 4px">{{remainLabel}}</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 9px; flex: 1; min-width: 0">
+<sc-for list="{{macros}}" as="m" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: {{t.muted}}">{{m.label}}</span><span style="font-weight: 600">{{m.val}}<span style="font-weight: 400; color: {{t.muted}}">/{{m.goal}}</span></span></div>
+<div style="height: 5px; border-radius: 3px; background: {{t.track}}"><div class="kc-bar" style="height: 5px; border-radius: 3px; background: {{t.text}}; width: {{m.pct}}"></div></div>
+</div>
+</sc-for>
+</div>
+</div>
+<button onClick="{{toggleWeek}}" style="width: 100%; min-height: 46px; margin-top: 12px; border-top: 1px solid {{t.line}}; display: flex; align-items: center; justify-content: space-between; font-size: 14px">
+<span style="color: {{t.muted}}">Woche</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="font-weight: 600">{{weekSum}}</span><span style="color: {{t.muted}}">/ 19.600 kcal</span><svg class="kc-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: {{t.muted}}; transform: {{weekChev}}"><path d="M6 9l6 6 6-6"></path></svg></span>
+</button>
+<sc-if value="{{weekOpen}}" hint-placeholder-val="{{ false }}">
+<div class="kc-drop" style="padding: 4px 0 14px">
+<div style="position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; height: 64px; align-items: end">
+<div style="position: absolute; left: 0; right: 0; bottom: 56px; border-top: 1px dashed {{t.muted}}; opacity: 0.5"></div>
+<sc-for list="{{week}}" as="b" hint-placeholder-count="7">
+<div style="height: 64px; display: flex; align-items: flex-end"><div style="width: 100%; border-radius: 6px 6px 3px 3px; background: {{b.color}}; height: {{b.h}}; transition: height 520ms cubic-bezier(.2,.8,.2,1)"></div></div>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; margin-top: 6px">
+<sc-for list="{{week}}" as="b" hint-placeholder-count="7">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 1px"><span style="font-size: 11px; color: {{t.muted}}">{{b.wd}}</span><span style="font-size: 11px">{{b.val}}</span></div>
+</sc-for>
+</div>
+<span style="display: block; font-size: 11px; color: {{t.muted}}; margin-top: 8px">Gestrichelt: festes Tagesziel 2.800</span>
+</div>
+</sc-if>
+</div>
+
+<div style="background: {{t.card}}; border-radius: 18px; padding: 0 6px 0 16px; display: flex; align-items: center; gap: 12px; min-height: 52px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.7l5.7 6.6a7.5 7.5 0 1 1-11.4 0z"></path></svg>
+<span style="font-size: 14px; font-weight: 500">Wasser</span>
+<div style="flex: 1; height: 4px; border-radius: 2px; background: {{t.track}}"><div class="kc-bar" style="width: {{waterPct}}; height: 4px; border-radius: 2px; background: {{accent}}"></div></div>
+<span style="font-size: 13px; color: {{t.muted}}">{{waterLabel}}</span>
+<button aria-label="250 ml Wasser hinzufügen" onClick="{{addWater}}" class="kc-press" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{t.accentText}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+</div>
+
+<sc-for list="{{slots}}" as="s" hint-placeholder-count="4">
+<div style="background: {{t.card}}; border-radius: 18px; padding: 0 6px 0 12px; overflow: hidden">
+<div style="display: flex; align-items: center">
+<button onClick="{{s.toggle}}" aria-expanded="{{s.open}}" style="flex: 1; min-height: 50px; display: flex; align-items: center; gap: 8px">
+<svg class="kc-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: {{t.muted}}; transform: {{s.chev}}"><path d="M9 18l6-6-6-6"></path></svg>
+<span style="font-size: 15px; font-weight: 600">{{s.name}}</span>
+<span style="font-size: 13px; color: {{t.muted}}">{{s.count}}</span>
+<span style="margin-left: auto; font-size: 14px; color: {{t.muted}}">{{s.kcal}}</span>
+</button>
+<button aria-label="Zu {{s.name}} hinzufügen" onClick="{{s.add}}" class="kc-press" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{t.accentText}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+</div>
+<sc-if value="{{s.open}}" hint-placeholder-val="{{ true }}">
+<div class="kc-drop" style="padding: 0 0 6px 12px">
+<sc-for list="{{s.items}}" as="i" hint-placeholder-count="2">
+<div style="position: relative; border-top: 1px solid {{t.line}}">
+<button onClick="{{i.del}}" style="position: absolute; top: 0; right: 0; bottom: 0; width: 88px; background: #D93A30; color: #FFFFFF; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center">Löschen</button>
+<div class="{{i.cls}}" onPointerDown="{{i.down}}" onPointerMove="{{i.move}}" onPointerUp="{{i.up}}" onPointerCancel="{{i.up}}" onClick="{{i.edit}}" role="button" tabindex="0" style="position: relative; background: {{t.card}}; transform: {{i.tx}}; touch-action: pan-y; cursor: pointer">
+<div style="display: flex; align-items: center; justify-content: space-between; min-height: 40px; padding-right: 12px; font-size: 14px; animation: {{i.anim}}; border-radius: 8px">
+<span>{{i.name}} <span style="color: {{t.muted}}">{{i.amount}}</span></span>
+<span style="color: {{t.muted}}">{{i.kcal}}</span>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+
+<sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+<div class="kc-toast" style="position: absolute; left: 24px; right: 24px; bottom: {{toastBottom}}; background: {{t.text}}; color: {{t.bg}}; border-radius: 16px; padding: 12px 16px; font-size: 14px; display: flex; align-items: center; gap: 10px; z-index: 30">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+<span>{{toast}}</span>
+</div>
+</sc-if>
+
+<nav style="position: absolute; left: 20px; right: 20px; bottom: 26px; height: 62px; border-radius: 31px; background: {{t.nav}}; box-shadow: 0 6px 24px rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: space-around; padding: 0 8px">
+<a href="#" aria-label="Tagebuch" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: {{t.text}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg></a>
+<a href="Statistik.dc.html" aria-label="Statistik" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: {{t.muted}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg></a>
+<button aria-label="Hinzufügen" onClick="{{openAdd}}" class="kc-press" style="width: 64px; height: 46px; border-radius: 23px; background: {{accent}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+<a href="Lebensmittel.dc.html" aria-label="Lebensmittel" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: {{t.muted}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></a>
+<a href="Einstellungen.dc.html" aria-label="Einstellungen" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: {{t.muted}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"></path><circle cx="16" cy="6" r="2"></circle><circle cx="10" cy="12" r="2"></circle><circle cx="18" cy="18" r="2"></circle></svg></a>
+</nav>
+
+<sc-if value="{{sheetOn}}" hint-placeholder-val="{{ false }}">
+<div class="{{scrimCls}}" style="position: absolute; inset: 0; background: rgba(0,0,0,0.38); z-index: 20">
+<button aria-label="Schließen" onClick="{{closeSheet}}" style="position: absolute; inset: 0"></button>
+</div>
+<div class="{{sheetCls}}" style="position: absolute; left: 0; right: 0; bottom: 0; height: 772px; background: {{t.sheet}}; border-radius: 28px 28px 0 0; z-index: 21; display: flex; flex-direction: column">
+<div style="width: 40px; height: 5px; border-radius: 3px; background: {{t.track}}; margin: 8px auto 4px"></div>
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 16px">
+<span style="font-size: 17px; font-weight: 600">Hinzufügen</span>
+<button onClick="{{closeSheet}}" class="kc-press" style="min-height: 44px; padding: 0 10px; font-size: 16px; font-weight: 600; color: {{t.accentText}}">Fertig</button>
+</div>
+<div style="display: flex; gap: 6px; padding: 4px 16px 10px; overflow-x: auto">
+<sc-for list="{{slotChips}}" as="c" hint-placeholder-count="4">
+<button onClick="{{c.pick}}" class="kc-press" style="min-height: 34px; padding: 0 14px; border-radius: 17px; font-size: 14px; font-weight: 500; white-space: nowrap; background: {{c.bg}}; color: {{c.fg}}; transition: background 200ms ease, color 200ms ease">{{c.name}}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{stepSearch}}" hint-placeholder-val="{{ true }}">
+<div class="kc-step" style="flex: 1; display: flex; flex-direction: column; min-height: 0">
+<div style="padding: 0 16px; display: flex; gap: 8px">
+<label style="flex: 1; height: 46px; border-radius: 14px; background: {{t.card}}; display: flex; align-items: center; gap: 8px; padding: 0 12px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{t.muted}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+<span style="position: absolute; width: 1px; height: 1px; overflow: hidden">Suchen</span>
+<input value="{{query}}" onInput="{{onQuery}}" placeholder="Lebensmittel suchen" style="flex: 1; border: 0; outline: none; background: transparent; font-size: 16px; min-width: 0">
+</label>
+<a href="Scanner.dc.html" aria-label="Barcode scannen" class="kc-press" style="width: 46px; height: 46px; border-radius: 14px; background: {{t.card}}; color: {{t.text}}; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M8 8v8M11 8v8M14 8v8M17 8v8"></path></svg></a>
+</div>
+<div style="display: flex; gap: 8px; padding: 10px 16px 6px">
+<a href="Schnell.dc.html" class="kc-press" style="min-height: 36px; padding: 0 12px; border-radius: 10px; background: {{t.card}}; color: {{t.text}}; font-size: 13px; font-weight: 500; display: flex; align-items: center; text-decoration: none">Schnelleintrag</a>
+<a href="Mahlzeit.dc.html" class="kc-press" style="min-height: 36px; padding: 0 12px; border-radius: 10px; background: {{t.card}}; color: {{t.text}}; font-size: 13px; font-weight: 500; display: flex; align-items: center; text-decoration: none">Mahlzeiten</a>
+<button onClick="{{soon}}" class="kc-press" style="min-height: 36px; padding: 0 12px; border-radius: 10px; background: {{t.card}}; font-size: 13px; font-weight: 500">Rezepte</button>
+</div>
+<span style="font-size: 12px; color: {{t.muted}}; padding: 8px 16px 4px; text-transform: uppercase; letter-spacing: 0.6px">{{listTitle}}</span>
+<div class="kc-scroll" style="flex: 1; overflow-y: auto; padding: 0 16px 24px; scrollbar-width: none">
+<div style="background: {{t.card}}; border-radius: 18px; overflow: hidden">
+<sc-for list="{{results}}" as="r" hint-placeholder-count="6">
+<button onClick="{{r.pick}}" style="width: 100%; min-height: 56px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-top: {{r.border}}">
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-size: 15px; font-weight: 500">{{r.name}}</span>
+<span style="font-size: 12px; color: {{t.muted}}; display: flex; align-items: center; gap: 4px">{{r.src}}<sc-if value="{{r.verified}}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="{{t.accentText}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="geprüft"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></sc-if></span>
+</span>
+<span style="font-size: 13px; color: {{t.muted}}">{{r.kcal}}</span>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{t.muted}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+</button>
+</sc-for>
+</div>
+<button onClick="{{soon}}" class="kc-press" style="width: 100%; min-height: 48px; margin-top: 10px; border-radius: 14px; border: 1px dashed {{t.muted}}; font-size: 14px; color: {{t.muted}}; text-align: center">In Open Food Facts suchen</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{stepAmount}}" hint-placeholder-val="{{ false }}">
+<div class="kc-step" style="flex: 1; display: flex; flex-direction: column; padding: 0 16px 30px; min-height: 0">
+<div style="display: flex; align-items: center; gap: 4px; margin-left: -10px">
+<button aria-label="Zurück" onClick="{{back}}" class="kc-press" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+<span style="display: flex; flex-direction: column"><span style="font-size: 17px; font-weight: 600">{{prod.name}}</span><span style="font-size: 12px; color: {{t.muted}}">{{prod.src}} · {{prod.per100}}</span></span>
+</div>
+<div style="display: flex; align-items: baseline; justify-content: space-between; padding: 14px 4px 6px">
+<span style="font-size: 44px; font-weight: 600; letter-spacing: -1.5px">{{amountShow}}<span style="font-size: 20px; font-weight: 500; color: {{t.muted}}"> {{prod.unit}}</span></span>
+<span style="font-size: 20px; font-weight: 600">{{calc.kcal}} <span style="font-size: 14px; font-weight: 400; color: {{t.muted}}">kcal</span></span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 6px 0 12px">
+<sc-for list="{{calc.macros}}" as="m" hint-placeholder-count="4">
+<div style="background: {{t.card}}; border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: {{t.muted}}">{{m.label}}</span><span style="font-size: 14px; font-weight: 600">{{m.val}}</span></div>
+</sc-for>
+</div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: 10px">
+<sc-for list="{{portions}}" as="p" hint-placeholder-count="3">
+<button onClick="{{p.pick}}" class="kc-press" style="min-height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid {{t.line}}; background: {{t.card}}; font-size: 13px; font-weight: 500">{{p.label}}</button>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: auto">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+<button onClick="{{k.press}}" aria-label="{{k.aria}}" class="kc-press" style="height: 54px; border-radius: 14px; background: {{t.card}}; font-size: 22px; font-weight: 500; text-align: center">{{k.label}}</button>
+</sc-for>
+</div>
+<div style="display: flex; gap: 8px; margin-top: 10px">
+<sc-if value="{{editing}}" hint-placeholder-val="{{ false }}">
+<button onClick="{{delEdit}}" class="kc-press" style="min-height: 54px; padding: 0 18px; border-radius: 16px; background: {{t.card}}; color: #D93A30; font-size: 16px; font-weight: 600">Löschen</button>
+</sc-if>
+<button onClick="{{confirm}}" class="kc-press" style="flex: 1; min-height: 54px; border-radius: 16px; background: {{accent}}; color: #FFFFFF; font-size: 17px; font-weight: 600; text-align: center; opacity: {{confirmOpacity}}">{{confirmLabel}}</button>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["hell","dunkel"],"default":"hell"},"accent":{"editor":"color","options":["#3D5AFE","#0E9F8E","#D9542B","#7C5CFF"],"default":"#3D5AFE"},"$preview":{"width":390,"height":844}}'>
+var KC_PRODUCTS = [
+  { id: 'hafer', name: 'Haferflocken, zart', src: 'Open Food Facts', verified: true, unit: 'g', k: 372, p: 13.5, c: 58.7, f: 7, fi: 10, portions: [['40 g', 40], ['60 g', 60]] },
+  { id: 'milch', name: 'Milch 1,5 %', src: 'Open Food Facts', verified: false, unit: 'ml', k: 47, p: 3.4, c: 4.8, f: 1.5, fi: 0, portions: [['1 Glas · 250 ml', 250]] },
+  { id: 'banane', name: 'Banane', src: 'BLS', verified: false, unit: 'g', k: 93, p: 1.2, c: 20, f: 0.2, fi: 2, portions: [['1 Stück · 120 g', 120]] },
+  { id: 'whey', name: 'Whey Vanille', src: 'Eigenes Produkt', verified: true, unit: 'g', k: 380, p: 78, c: 6, f: 6, fi: 0, portions: [['1 Scoop · 30 g', 30]] },
+  { id: 'huhn', name: 'Hähnchenbrust', src: 'BLS', verified: false, unit: 'g', k: 110, p: 23, c: 0, f: 1.5, fi: 0, portions: [['150 g', 150], ['200 g', 200]] },
+  { id: 'reis', name: 'Reis, gekocht', src: 'BLS', verified: false, unit: 'g', k: 130, p: 2.7, c: 28, f: 0.3, fi: 0.4, portions: [['250 g', 250]] },
+  { id: 'brokkoli', name: 'Brokkoli, gegart', src: 'BLS', verified: false, unit: 'g', k: 34, p: 2.8, c: 4, f: 0.4, fi: 2.6, portions: [['150 g', 150]] },
+  { id: 'skyr', name: 'Skyr natur', src: 'Open Food Facts', verified: true, unit: 'g', k: 63, p: 11, c: 4, f: 0.2, fi: 0, portions: [['1 Becher · 250 g', 250], ['150 g', 150]] },
+  { id: 'apfel', name: 'Apfel', src: 'BLS', verified: false, unit: 'g', k: 52, p: 0.3, c: 11.4, f: 0.2, fi: 2.4, portions: [['1 Stück · 150 g', 150]] },
+  { id: 'brot', name: 'Vollkornbrot', src: 'Open Food Facts', verified: false, unit: 'g', k: 220, p: 7, c: 38, f: 1.5, fi: 8, portions: [['1 Scheibe · 45 g', 45], ['2 Scheiben · 90 g', 90]] },
+  { id: 'erdnuss', name: 'Erdnussbutter crunchy', src: 'Open Food Facts', verified: false, unit: 'g', k: 610, p: 25, c: 12, f: 50, fi: 6, portions: [['1 EL · 15 g', 15]] },
+  { id: 'quark', name: 'Magerquark', src: 'Open Food Facts', verified: true, unit: 'g', k: 67, p: 12, c: 4, f: 0.3, fi: 0, portions: [['1 Becher · 250 g', 250]] },
+  { id: 'ei', name: 'Ei, gekocht', src: 'BLS', verified: false, unit: 'g', k: 155, p: 13, c: 1.1, f: 11, fi: 0, portions: [['1 Stück · 60 g', 60], ['2 Stück · 120 g', 120]] }
+];
+var KC_SLOTS = ['Frühstück', 'Mittag', 'Snacks', 'Abend'];
+var KC_PAST = [2910, 3050, 2940];
+var KC_DAY = 2675;
+function kcFind(id) { for (var i = 0; i < KC_PRODUCTS.length; i++) { if (KC_PRODUCTS[i].id === id) return KC_PRODUCTS[i]; } return KC_PRODUCTS[0]; }
+function kcFmt(n, d) { return Number(n).toLocaleString('de-DE', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }); }
+function kcNum(s) { var v = parseFloat(String(s).replace(',', '.')); return isNaN(v) ? 0 : v; }
+function kcTotals(entries) {
+  var t = { k: 0, p: 0, c: 0, f: 0, fi: 0 };
+  entries.forEach(function (e) { var pr = kcFind(e.pid); var g = e.amount / 100; t.k += pr.k * g; t.p += pr.p * g; t.c += pr.c * g; t.f += pr.f * g; t.fi += pr.fi * g; });
+  return t;
+}
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var seed = [
+      ['Frühstück', 'hafer', 60], ['Frühstück', 'milch', 250], ['Frühstück', 'banane', 120], ['Frühstück', 'whey', 30],
+      ['Mittag', 'huhn', 200], ['Mittag', 'reis', 250], ['Mittag', 'brokkoli', 150],
+      ['Snacks', 'skyr', 250], ['Snacks', 'apfel', 150]
+    ];
+    var entries = seed.map(function (s, i) { return { id: 'e' + i, slot: s[0], pid: s[1], amount: s[2] }; });
+    var total = kcTotals(entries).k;
+    this.nextId = 100;
+    this.drag = null;
+    this.state = {
+      entries: entries, disp: total, closed: {}, cal: false, week: false, water: 1250,
+      sheet: false, closing: false, step: 'search', slot: 'Abend', query: '', pid: null, amount: '', editId: null,
+      toast: '', flash: null, swiped: null, dragId: null, dragDx: 0
+    };
+  }
+  componentDidUpdate(prevProps, prevState) {
+    var now = kcTotals(this.state.entries).k;
+    var before = kcTotals(prevState.entries).k;
+    if (Math.abs(now - before) > 0.01) this.tween(now);
+  }
+  componentWillUnmount() { if (this.raf) cancelAnimationFrame(this.raf); clearTimeout(this.tt); clearTimeout(this.ct); }
+  tween(target) {
+    var self = this;
+    var reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (this.raf) cancelAnimationFrame(this.raf);
+    if (reduce) { this.setState({ disp: target }); return; }
+    var from = this.state.disp; var start = null; var dur = 650;
+    var step = function (ts) {
+      if (start === null) start = ts;
+      var x = Math.min(1, (ts - start) / dur);
+      var e = 1 - Math.pow(1 - x, 3);
+      self.setState({ disp: from + (target - from) * e });
+      if (x < 1) self.raf = requestAnimationFrame(step);
+    };
+    this.raf = requestAnimationFrame(step);
+  }
+  showToast(msg) {
+    var self = this;
+    clearTimeout(this.tt);
+    this.setState({ toast: msg });
+    this.tt = setTimeout(function () { self.setState({ toast: '', flash: null }); }, 2200);
+  }
+  closeSheet() {
+    var self = this;
+    this.setState({ closing: true });
+    clearTimeout(this.ct);
+    this.ct = setTimeout(function () { self.setState({ sheet: false, closing: false, step: 'search', query: '', editId: null }); }, 220);
+  }
+  renderVals() {
+    var self = this;
+    var st = this.state;
+    var dark = (this.props.mode || 'hell') === 'dunkel';
+    var accent = this.props.accent || '#3D5AFE';
+    var t = dark
+      ? { bg: '#0A0A0C', card: '#16171B', sheet: '#101114', nav: '#1E1F24', text: '#F4F5F7', muted: '#9A9EA8', line: '#26282E', track: '#2A2C33', accentText: '#8C9BFF' }
+      : { bg: '#F3F4F6', card: '#FFFFFF', sheet: '#F3F4F6', nav: '#FFFFFF', text: '#0D0E12', muted: '#646874', line: '#ECEDF0', track: '#E9EBF0', accentText: '#2F4BE8' };
+
+    var tot = kcTotals(st.entries);
+    var disp = st.disp;
+    var left = KC_DAY - disp;
+    var circ = 2 * Math.PI * 62;
+    var frac = Math.max(0, Math.min(1, disp / KC_DAY));
+
+    var cal = [];
+    for (var i = 0; i < 3; i++) cal.push({ num: '', bg: 'transparent', fg: t.text, dot: 'transparent' });
+    for (var d = 1; d <= 31; d++) {
+      cal.push({ num: String(d), bg: d === 15 ? accent : 'transparent', fg: d === 15 ? '#FFFFFF' : (d > 15 ? t.muted : t.text), dot: d < 15 ? (d === 9 ? t.muted : accent) : 'transparent' });
+    }
+    cal.push({ num: '', bg: 'transparent', fg: t.text, dot: 'transparent' });
+
+    var wd = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    var wk = KC_PAST.concat([disp, 0, 0, 0]);
+    var week = wk.map(function (k, j) {
+      return { wd: wd[j], val: k ? kcFmt(k) : '–', h: Math.round(Math.min(k, 3200) / 3200 * 64) + 'px', color: j === 3 ? accent : (dark ? '#4A4D57' : '#C9CCD3') };
+    });
+
+    var mk = function (label, v, g) { return { label: label, val: kcFmt(v), goal: g + ' g', pct: Math.min(100, Math.round(v / g * 100)) + '%' }; };
+
+    var slots = KC_SLOTS.map(function (name) {
+      var es = st.entries.filter(function (e) { return e.slot === name; });
+      var open = !st.closed[name] && es.length > 0;
+      var sum = kcTotals(es).k;
+      return {
+        name: name, open: open,
+        kcal: kcFmt(sum) + ' kcal',
+        count: es.length ? (open ? '' : es.length + (es.length === 1 ? ' Eintrag' : ' Einträge')) : 'leer',
+        chev: open ? 'rotate(90deg)' : 'rotate(0deg)',
+        toggle: function () { var c = Object.assign({}, self.state.closed); c[name] = open; self.setState({ closed: c }); },
+        add: function () { self.setState({ sheet: true, closing: false, step: 'search', slot: name, query: '', editId: null, swiped: null }); },
+        items: es.map(function (e) {
+          var pr = kcFind(e.pid);
+          var dragging = st.dragId === e.id;
+          var dx = dragging ? st.dragDx : (st.swiped === e.id ? -88 : 0);
+          return {
+            name: pr.name, amount: kcFmt(e.amount) + ' ' + pr.unit, kcal: kcFmt(pr.k * e.amount / 100),
+            tx: 'translateX(' + dx + 'px)',
+            cls: dragging ? 'kc-row kc-drag' : 'kc-row',
+            anim: st.flash === e.id ? 'kcFlash 1.4s ease-out' : 'none',
+            down: function (ev) { self.drag = { id: e.id, x: ev.clientX, base: st.swiped === e.id ? -88 : 0, moved: false }; try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (err) {} },
+            move: function (ev) {
+              if (!self.drag || self.drag.id !== e.id) return;
+              var dxx = ev.clientX - self.drag.x;
+              if (Math.abs(dxx) > 6) self.drag.moved = true;
+              if (!self.drag.moved) return;
+              self.setState({ dragId: e.id, dragDx: Math.max(-110, Math.min(0, self.drag.base + dxx)) });
+            },
+            up: function () {
+              if (!self.drag || self.drag.id !== e.id) return;
+              var moved = self.drag.moved; var dx2 = self.state.dragDx;
+              self.dragMoved = moved;
+              self.drag = null;
+              if (moved) self.setState({ dragId: null, swiped: dx2 < -44 ? e.id : null });
+            },
+            edit: function () {
+              if (self.dragMoved) { self.dragMoved = false; return; }
+              if (self.state.swiped) { self.setState({ swiped: null }); return; }
+              self.setState({ sheet: true, closing: false, step: 'amount', slot: e.slot, pid: e.pid, amount: String(e.amount).replace('.', ','), editId: e.id });
+            },
+            del: function () {
+              self.setState({ entries: self.state.entries.filter(function (x) { return x.id !== e.id; }), swiped: null });
+              self.showToast(pr.name + ' gelöscht');
+            }
+          };
+        })
+      };
+    });
+
+    var q = st.query.trim().toLowerCase();
+    var list = q ? KC_PRODUCTS.filter(function (p) { return p.name.toLowerCase().indexOf(q) >= 0; }) : KC_PRODUCTS;
+    var results = list.map(function (p, j) {
+      return {
+        name: p.name, src: p.src, verified: p.verified, kcal: p.k + ' kcal/100 ' + p.unit,
+        border: j === 0 ? '0' : '1px solid ' + t.line,
+        pick: function () { self.setState({ step: 'amount', pid: p.id, amount: String(p.portions[0][1]), editId: null }); }
+      };
+    });
+
+    var prod = st.pid ? kcFind(st.pid) : KC_PRODUCTS[0];
+    var amt = kcNum(st.amount);
+    var g = amt / 100;
+    var one = function (v) { return kcFmt(v, 1) + ' g'; };
+    var keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', 'del'].map(function (k) {
+      return {
+        label: k === 'del' ? '⌫' : k, aria: k === 'del' ? 'Löschen' : k,
+        press: function () {
+          var a = self.state.amount;
+          if (k === 'del') a = a.slice(0, -1);
+          else if (k === ',') { if (a.indexOf(',') < 0) a = (a || '0') + ','; }
+          else if (a.length < 6) a = (a === '0' ? '' : a) + k;
+          self.setState({ amount: a });
+        }
+      };
+    });
+
+    return {
+      t: t, accent: accent,
+      ring: (circ * frac).toFixed(1) + ' ' + circ.toFixed(1),
+      ringColor: left < 0 ? '#E8613C' : accent,
+      remain: kcFmt(Math.abs(left)),
+      remainLabel: left < 0 ? 'kcal drüber' : 'kcal übrig',
+      macros: [mk('Eiweiß', tot.p, 140), mk('Kohlenhydrate', tot.c, 330), mk('Fett', tot.f, 80), mk('Ballaststoffe', tot.fi, 30)],
+      weekSum: kcFmt(KC_PAST[0] + KC_PAST[1] + KC_PAST[2] + disp),
+      weekOpen: st.week,
+      weekChev: st.week ? 'rotate(180deg)' : 'rotate(0deg)',
+      toggleWeek: function () { self.setState({ week: !self.state.week }); },
+      week: week,
+      calOpen: st.cal, cal: cal, wdays: wd,
+      calChev: st.cal ? 'rotate(180deg)' : 'rotate(0deg)',
+      calIcon: st.cal ? t.accentText : t.muted,
+      toggleCal: function () { self.setState({ cal: !self.state.cal }); },
+      closeCal: function () { self.setState({ cal: false }); },
+      waterPct: Math.min(100, st.water / 2500 * 100) + '%',
+      waterLabel: kcFmt(st.water / 1000, 2).replace(/0$/, '') + ' / 2,5 l',
+      addWater: function () { self.setState({ water: self.state.water + 250 }); self.showToast('250 ml Wasser hinzugefügt'); },
+      slots: slots,
+      toast: st.toast,
+      toastBottom: st.sheet ? '40px' : '100px',
+      openAdd: function () { self.setState({ sheet: true, closing: false, step: 'search', slot: 'Abend', query: '', editId: null, swiped: null }); },
+      sheetOn: st.sheet,
+      sheetCls: st.closing ? 'kc-sheet kc-out' : 'kc-sheet',
+      scrimCls: st.closing ? 'kc-scrim kc-out' : 'kc-scrim',
+      closeSheet: function () { self.closeSheet(); },
+      slotChips: KC_SLOTS.map(function (n) {
+        var on = st.slot === n;
+        return { name: n, bg: on ? accent : t.card, fg: on ? '#FFFFFF' : t.text, pick: function () { self.setState({ slot: n }); } };
+      }),
+      stepSearch: st.step === 'search',
+      stepAmount: st.step === 'amount',
+      query: st.query,
+      onQuery: function (ev) { self.setState({ query: ev.target.value }); },
+      listTitle: q ? 'Treffer lokal' : 'Zuletzt gegessen',
+      results: results,
+      soon: function () { self.showToast('Kommt in den nächsten Screens'); },
+      back: function () { self.setState(self.state.editId ? { step: 'search', editId: null } : { step: 'search' }); },
+      prod: { name: prod.name, src: prod.src, per100: prod.k + ' kcal/100 ' + prod.unit, unit: prod.unit },
+      amountShow: st.amount || '0',
+      calc: { kcal: kcFmt(prod.k * g), macros: [ { label: 'Eiweiß', val: one(prod.p * g) }, { label: 'Kohlenh.', val: one(prod.c * g) }, { label: 'Fett', val: one(prod.f * g) }, { label: 'Ballastst.', val: one(prod.fi * g) } ] },
+      portions: prod.portions.map(function (p) { return { label: p[0], pick: function () { self.setState({ amount: String(p[1]) }); } }; }),
+      keys: keys,
+      editing: !!st.editId,
+      confirmLabel: st.editId ? 'Speichern' : 'Zu ' + st.slot + ' hinzufügen',
+      confirmOpacity: amt > 0 ? '1' : '0.4',
+      confirm: function () {
+        if (amt <= 0) return;
+        if (self.state.editId) {
+          var id = self.state.editId;
+          self.setState({ entries: self.state.entries.map(function (x) { return x.id === id ? Object.assign({}, x, { amount: amt, slot: self.state.slot }) : x; }), flash: id });
+          self.showToast(prod.name + ' gespeichert');
+          self.closeSheet();
+        } else {
+          var nid = 'n' + (self.nextId++);
+          var c2 = Object.assign({}, self.state.closed); c2[self.state.slot] = false;
+          self.setState({ entries: self.state.entries.concat([{ id: nid, slot: self.state.slot, pid: prod.id, amount: amt }]), flash: nid, step: 'search', query: '', closed: c2 });
+          self.showToast(prod.name + ' · ' + kcFmt(prod.k * g) + ' kcal zu ' + self.state.slot);
+        }
+      },
+      delEdit: function () {
+        var id = self.state.editId;
+        self.setState({ entries: self.state.entries.filter(function (x) { return x.id !== id; }) });
+        self.showToast(prod.name + ' gelöscht');
+        self.closeSheet();
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Einstellungen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.kc-press{transition:transform 140ms cubic-bezier(.2,.8,.2,1)}
+.kc-press:active{transform:scale(.95)}
+.kc-scroll>*{flex-shrink:0}
+.kc-knob{transition:transform 220ms cubic-bezier(.2,1.2,.4,1),background 200ms ease}
+@media (prefers-reduced-motion: reduce){.kc-press,.kc-knob{transition:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F4F6; color: #0D0E12; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden; font-feature-settings: 'tnum' 1">
+
+<div style="padding: 52px 20px 8px">
+<h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.5px">Einstellungen</h1>
+</div>
+
+<div class="kc-scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 0 16px 120px; display: flex; flex-direction: column; gap: 6px">
+
+<span style="font-size: 12px; color: #646874; text-transform: uppercase; letter-spacing: 0.6px; padding: 10px 4px 2px">Ziele</span>
+<div style="background: #FFFFFF; border-radius: 18px; overflow: hidden">
+<a href="Profil.dc.html" style="min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; color: #0D0E12; text-decoration: none"><span style="flex: 1; font-size: 15px">Profile und Ziele</span><span style="font-size: 14px; color: #646874">Aufbau</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C5C9D2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></a>
+<button style="width: 100%; min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; border-top: 1px solid #ECEDF0"><span style="flex: 1; font-size: 15px">Mahlzeiten-Slots</span><span style="font-size: 14px; color: #646874">4 · mit Uhrzeiten</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C5C9D2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
+</div>
+
+<span style="font-size: 12px; color: #646874; text-transform: uppercase; letter-spacing: 0.6px; padding: 10px 4px 2px">Funktionen</span>
+<div style="background: #FFFFFF; border-radius: 18px; overflow: hidden">
+<sc-for list="{{toggles}}" as="t" hint-placeholder-count="2">
+<div style="display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 0 16px; border-top: {{t.border}}">
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px">{{t.label}}</span><span style="font-size: 12px; color: #646874">{{t.sub}}</span></span>
+<sc-if value="{{t.link}}" hint-placeholder-val="{{ false }}"><a href="Schaetzung.dc.html" style="font-size: 13px; color: #2F4BE8; text-decoration: none; min-height: 44px; display: flex; align-items: center; padding: 0 4px">Details</a></sc-if>
+<button role="switch" aria-checked="{{t.on}}" aria-label="{{t.label}}" onClick="{{t.toggle}}" style="width: 52px; height: 32px; border-radius: 16px; background: {{t.track}}; position: relative; flex: none; transition: background 200ms ease">
+<span class="kc-knob" style="position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transform: {{t.knob}}"></span>
+</button>
+</div>
+</sc-for>
+</div>
+
+<span style="font-size: 12px; color: #646874; text-transform: uppercase; letter-spacing: 0.6px; padding: 10px 4px 2px">Daten</span>
+<div style="background: #FFFFFF; border-radius: 18px; overflow: hidden">
+<div style="padding: 14px 16px; display: flex; align-items: center; gap: 12px">
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px">Backup</span><span style="font-size: 12px; color: {{bkColor}}">{{bkText}}</span></span>
+<button onClick="{{backup}}" class="kc-press" style="min-height: 40px; padding: 0 14px; border-radius: 12px; background: #3D5AFE; color: #FFFFFF; font-size: 14px; font-weight: 600">Jetzt sichern</button>
+</div>
+<button style="width: 100%; min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; border-top: 1px solid #ECEDF0"><span style="flex: 1; font-size: 15px">Backup importieren</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C5C9D2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
+<a href="Export.dc.html" style="min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; border-top: 1px solid #ECEDF0; color: #0D0E12; text-decoration: none"><span style="flex: 1; font-size: 15px">Export</span><span style="font-size: 14px; color: #646874">CSV, JSON</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C5C9D2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></a>
+</div>
+
+<span style="font-size: 12px; color: #646874; text-transform: uppercase; letter-spacing: 0.6px; padding: 10px 4px 2px">Darstellung</span>
+<div style="background: #FFFFFF; border-radius: 18px; padding: 12px 16px">
+<div role="tablist" aria-label="Erscheinungsbild" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #F0F1F4; border-radius: 12px; padding: 3px">
+<sc-for list="{{themes}}" as="th" hint-placeholder-count="3">
+<button role="tab" onClick="{{th.pick}}" style="min-height: 36px; border-radius: 9px; font-size: 13px; font-weight: 600; text-align: center; background: {{th.bg}}; color: {{th.fg}}">{{th.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<span style="font-size: 12px; color: #646874; text-transform: uppercase; letter-spacing: 0.6px; padding: 10px 4px 2px">Über</span>
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #646874; line-height: 1.45">
+<span><span style="color: #0D0E12; font-weight: 600">Kcalm</span> · Version 1.0 · alle Daten bleiben auf diesem Gerät</span>
+<span>Produktdaten: Open Food Facts, Lizenz ODbL</span>
+<span>Grundlebensmittel: Max Rubner-Institut, Bundeslebensmittelschlüssel 4.0</span>
+</div>
+</div>
+
+<nav style="position: absolute; left: 20px; right: 20px; bottom: 26px; height: 62px; border-radius: 31px; background: #FFFFFF; box-shadow: 0 6px 24px rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: space-around; padding: 0 8px">
+<a href="Kern.dc.html" aria-label="Tagebuch" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: #646874"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg></a>
+<a href="Statistik.dc.html" aria-label="Statistik" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: #646874"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg></a>
+<a href="Kern.dc.html" aria-label="Hinzufügen" class="kc-press" style="width: 64px; height: 46px; border-radius: 23px; background: #3D5AFE; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
+<a href="Lebensmittel.dc.html" aria-label="Lebensmittel" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: #646874"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></a>
+<a href="Einstellungen.dc.html" aria-label="Einstellungen" aria-current="page" class="kc-press" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: #0D0E12"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"></path><circle cx="16" cy="6" r="2"></circle><circle cx="10" cy="12" r="2"></circle><circle cx="18" cy="18" r="2"></circle></svg></a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { water: true, est: true, theme: 'sys', backedUp: false }; }
+  renderVals() {
+    var self = this;
+    var st = this.state;
+    var tg = function (key, label, sub, link) {
+      var on = st[key];
+      return { label: label, sub: sub, link: link && on, on: on ? 'true' : 'false', track: on ? '#3D5AFE' : '#D9DCE3', knob: on ? 'translateX(20px)' : 'translateX(0)', border: key === 'water' ? '0' : '1px solid #ECEDF0', toggle: function () { var o = {}; o[key] = !self.state[key]; self.setState(o); } };
+    };
+    return {
+      toggles: [ tg('water', 'Wasser tracken', 'Ziel 2,5 l · Schnellgrößen 250 / 500 ml', false), tg('est', 'Verbrauchsschätzung', 'Gewicht per Kurzbefehl aus Apple Health', true) ],
+      bkText: st.backedUp ? 'Gerade gesichert · iCloud Drive' : 'Letztes Backup vor 16 Tagen · bitte sichern',
+      bkColor: st.backedUp ? '#646874' : '#B4471E',
+      backup: function () { self.setState({ backedUp: true }); },
+      themes: [['sys', 'System'], ['light', 'Hell'], ['dark', 'Dunkel']].map(function (t) { var on = st.theme === t[0]; return { label: t[1], bg: on ? '#FFFFFF' : 'transparent', fg: on ? '#0D0E12' : '#646874', pick: function () { self.setState({ theme: t[0] }); } }; })
+    };
+  }
+}
+</script>
+</body>
+</html>

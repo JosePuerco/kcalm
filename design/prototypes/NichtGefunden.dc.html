@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Barcode nicht gefunden</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #2A2B2F; color: #0D0E12; font-family: 'Geist', sans-serif; position: relative; overflow: hidden; font-feature-settings: 'tnum' 1">
+<div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(0,0,0,0.5)"></div>
+
+<div style="position: absolute; left: 0; right: 0; bottom: 0; background: #F3F4F6; border-radius: 28px 28px 0 0; padding: 8px 16px 34px">
+<div style="width: 40px; height: 5px; border-radius: 3px; background: #D9DCE3; margin: 0 auto 18px"></div>
+
+<div role="tablist" aria-label="Zustand" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #E6E8EC; border-radius: 12px; padding: 3px; margin-bottom: 18px">
+<button role="tab" onClick="{{showMissing}}" style="min-height: 34px; border-radius: 9px; font-size: 13px; font-weight: 600; text-align: center; background: {{tabA}}; color: {{tabAFg}}">Nicht gefunden</button>
+<button role="tab" onClick="{{showOffline}}" style="min-height: 34px; border-radius: 9px; font-size: 13px; font-weight: 600; text-align: center; background: {{tabB}}; color: {{tabBFg}}">Offline</button>
+</div>
+
+<sc-if value="{{missing}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 0 12px 20px">
+<span style="width: 56px; height: 56px; border-radius: 18px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#646874" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3M8.5 8.5l5 5M13.5 8.5l-5 5"></path></svg></span>
+<span style="font-size: 20px; font-weight: 600">Nicht in Open Food Facts</span>
+<span style="font-size: 14px; color: #646874; line-height: 1.45">Zu diesem Barcode gibt es noch kein Produkt. Lege es mit den Werten vom Etikett an, dann findet Kcalm es beim nächsten Scan sofort.</span>
+<span style="font-size: 13px; color: #646874; padding: 6px 12px; border-radius: 10px; background: #FFFFFF; margin-top: 4px">EAN 4 012345 678901</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<button style="min-height: 54px; border-radius: 16px; background: #3D5AFE; color: #FFFFFF; font-size: 17px; font-weight: 600; text-align: center">Eigenes Produkt anlegen</button>
+<button style="min-height: 48px; border-radius: 16px; background: #FFFFFF; font-size: 15px; font-weight: 500; text-align: center">Lokal suchen</button>
+<a href="Scanner.dc.html" style="min-height: 44px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500; color: #2F4BE8; text-decoration: none">Nochmal scannen</a>
+</div>
+</sc-if>
+
+<sc-if value="{{offline}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 0 12px 20px">
+<span style="width: 56px; height: 56px; border-radius: 18px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#646874" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0M12 19h.01M3 3l18 18"></path></svg></span>
+<span style="font-size: 20px; font-weight: 600">Kein Internet</span>
+<span style="font-size: 14px; color: #646874; line-height: 1.45">Der Barcode ist gemerkt. Sobald du online bist, lädt Kcalm das Produkt und fragt dich nach der Menge.</span>
+</div>
+<div style="background: #FFFFFF; border-radius: 18px; padding: 4px 16px; margin-bottom: 10px">
+<div style="display: flex; align-items: center; justify-content: space-between; min-height: 48px; font-size: 14px"><span>Gemerkt für</span><span style="font-weight: 600">Abend · heute</span></div>
+<div style="display: flex; align-items: center; justify-content: space-between; min-height: 48px; font-size: 14px; border-top: 1px solid #ECEDF0"><span>Offene Scans</span><span style="font-weight: 600">2</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<button style="min-height: 54px; border-radius: 16px; background: #3D5AFE; color: #FFFFFF; font-size: 17px; font-weight: 600; text-align: center">Jetzt manuell eintragen</button>
+<a href="Kern.dc.html" style="min-height: 48px; border-radius: 16px; background: #FFFFFF; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; color: #0D0E12; text-decoration: none">Später</a>
+</div>
+</sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { mode: 'missing' }; }
+  renderVals() {
+    var m = this.state.mode === 'missing';
+    var self = this;
+    return {
+      missing: m, offline: !m,
+      tabA: m ? '#FFFFFF' : 'transparent', tabAFg: m ? '#0D0E12' : '#646874',
+      tabB: !m ? '#FFFFFF' : 'transparent', tabBFg: !m ? '#0D0E12' : '#646874',
+      showMissing: function () { self.setState({ mode: 'missing' }); },
+      showOffline: function () { self.setState({ mode: 'offline' }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

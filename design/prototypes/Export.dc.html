@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Export</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.kc-press{transition:transform 140ms cubic-bezier(.2,.8,.2,1)}
+.kc-press:active{transform:scale(.95)}
+.kc-scroll>*{flex-shrink:0}
+@media (prefers-reduced-motion: reduce){.kc-press{transition:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F4F6; color: #0D0E12; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; font-feature-settings: 'tnum' 1">
+
+<div style="padding: 50px 8px 0 4px; display: flex; align-items: center; justify-content: space-between">
+<a href="Einstellungen.dc.html" aria-label="Zurück" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #0D0E12"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></a>
+<span style="font-size: 17px; font-weight: 600">Export</span>
+<span style="width: 44px"></span>
+</div>
+
+<div class="kc-scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 10px">
+
+<button onClick="{{applyTpl}}" class="kc-press" style="background: {{tplBg}}; border: 1.5px solid {{tplBorder}}; border-radius: 18px; padding: 14px 16px; display: flex; align-items: center; gap: 12px">
+<span style="width: 40px; height: 40px; border-radius: 12px; background: #EEF1FF; color: #2F4BE8; display: flex; align-items: center; justify-content: center; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h4"></path></svg></span>
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Vorlage: Monatsauswertung Claude</span><span style="font-size: 12px; color: #646874">Letzter Monat · Tage · JSON · alle Nährwerte + Gewicht</span></span>
+</button>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; color: #646874">Zeitraum</span>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<sc-for list="{{ranges}}" as="r" hint-placeholder-count="4">
+<button onClick="{{r.pick}}" class="kc-press" style="min-height: 34px; padding: 0 12px; border-radius: 17px; font-size: 13px; font-weight: 500; background: {{r.bg}}; color: {{r.fg}}">{{r.label}}</button>
+</sc-for>
+</div>
+<span style="font-size: 12px; color: #646874">{{rangeText}}</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #ECEDF0; padding-top: 12px">
+<span style="font-size: 13px; color: #646874">Ebene</span>
+<div role="tablist" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; background: #F0F1F4; border-radius: 12px; padding: 3px">
+<sc-for list="{{levels}}" as="l" hint-placeholder-count="4">
+<button role="tab" onClick="{{l.pick}}" style="min-height: 34px; border-radius: 9px; font-size: 13px; font-weight: 600; text-align: center; background: {{l.bg}}; color: {{l.fg}}">{{l.label}}</button>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #ECEDF0; padding-top: 12px">
+<span style="font-size: 13px; color: #646874">Format</span>
+<div role="tablist" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #F0F1F4; border-radius: 12px; padding: 3px">
+<sc-for list="{{formats}}" as="f" hint-placeholder-count="2">
+<button role="tab" onClick="{{f.pick}}" style="min-height: 34px; border-radius: 9px; font-size: 13px; font-weight: 600; text-align: center; background: {{f.bg}}; color: {{f.fg}}">{{f.label}}</button>
+</sc-for>
+</div>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 15px; font-weight: 600">Spalten</span><span style="font-size: 12px; color: #646874">{{colCount}} gewählt</span></div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px">
+<sc-for list="{{cols}}" as="c" hint-placeholder-count="12">
+<button onClick="{{c.pick}}" aria-pressed="{{c.on}}" class="kc-press" style="min-height: 32px; padding: 0 10px; border-radius: 10px; font-size: 13px; font-weight: 500; background: {{c.bg}}; color: {{c.fg}}; border: 1px solid {{c.border}}">{{c.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px">
+<span style="font-size: 15px; font-weight: 600">Vorschau</span>
+<div style="margin-top: 10px; background: #F3F4F6; border-radius: 12px; padding: 10px 12px; overflow-x: auto">
+<pre style="margin: 0; font-family: 'Geist Mono', monospace; font-size: 11px; line-height: 1.6; color: #0D0E12; white-space: pre">{{preview}}</pre>
+</div>
+</div>
+</div>
+
+<div style="padding: 8px 16px 30px">
+<button class="kc-press" style="width: 100%; min-height: 54px; border-radius: 16px; background: #3D5AFE; color: #FFFFFF; font-size: 17px; font-weight: 600; text-align: center">{{cta}}</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var KC_COLS = [
+  ['date', 'Datum', 'date'], ['complete', 'Vollständig', 'complete'], ['slot', 'Slot', 'slot'], ['name', 'Name', 'name'], ['amount', 'Menge', 'amount_g'],
+  ['kcal', 'kcal', 'kcal'], ['protein', 'Eiweiß', 'protein_g'], ['carbs', 'Kohlenh.', 'carbs_g'], ['fat', 'Fett', 'fat_g'], ['satfat', 'Ges. Fett', 'satfat_g'],
+  ['sugar', 'Zucker', 'sugar_g'], ['fiber', 'Ballastst.', 'fiber_g'], ['salt', 'Salz', 'salt_g'], ['water', 'Wasser', 'water_ml'], ['budget', 'Budget', 'budget_kcal'], ['weight', 'Gewicht', 'weight_kg']
+];
+var KC_ROW = { date: '2026-09-01', complete: 'true', slot: 'Frühstück', name: 'Haferflocken', amount: '60', kcal: '2911', protein: '142.3', carbs: '351.0', fat: '88.4', satfat: '24.1', sugar: '71.2', fiber: '27.5', salt: '5.12', water: '2250', budget: '2800', weight: '74.2' };
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { range: 'lm', level: 'd', fmt: 'json', cols: { date: true, complete: true, kcal: true, protein: true, carbs: true, fat: true, fiber: true, budget: true, weight: true } };
+  }
+  renderVals() {
+    var self = this;
+    var st = this.state;
+    var lvl = st.level;
+    var avail = KC_COLS.filter(function (c) {
+      if ((c[0] === 'slot') && lvl !== 's' && lvl !== 'e') return false;
+      if ((c[0] === 'name' || c[0] === 'amount') && lvl !== 'e') return false;
+      return true;
+    });
+    var chosen = avail.filter(function (c) { return st.cols[c[0]]; });
+    var row = function (c) { var v = KC_ROW[c[0]]; if (lvl === 'w' && c[0] === 'date') v = '2026-W36'; if (lvl === 'w' && c[0] === 'kcal') v = '19740'; if (lvl === 'w' && c[0] === 'budget') v = '19600'; if (lvl === 'e' && c[0] === 'kcal') v = '223'; return v; };
+    var preview;
+    if (st.fmt === 'csv') {
+      preview = chosen.map(function (c) { return c[2]; }).join(',') + '\n' + chosen.map(row).join(',') + '\n…';
+    } else {
+      var lines = chosen.map(function (c) { var v = row(c); var q = isNaN(Number(v)) && v !== 'true' ? '"' + v + '"' : v; return '    "' + c[2] + '": ' + q; });
+      preview = '{\n  "app": "kcalm",\n  "level": "' + ({ e: 'entries', s: 'slots', d: 'days', w: 'weeks' })[lvl] + '",\n  "rows": [\n   {\n' + lines.join(',\n') + '\n   }, …\n  ]\n}';
+    }
+    var isTpl = st.range === 'lm' && lvl === 'd' && st.fmt === 'json' && ['date', 'complete', 'kcal', 'protein', 'carbs', 'fat', 'fiber', 'budget', 'weight'].every(function (k) { return st.cols[k]; });
+    var rangeText = { lm: '01.09.2026 – 30.09.2026 · 30 Tage', w4: '19.09.2026 – 16.10.2026 · 28 Tage', all: '01.09.2026 – heute · 46 Tage', free: 'Start und Ende frei wählen' }[st.range];
+    var count = { e: '412 Einträge', s: '120 Slots', d: '30 Tage', w: '5 Wochen' }[lvl];
+    return {
+      tplBg: isTpl ? '#F5F7FF' : '#FFFFFF', tplBorder: isTpl ? '#3D5AFE' : 'transparent',
+      applyTpl: function () { self.setState({ range: 'lm', level: 'd', fmt: 'json', cols: { date: true, complete: true, kcal: true, protein: true, carbs: true, fat: true, fiber: true, budget: true, weight: true } }); },
+      ranges: [['lm', 'Letzter Monat'], ['w4', '4 Wochen'], ['all', 'Alles'], ['free', 'Frei…']].map(function (r) { var on = st.range === r[0]; return { label: r[1], bg: on ? '#0D0E12' : '#F3F4F6', fg: on ? '#FFFFFF' : '#0D0E12', pick: function () { self.setState({ range: r[0] }); } }; }),
+      rangeText: rangeText,
+      levels: [['e', 'Einträge'], ['s', 'Slots'], ['d', 'Tage'], ['w', 'Wochen']].map(function (l) { var on = lvl === l[0]; return { label: l[1], bg: on ? '#FFFFFF' : 'transparent', fg: on ? '#0D0E12' : '#646874', pick: function () { self.setState({ level: l[0] }); } }; }),
+      formats: [['csv', 'CSV'], ['json', 'JSON']].map(function (f) { var on = st.fmt === f[0]; return { label: f[1], bg: on ? '#FFFFFF' : 'transparent', fg: on ? '#0D0E12' : '#646874', pick: function () { self.setState({ fmt: f[0] }); } }; }),
+      cols: avail.map(function (c) { var on = !!st.cols[c[0]]; return { label: c[1], on: on ? 'true' : 'false', bg: on ? '#EEF1FF' : '#FFFFFF', fg: on ? '#2F4BE8' : '#646874', border: on ? '#C7D0FF' : '#E1E3E8', pick: function () { var o = Object.assign({}, self.state.cols); o[c[0]] = !on; self.setState({ cols: o }); } }; }),
+      colCount: chosen.length,
+      preview: preview,
+      cta: count + ' als ' + st.fmt.toUpperCase() + ' teilen'
+    };
+  }
+}
+</script>
+</body>
+</html>

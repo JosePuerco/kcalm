@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Rezept anlegen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+input{font:inherit;color:inherit}
+.kc-press{transition:transform 140ms cubic-bezier(.2,.8,.2,1)}
+.kc-press:active{transform:scale(.95)}
+.kc-scroll>*{flex-shrink:0}
+@media (prefers-reduced-motion: reduce){.kc-press{transition:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F4F6; color: #0D0E12; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; font-feature-settings: 'tnum' 1">
+
+<div style="padding: 50px 8px 0 4px; display: flex; align-items: center; justify-content: space-between">
+<a href="Lebensmittel.dc.html" style="min-height: 44px; padding: 0 12px; font-size: 16px; color: #2F4BE8; display: flex; align-items: center; text-decoration: none">Abbrechen</a>
+<span style="font-size: 17px; font-weight: 600">Neues Rezept</span>
+<a href="Lebensmittel.dc.html" style="min-height: 44px; padding: 0 12px; font-size: 16px; font-weight: 600; color: #2F4BE8; display: flex; align-items: center; text-decoration: none">Sichern</a>
+</div>
+
+<div class="kc-scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 10px">
+
+<label style="background: #FFFFFF; border-radius: 14px; min-height: 52px; display: flex; align-items: center; padding: 0 16px">
+<span style="position: absolute; width: 1px; height: 1px; overflow: hidden">Name</span>
+<input value="Chili con Carne" style="flex: 1; border: 0; outline: none; background: transparent; font-size: 18px; font-weight: 600">
+</label>
+
+<div style="background: #FFFFFF; border-radius: 18px; overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 8px 0 16px">
+<span style="font-size: 15px; font-weight: 600">Zutaten (roh)</span>
+<button class="kc-press" style="min-height: 44px; padding: 0 8px; font-size: 14px; font-weight: 600; color: #2F4BE8">+ Zutat</button>
+</div>
+<sc-for list="{{ings}}" as="i" hint-placeholder-count="6">
+<div style="display: flex; align-items: center; min-height: 48px; padding: 0 16px; border-top: 1px solid #ECEDF0; font-size: 14px; gap: 8px">
+<span style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{i.name}}</span>
+<span style="color: #646874; min-width: 54px; text-align: right">{{i.amt}}</span>
+<span style="color: #646874; min-width: 66px; text-align: right">{{i.kcal}}</span>
+</div>
+</sc-for>
+<div style="display: flex; align-items: center; justify-content: space-between; min-height: 46px; padding: 0 16px; border-top: 1px solid #ECEDF0; background: #FAFAFB; font-size: 14px">
+<span style="color: #646874">Summe roh</span>
+<span style="font-weight: 600">{{rawW}} · {{totK}} kcal</span>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px">
+<span style="font-size: 15px; font-weight: 600">Endgewicht nach dem Kochen</span>
+<span style="display: block; font-size: 13px; color: #646874; margin-top: 4px; line-height: 1.4">Topf leer wiegen, dann mit Inhalt. Die Differenz ist das Endgewicht.</span>
+<div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px">
+<button onClick="{{minus}}" aria-label="50 g weniger" class="kc-press" style="width: 48px; height: 48px; border-radius: 14px; background: #F3F4F6; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+<span style="font-size: 36px; font-weight: 600; letter-spacing: -1px">{{endW}}<span style="font-size: 16px; font-weight: 500; color: #646874"> g</span></span>
+<button onClick="{{plus}}" aria-label="50 g mehr" class="kc-press" style="width: 48px; height: 48px; border-radius: 14px; background: #F3F4F6; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+</div>
+<span style="display: block; text-align: center; font-size: 12px; color: {{lossColor}}; margin-top: 6px">{{loss}}</span>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px">
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<span style="font-size: 15px; font-weight: 600">Pro 100 g fertig</span>
+<span style="font-size: 22px; font-weight: 600">{{per.k}} <span style="font-size: 13px; font-weight: 400; color: #646874">kcal</span></span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 10px">
+<sc-for list="{{per.m}}" as="m" hint-placeholder-count="3">
+<div style="background: #F3F4F6; border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #646874">{{m.label}}</span><span style="font-size: 14px; font-weight: 600">{{m.val}}</span></div>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; min-height: 44px; margin-top: 10px; border-top: 1px solid #ECEDF0; font-size: 14px">
+<span>Portion „1 Teller“</span>
+<span><span style="color: #646874">450 g = </span><span style="font-weight: 600">{{plate}} kcal</span></span>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var KC_ING = [
+  { name: 'Rinderhack 20 % Fett', g: 500, k: 254, p: 17.2, c: 0, f: 20 },
+  { name: 'Kidneybohnen, abgetropft', g: 250, k: 100, p: 7, c: 13, f: 0.5 },
+  { name: 'Tomaten, passiert', g: 500, k: 26, p: 1.3, c: 4.3, f: 0.2 },
+  { name: 'Paprika rot', g: 200, k: 31, p: 1, c: 6, f: 0.3 },
+  { name: 'Zwiebel', g: 150, k: 30, p: 1.2, c: 5.8, f: 0.2 },
+  { name: 'Rapsöl', g: 15, k: 884, p: 0, c: 0, f: 100 }
+];
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { endW: 1400 }; }
+  renderVals() {
+    var self = this;
+    var fm = function (n, d) { return Number(n).toLocaleString('de-DE', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }); };
+    var t = { g: 0, k: 0, p: 0, c: 0, f: 0 };
+    var ings = KC_ING.map(function (x) {
+      var r = x.g / 100;
+      t.g += x.g; t.k += x.k * r; t.p += x.p * r; t.c += x.c * r; t.f += x.f * r;
+      return { name: x.name, amt: fm(x.g) + ' g', kcal: fm(x.k * r) + ' kcal' };
+    });
+    var e = this.state.endW;
+    var per = 100 / e;
+    var lossPct = Math.round((1 - e / t.g) * 100);
+    return {
+      ings: ings, rawW: fm(t.g) + ' g', totK: fm(t.k),
+      endW: fm(e),
+      loss: lossPct >= 0 ? lossPct + ' % Wasser beim Kochen verdampft' : 'Endgewicht höher als roh: Wasser dazugegeben?',
+      lossColor: lossPct > 40 ? '#B4471E' : '#646874',
+      minus: function () { self.setState({ endW: Math.max(100, self.state.endW - 50) }); },
+      plus: function () { self.setState({ endW: self.state.endW + 50 }); },
+      per: { k: fm(t.k * per), m: [ { label: 'Eiweiß', val: fm(t.p * per, 1) + ' g' }, { label: 'Kohlenh.', val: fm(t.c * per, 1) + ' g' }, { label: 'Fett', val: fm(t.f * per, 1) + ' g' } ] },
+      plate: fm(t.k * per * 4.5)
+    };
+  }
+}
+</script>
+</body>
+</html>

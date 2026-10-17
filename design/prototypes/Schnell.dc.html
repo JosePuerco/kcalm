@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Schnelleintrag</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+input{font:inherit;color:inherit}
+.kc-press{transition:transform 140ms cubic-bezier(.2,.8,.2,1)}
+.kc-press:active{transform:scale(.95)}
+@media (prefers-reduced-motion: reduce){.kc-press{transition:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F4F6; color: #0D0E12; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; font-feature-settings: 'tnum' 1">
+<div style="width: 40px; height: 5px; border-radius: 3px; background: #D9DCE3; margin: 58px auto 4px"></div>
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 4px">
+<a href="Kern.dc.html" aria-label="Zurück" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #0D0E12"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></a>
+<span style="font-size: 17px; font-weight: 600">Schnelleintrag</span>
+<a href="Kern.dc.html" style="min-height: 44px; padding: 0 10px; font-size: 16px; font-weight: 600; color: #2F4BE8; display: flex; align-items: center; text-decoration: none">Fertig</a>
+</div>
+<div style="display: flex; gap: 6px; padding: 4px 16px 10px">
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+<button class="kc-press" style="min-height: 34px; padding: 0 14px; border-radius: 17px; font-size: 14px; font-weight: 500; background: {{c.bg}}; color: {{c.fg}}">{{c.name}}</button>
+</sc-for>
+</div>
+
+<div style="padding: 0 16px; display: flex; flex-direction: column; gap: 8px">
+<label style="background: #FFFFFF; border-radius: 14px; min-height: 48px; display: flex; align-items: center; padding: 0 14px; gap: 8px">
+<span style="position: absolute; width: 1px; height: 1px; overflow: hidden">Name</span>
+<input placeholder="Name (optional), z. B. Döner" value="Döner Teller" style="flex: 1; border: 0; outline: none; background: transparent; font-size: 16px">
+</label>
+<button onClick="{{f0.pick}}" class="kc-press" style="background: #FFFFFF; border-radius: 18px; padding: 12px 16px; display: flex; align-items: baseline; justify-content: space-between; box-shadow: {{f0.ring}}">
+<span style="font-size: 13px; color: #646874">Energie</span>
+<span style="font-size: 38px; font-weight: 600; letter-spacing: -1.2px">{{f0.val}}<span style="font-size: 16px; font-weight: 500; color: #646874"> kcal</span></span>
+</button>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{macroFields}}" as="m" hint-placeholder-count="3">
+<button onClick="{{m.pick}}" class="kc-press" style="background: #FFFFFF; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: {{m.ring}}">
+<span style="font-size: 12px; color: #646874">{{m.label}}</span>
+<span style="font-size: 18px; font-weight: 600">{{m.val}}<span style="font-size: 13px; font-weight: 400; color: #646874"> g</span></span>
+</button>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; min-height: 32px; padding: 0 4px">
+<span style="font-size: 12px; color: {{checkColor}}">{{check}}</span>
+<button style="min-height: 32px; font-size: 13px; font-weight: 500; color: #2F4BE8">Weitere Nährwerte</button>
+</div>
+</div>
+
+<div style="margin-top: auto; padding: 0 16px 30px">
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+<button onClick="{{k.press}}" aria-label="{{k.aria}}" class="kc-press" style="height: 52px; border-radius: 14px; background: #FFFFFF; font-size: 22px; font-weight: 500; text-align: center">{{k.label}}</button>
+</sc-for>
+</div>
+<a href="Kern.dc.html" class="kc-press" style="margin-top: 10px; min-height: 54px; border-radius: 16px; background: #3D5AFE; color: #FFFFFF; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; text-decoration: none">Zu Abend hinzufügen</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { active: 'k', vals: { k: '850', p: '38', c: '80', f: '40' } };
+  }
+  renderVals() {
+    var self = this;
+    var st = this.state;
+    var num = function (s) { var v = parseFloat(String(s).replace(',', '.')); return isNaN(v) ? 0 : v; };
+    var field = function (key, label) {
+      var on = st.active === key;
+      return { label: label, val: st.vals[key] || '0', ring: on ? '0 0 0 2px #3D5AFE' : 'none', pick: function () { self.setState({ active: key }); } };
+    };
+    var fromMacros = Math.round(num(st.vals.p) * 4 + num(st.vals.c) * 4 + num(st.vals.f) * 9);
+    var kcal = num(st.vals.k);
+    var diff = Math.abs(fromMacros - kcal);
+    var ok = kcal === 0 || diff <= kcal * 0.1;
+    var keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', 'del'].map(function (k) {
+      return {
+        label: k === 'del' ? '⌫' : k, aria: k === 'del' ? 'Löschen' : k,
+        press: function () {
+          var a = self.state.vals[self.state.active] || '';
+          if (k === 'del') a = a.slice(0, -1);
+          else if (k === ',') { if (a.indexOf(',') < 0) a = (a || '0') + ','; }
+          else if (a.length < 5) a = (a === '0' ? '' : a) + k;
+          var v = Object.assign({}, self.state.vals); v[self.state.active] = a;
+          self.setState({ vals: v });
+        }
+      };
+    });
+    return {
+      chips: ['Frühstück', 'Mittag', 'Snacks', 'Abend'].map(function (n) { var on = n === 'Abend'; return { name: n, bg: on ? '#3D5AFE' : '#FFFFFF', fg: on ? '#FFFFFF' : '#0D0E12' }; }),
+      f0: field('k', 'Energie'),
+      macroFields: [field('p', 'Eiweiß'), field('c', 'Kohlenh.'), field('f', 'Fett')],
+      check: 'Makros ergeben ' + fromMacros.toLocaleString('de-DE') + ' kcal' + (ok ? ' · passt' : ' · weicht über 10 % ab'),
+      checkColor: ok ? '#646874' : '#B4471E',
+      keys: keys
+    };
+  }
+}
+</script>
+</body>
+</html>

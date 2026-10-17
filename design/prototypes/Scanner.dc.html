@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Scanner</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.kc-laser{animation:kcLaser 1.8s ease-in-out infinite alternate}
+@keyframes kcLaser{from{transform:translateY(-62px)}to{transform:translateY(62px)}}
+@media (prefers-reduced-motion: reduce){.kc-laser{animation:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #121316; color: #FFFFFF; font-family: 'Geist', sans-serif; position: relative; overflow: hidden; font-feature-settings: 'tnum' 1">
+
+<div aria-hidden="true" style="position: absolute; inset: 0; background: #2A2B2F"></div>
+<div aria-hidden="true" style="position: absolute; left: 70px; top: 300px; width: 250px; height: 230px; border-radius: 22px; background: #3A3B40"></div>
+
+<div style="position: absolute; left: 0; right: 0; top: 50px; padding: 0 8px; display: flex; align-items: center; justify-content: space-between">
+<a href="Kern.dc.html" aria-label="Schließen" style="width: 44px; height: 44px; border-radius: 22px; background: rgba(0,0,0,0.45); color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+<span style="font-size: 16px; font-weight: 600">Barcode scannen</span>
+<button aria-label="Taschenlampe" style="width: 44px; height: 44px; border-radius: 22px; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2h8l-1 5H9zM9 7h6l-1 13h-4z"></path><path d="M12 11v3"></path></svg></button>
+</div>
+
+<div style="position: absolute; left: 50%; top: 340px; width: 290px; height: 170px; margin-left: -145px">
+<div aria-hidden="true" style="position: absolute; inset: 0; border-radius: 20px; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5)"></div>
+<span aria-hidden="true" style="position: absolute; left: 0; top: 0; width: 34px; height: 34px; border-left: 4px solid #FFFFFF; border-top: 4px solid #FFFFFF; border-radius: 20px 0 0 0"></span>
+<span aria-hidden="true" style="position: absolute; right: 0; top: 0; width: 34px; height: 34px; border-right: 4px solid #FFFFFF; border-top: 4px solid #FFFFFF; border-radius: 0 20px 0 0"></span>
+<span aria-hidden="true" style="position: absolute; left: 0; bottom: 0; width: 34px; height: 34px; border-left: 4px solid #FFFFFF; border-bottom: 4px solid #FFFFFF; border-radius: 0 0 0 20px"></span>
+<span aria-hidden="true" style="position: absolute; right: 0; bottom: 0; width: 34px; height: 34px; border-right: 4px solid #FFFFFF; border-bottom: 4px solid #FFFFFF; border-radius: 0 0 20px 0"></span>
+<div aria-hidden="true" style="position: absolute; left: 22px; right: 22px; top: 84px; height: 2px; background: #6E86FF; box-shadow: 0 0 12px #6E86FF" class="kc-laser"></div>
+</div>
+<span style="position: absolute; left: 0; right: 0; top: 530px; text-align: center; font-size: 14px; color: rgba(255,255,255,0.85)">Barcode in den Rahmen halten</span>
+
+<div style="position: absolute; left: 16px; right: 16px; bottom: 34px; display: flex; flex-direction: column; gap: 10px">
+<div style="background: #FFFFFF; color: #0D0E12; border-radius: 22px; padding: 14px 14px 14px 16px; display: flex; align-items: center; gap: 12px">
+<span style="width: 40px; height: 40px; border-radius: 12px; background: #EEF1FF; color: #2F4BE8; display: flex; align-items: center; justify-content: center; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span>
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-size: 15px; font-weight: 600">Skyr natur</span>
+<span style="font-size: 12px; color: #646874">Open Food Facts · 63 kcal/100 g · EAN 4002971243802</span>
+</span>
+<a href="Kern.dc.html" style="min-height: 44px; padding: 0 16px; border-radius: 14px; background: #3D5AFE; color: #FFFFFF; font-size: 15px; font-weight: 600; display: flex; align-items: center; text-decoration: none">Weiter</a>
+</div>
+<button style="min-height: 48px; border-radius: 16px; background: rgba(0,0,0,0.5); color: #FFFFFF; font-size: 15px; font-weight: 500; text-align: center">Code eintippen</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

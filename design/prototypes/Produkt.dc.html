@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kcalm Produktdetail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.kc-press{transition:transform 140ms cubic-bezier(.2,.8,.2,1)}
+.kc-press:active{transform:scale(.95)}
+.kc-scroll>*{flex-shrink:0}
+.kc-col{transition:background 220ms ease,color 220ms ease}
+@media (prefers-reduced-motion: reduce){.kc-press,.kc-col{transition:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F4F6; color: #0D0E12; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; font-feature-settings: 'tnum' 1">
+
+<div style="padding: 50px 8px 0 4px; display: flex; align-items: center; justify-content: space-between">
+<a href="Lebensmittel.dc.html" aria-label="Zurück" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #0D0E12"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></a>
+<button aria-label="Mehr" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg></button>
+</div>
+
+<div class="kc-scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 0 16px 24px; display: flex; flex-direction: column; gap: 10px">
+
+<div style="padding: 0 4px 4px">
+<h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.5px">Skyr natur</h1>
+<span style="display: block; font-size: 13px; color: #646874; margin-top: 4px">Arla · 450 g · EAN 4002971243802</span>
+<div style="display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap">
+<span style="font-size: 12px; padding: 5px 10px; border-radius: 10px; background: #FFFFFF; color: #646874">Open Food Facts</span>
+<span style="font-size: 12px; padding: 5px 10px; border-radius: 10px; background: {{badgeBg}}; color: {{badgeFg}}; display: inline-flex; align-items: center; gap: 4px; font-weight: 500"><sc-if value="{{verified}}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></sc-if>{{badge}}</span>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px 6px">
+<div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px">
+<span style="font-size: 15px; font-weight: 600">Nährwerte pro 100 g</span>
+<span style="font-size: 12px; color: #646874">{{diffCount}} korrigiert</span>
+</div>
+<div role="tablist" aria-label="Verwendete Werte" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #F0F1F4; border-radius: 12px; padding: 3px; margin-bottom: 6px">
+<button role="tab" onClick="{{useMine}}" style="min-height: 34px; border-radius: 9px; font-size: 13px; font-weight: 600; text-align: center; background: {{tMineBg}}; color: {{tMineFg}}">Meine Werte nutzen</button>
+<button role="tab" onClick="{{useOrig}}" style="min-height: 34px; border-radius: 9px; font-size: 13px; font-weight: 600; text-align: center; background: {{tOrigBg}}; color: {{tOrigFg}}">Original nutzen</button>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 76px 76px; gap: 0; font-size: 12px; color: #646874; padding: 6px 0 4px">
+<span></span><span style="text-align: right; padding-right: 8px">Original</span><span style="text-align: right; padding-right: 8px">Meine</span>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 76px 76px; align-items: center; min-height: 40px; border-top: 1px solid #ECEDF0; font-size: 14px">
+<span style="padding-left: {{r.indent}}; color: {{r.labelColor}}">{{r.label}}</span>
+<span class="kc-col" style="text-align: right; padding: 4px 8px; border-radius: 8px; background: {{r.origBg}}; color: {{r.origFg}}">{{r.orig}}</span>
+<span class="kc-col" style="text-align: right; padding: 4px 8px; border-radius: 8px; background: {{r.mineBg}}; color: {{r.mineFg}}; font-weight: {{r.mineW}}">{{r.mine}}</span>
+</div>
+</sc-for>
+<span style="display: block; font-size: 12px; color: #646874; padding: 8px 0 8px; line-height: 1.4">Abweichungen sind markiert. „–“ heißt unbekannt, nicht 0. Ein Update aus Open Food Facts ändert nur die Original-Spalte.</span>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<button class="kc-press" style="min-height: 48px; border-radius: 14px; background: #FFFFFF; font-size: 14px; font-weight: 600; text-align: center">Werte bearbeiten</button>
+<button onClick="{{toggleVerified}}" class="kc-press" style="min-height: 48px; border-radius: 14px; background: {{verBtnBg}}; color: {{verBtnFg}}; font-size: 14px; font-weight: 600; text-align: center">{{verBtn}}</button>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 4px 16px">
+<div style="display: flex; align-items: center; justify-content: space-between; min-height: 48px"><span style="font-size: 15px; font-weight: 600">Portionen</span><button style="min-height: 44px; font-size: 14px; font-weight: 600; color: #2F4BE8">Hinzufügen</button></div>
+<div style="display: flex; justify-content: space-between; min-height: 44px; align-items: center; border-top: 1px solid #ECEDF0; font-size: 14px"><span>1 Becher</span><span style="color: #646874">450 g</span></div>
+<div style="display: flex; justify-content: space-between; min-height: 44px; align-items: center; border-top: 1px solid #ECEDF0; font-size: 14px"><span>Halber Becher</span><span style="color: #646874">225 g</span></div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 18px; padding: 4px 16px">
+<div style="display: flex; justify-content: space-between; min-height: 48px; align-items: center; font-size: 14px"><span>Ist ein Getränk</span><span style="color: #646874">Nein</span></div>
+<div style="display: flex; justify-content: space-between; min-height: 48px; align-items: center; border-top: 1px solid #ECEDF0; font-size: 14px"><span>Zuletzt aus Open Food Facts geladen</span><span style="color: #646874">02.10.2026</span></div>
+<button style="width: 100%; min-height: 48px; border-top: 1px solid #ECEDF0; font-size: 14px; font-weight: 500; color: #2F4BE8">Original jetzt aktualisieren</button>
+</div>
+
+<button style="min-height: 44px; font-size: 14px; font-weight: 500; color: #B4471E; text-align: center">Archivieren</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var KC_ROWS = [
+  ['Energie', '63 kcal', '63 kcal', false],
+  ['Fett', '0,2 g', '0,2 g', false],
+  ['davon gesättigt', '0,1 g', '0,1 g', true],
+  ['Kohlenhydrate', '4,0 g', '3,5 g', false],
+  ['davon Zucker', '4,0 g', '3,5 g', true],
+  ['Ballaststoffe', '–', '0 g', false],
+  ['Eiweiß', '11 g', '11 g', false],
+  ['Salz', '0,10 g', '0,13 g', false]
+];
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { mine: true, verified: true }; }
+  renderVals() {
+    var self = this;
+    var st = this.state;
+    var diffs = 0;
+    var rows = KC_ROWS.map(function (r) {
+      var diff = r[1] !== r[2];
+      if (diff) diffs++;
+      var activeMine = st.mine;
+      return {
+        label: r[0], orig: r[1], mine: r[2], indent: r[3] ? '12px' : '0', labelColor: r[3] ? '#646874' : '#0D0E12',
+        origBg: diff && !activeMine ? '#EEF1FF' : 'transparent',
+        origFg: activeMine ? '#9A9EA8' : '#0D0E12',
+        mineBg: diff && activeMine ? '#EEF1FF' : 'transparent',
+        mineFg: activeMine ? (diff ? '#2F4BE8' : '#0D0E12') : '#9A9EA8',
+        mineW: diff && activeMine ? '600' : '400'
+      };
+    });
+    return {
+      rows: rows, diffCount: diffs,
+      verified: st.verified,
+      badge: st.verified ? 'Geprüft am 12.10.2026' : 'Nicht geprüft',
+      badgeBg: st.verified ? '#EEF1FF' : '#FFFFFF', badgeFg: st.verified ? '#2F4BE8' : '#646874',
+      tMineBg: st.mine ? '#FFFFFF' : 'transparent', tMineFg: st.mine ? '#0D0E12' : '#646874',
+      tOrigBg: !st.mine ? '#FFFFFF' : 'transparent', tOrigFg: !st.mine ? '#0D0E12' : '#646874',
+      useMine: function () { self.setState({ mine: true }); },
+      useOrig: function () { self.setState({ mine: false }); },
+      verBtn: st.verified ? 'Prüfung entfernen' : 'Als geprüft markieren',
+      verBtnBg: st.verified ? '#FFFFFF' : '#3D5AFE', verBtnFg: st.verified ? '#0D0E12' : '#FFFFFF',
+      toggleVerified: function () { self.setState({ verified: !self.state.verified }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
