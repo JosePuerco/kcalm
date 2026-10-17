@@ -261,7 +261,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 - [x] Hell/Dunkel über Tokens, Standard System
 - [x] Schwebende Navigation mit leeren Screens nach DESIGN.md
 - [x] Bausteine mit Vorschauseite: Karte, Buttons, Chips, Segment-Umschalter, Schalter, Bottom-Sheet, Ziffernblock, Fortschrittsleiste, Ring, Toast
-- [ ] GitHub Pages per Actions, Installations- und Offline-Test auf dem iPhone
+- [x] GitHub Pages per Actions, Installations- und Offline-Test auf dem iPhone
 
 ### Phase 1 – Produkte und BLS
 
@@ -359,9 +359,13 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**17.10.2026 · Phase 0 fast fertig**
+**17.10.2026 · Phase 0 abgeschlossen** – nächster Schritt: Phase 1 (Produkte und BLS). Vorher BLS-Excel nach `data/bls/` legen.
+
+- iOS 26 legt bei installierten Web-Apps einen Unschärfe-Streifen (~40 pt) unter die Statusleiste. Kopf in `display-mode: standalone` daher bei Safe Area + 44 px (Abweichung vom Prototyp, `src/styles/index.css`). Auf dem iPhone 16e geprüft.
+
+Verlauf:
 
 - Erledigt: Projekt-Setup, Tokens → Tailwind (Generator `scripts/build-tokens.ts`), PWA, App-Hülle, Navigation, leere Screens, Bausteine + Vorschau (Einstellungen → „Bausteine (Vorschau)“), Workflow `.github/workflows/deploy.yml`. 33 Tests grün, Build und Lint sauber.
 - `tokens.json` ergänzt (mit Jans OK): `type.label` 14, `type.unit` 20, Radien `calendar`/`button`/`tile`/`smallButton`, Farben `switchOff`, `segmentActive`, Abschnitt `shadow`.
 - Theme-Wahl wird noch nicht gespeichert (kommt mit der `settings`-Tabelle in Phase 1).
-- Offen: Sichtprüfung im Browser durch Jan (Claude hatte keinen Browserzugriff), GitHub Pages aktivieren, Push, Installations- und Offline-Test auf dem iPhone 16e.
+- Sichtprüfung im Browser, GitHub Pages, Installations- und Offline-Test auf dem iPhone 16e durch Jan erledigt.
