@@ -362,6 +362,9 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 | Offline-Scan „Jetzt manuell eintragen“ | Öffnet den Schnelleintrag, der gemerkte Scan gilt als erledigt; OFF nicht erreichbar (Netz da) zeigt „Open Food Facts nicht erreichbar“ (Jan, 21.10.2026) |
 | Gemerkte Scans nachladen | Still beim Start, bei Netz zurück und beim Zurückkehren in die App; Zeile „2 gemerkte Scans“ über den Slots, Liste im Sheet, Tipp → Menge im gemerkten Slot und Tag (bzw. Produktformular), Wischen verwirft. „Nicht gefunden“ merkt sich nur die Sitzung, kein neues Feld (Jan, 21.10.2026) |
 | Treffer beim Scan | Direkt zum Mengen-Schritt, keine Trefferkarte mit „Weiter“ (Jan nach iPhone-Test, 21.10.2026) |
+| Rezept: Nährwert bei einer Zutat unbekannt | Pro 100 g unbekannt (`null`); die Topf-Summe auf dem Rezept-Screen zeigt „mind. …“ (Jan, 21.10.2026) |
+| Rezept: Zutaten in ml | Zählen beim Rohgewicht wie g (1 ml ≈ 1 g) (Jan, 21.10.2026) |
+| Mahlzeit: −/+ bei Skalierung | Schritt auf der angezeigten Menge (unter 50 → 5, unter 200 → 10, sonst 50), rastet auf Vielfache ein, nicht unter 5 (Jan, 21.10.2026) |
 | Spalten „Monatsauswertung Claude“ | Ebene Tage, JSON: Datum, Vollständig, kcal, Eiweiß, Kohlenhydrate, Fett, Ballaststoffe, Budget, Gewicht |
 
 Offen nur noch:
