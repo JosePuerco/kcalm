@@ -375,7 +375,7 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**21.10.2026 · Phase 5 abgeschlossen (lokal)** – alle Punkte erledigt (Teilschritte 5a–5d, je ein Commit), im Browser durchgeklickt; noch nicht gepusht, iPhone-Test steht aus. 628 Tests grün, Build und Lint sauber. Nächster Schritt: Push nach Jans OK und iPhone-Test, dann Phase 6 (Verifizieren).
+**21.10.2026 · Phase 5 abgeschlossen** – alle Punkte erledigt (Teilschritte 5a–5d, je ein Commit), deployt und von Jan auf dem iPhone getestet. 628 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 6 (Verifizieren).
 
 - Erledigt: Rechenlogik `meal.ts` (Skalierung, −/+ mit Einrasten, Ziffernblock, Einträge mit Gruppe, Prüfung) und `recipe.ts` (Rohgewicht, pro 100 g, Kochverlust, Endgewicht ±50, Prüfung), `groupList.ts`, `groupSlotEntries` in `diary.ts`; `db/meals.ts`, `db/recipes.ts`, `addEntries`; Lebensmittel-Liste mit Reitern Mahlzeiten/Rezepte; Rezept-Screen, Mahlzeit-Formular, Auswahl-Sheet für Zutaten/Bestandteile; im Hinzufügen-Sheet Knöpfe Mahlzeiten/Rezepte, Mahlzeit-Schritt, Mahlzeiten und Rezepte in der Suche; Gruppen im Tagebuch.
 - Mit Jan abgestimmt (kein Prototyp): Mahlzeit-Formular wie der Rezept-Screen ohne Endgewicht; Rezepte dürfen in Mahlzeiten, nicht in Rezepte; Gruppe im Tagebuch mit schlichter Kopfzeile (nicht antippbar), Bestandteile eingerückt und einzeln bearbeitbar; Endgewicht beginnt leer, −/+ startet vom Rohgewicht.
