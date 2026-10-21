@@ -298,7 +298,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 - [ ] Barcode-Scanner mit selbst gehostetem Decoder, Start per Tipp, Taschenlampe, manuelle Eingabe
 - [x] OFF-Abfrage mit App-Kennung, Zod-Prüfung, lokales Speichern
 - [ ] OFF-Textsuche auf Knopfdruck
-- [ ] Offline-Scans merken und nachladen; „nicht gefunden“ → eigenes Produkt mit Barcode
+- [x] Offline-Scans merken und nachladen; „nicht gefunden“ → eigenes Produkt mit Barcode
 - [ ] Scanner-Test im Supermarkt
 
 ### Phase 5 – Mahlzeiten und Rezepte
@@ -358,6 +358,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 | OFF-Treffer ohne kcal | Wird nicht gespeichert; „Eigenes Produkt anlegen“ mit vorbefülltem Formular (Name, Marke, Barcode, bekannte Werte). Das OFF-Original wird nie überschrieben (Jan, 21.10.2026) |
 | „Werte bearbeiten“ bei OFF-Produkten | Bis zur Korrekturschicht (Phase 6) ausgeblendet; Portionen bleiben änderbar (Jan, 21.10.2026) |
 | Offline-Scan „Jetzt manuell eintragen“ | Öffnet den Schnelleintrag, der gemerkte Scan gilt als erledigt; OFF nicht erreichbar (Netz da) zeigt „Open Food Facts nicht erreichbar“ (Jan, 21.10.2026) |
+| Gemerkte Scans nachladen | Still beim Start, bei Netz zurück und beim Zurückkehren in die App; Zeile „2 gemerkte Scans“ über den Slots, Liste im Sheet, Tipp → Menge im gemerkten Slot und Tag (bzw. Produktformular), Wischen verwirft. „Nicht gefunden“ merkt sich nur die Sitzung, kein neues Feld (Jan, 21.10.2026) |
 | Spalten „Monatsauswertung Claude“ | Ebene Tage, JSON: Datum, Vollständig, kcal, Eiweiß, Kohlenhydrate, Fett, Ballaststoffe, Budget, Gewicht |
 
 Offen nur noch:

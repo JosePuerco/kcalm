@@ -13,6 +13,7 @@ import { AddSheet } from '../screens/add/AddSheet.tsx'
 import { useLiveQuery } from '../db/live.ts'
 import { isSetupDone } from '../db/setup.ts'
 import { openAddSheet } from './diaryState.ts'
+import { usePendingSyncTriggers } from './pendingSync.ts'
 import { Navigation } from './Navigation.tsx'
 import { useRoute, useSubPath, type Route } from './router.ts'
 import { initTheme } from './theme.ts'
@@ -23,6 +24,12 @@ const screens: Record<Route, ComponentType> = {
   lebensmittel: Lebensmittel,
   einstellungen: Einstellungen,
   vorschau: Vorschau,
+}
+
+/** Gemerkte Scans im Hintergrund nachladen (erst nach der Ersteinrichtung) */
+function PendingSync() {
+  usePendingSyncTriggers()
+  return null
 }
 
 export function App() {
@@ -47,6 +54,7 @@ export function App() {
               <CurrentScreen key={route} />
               {!isSubPage && <Navigation current={route} onAdd={() => openAddSheet()} />}
               <AddSheet />
+              <PendingSync />
             </>
           )}
         </ToastProvider>

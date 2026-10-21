@@ -115,7 +115,7 @@ export default function ScanFlow({ slot, date, today, resolver, onPick, onQuick,
         ) : state.kind === 'offline' ? (
           <OfflineSheet
             reason={state.reason}
-            rememberedFor={rememberedFor(slot?.name ?? '', date, today)}
+            rememberedFor={rememberedFor(slot?.name ?? null, date, today)}
             openScans={state.openScans}
             onManual={() => {
               // Mit Jan abgestimmt: manuell eingetragen = Scan erledigt, damit nichts doppelt kommt

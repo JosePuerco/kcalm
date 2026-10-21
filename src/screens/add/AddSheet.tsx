@@ -10,6 +10,7 @@ import {
   useAddSheet,
   useDiaryState,
   useToday,
+  type ScanStart,
 } from '../../app/diaryState.ts'
 import { IconChevronDown } from '../../components/icons/icons.tsx'
 import { Button } from '../../components/ui/Button.tsx'
@@ -19,6 +20,7 @@ import { Sheet } from '../../components/ui/Sheet.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { useBls } from '../../data/bls.ts'
 import { addEntry, deleteEntry, getEntry, loadFoodSources, updateEntry } from '../../db/entries.ts'
+import { resolvePendingScan } from '../../db/pendingScans.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { getSlots } from '../../db/slots.ts'
 import type { Entry, LocalDate, Slot } from '../../db/types.ts'
@@ -27,6 +29,7 @@ import {
   amountToKeypad,
   canEditAsFood,
   choiceFromEntry,
+  choiceFromProduct,
   editedEntry,
   foodEntry,
   initialAmount,
@@ -43,8 +46,10 @@ import {
   validateQuick,
   type QuickValues,
 } from '../../logic/quickEntry.ts'
+import type { ProductFormValues } from '../../logic/productForm.ts'
 import { slotForTime } from '../../logic/slots.ts'
 import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
+import { ProductForm } from '../lebensmittel/ProductForm.tsx'
 import { MonthCalendar } from '../tagebuch/MonthCalendar.tsx'
 import { AmountStep } from './AmountStep.tsx'
 import { QuickStep } from './QuickStep.tsx'
@@ -82,10 +87,11 @@ export function AddSheet() {
       {/* Inhalt erst mit Slots: dann stimmt die Vorauswahl; jedes Öffnen beginnt frisch */}
       {ready && (sheet.editId === null || editable) && (
         <AddFlow
-          key={sheet.editId ?? 'neu'}
+          key={sheet.editId ?? sheet.scan?.scanId ?? 'neu'}
           slots={slots}
           initialSlotId={sheet.slotId}
           editing={editable}
+          scan={sheet.scan}
           onHeader={setHeader}
         />
       )}
@@ -106,10 +112,11 @@ type FlowProps = {
   slots: Slot[]
   initialSlotId: string | null
   editing: Entry | null
+  scan: ScanStart | null
   onHeader: (header: Header | null) => void
 }
 
-function AddFlow({ slots, initialSlotId, editing, onHeader }: FlowProps) {
+function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
   const toast = useToast()
   const reduced = useReduced()
   const today = useToday()
@@ -125,9 +132,19 @@ function AddFlow({ slots, initialSlotId, editing, onHeader }: FlowProps) {
     return slotForTime(slots, formatTime(new Date()))?.id ?? null
   })
   const [date, setDate] = useState<LocalDate>(editing?.date ?? viewed)
-  const [step, setStep] = useState<Step>(editing ? { kind: 'edit', entry: editing } : { kind: 'search' })
+  const [step, setStep] = useState<Step>(() => {
+    if (editing) return { kind: 'edit', entry: editing }
+    return scan?.food ? { kind: 'amount', food: scan.food } : { kind: 'search' }
+  })
   const [query, setQuery] = useState('')
-  const [amount, setAmount] = useState(editing?.amount ? amountToKeypad(editing.amount) : '')
+  const [amount, setAmount] = useState(() => {
+    if (editing?.amount) return amountToKeypad(editing.amount)
+    return scan?.food ? amountToKeypad(initialAmount(scan.food)) : ''
+  })
+  // Gemerkter Scan: gilt als erledigt, sobald er eingetragen ist
+  const [pendingScanId, setPendingScanId] = useState(scan?.scanId ?? null)
+  // Produkt anlegen für einen gemerkten Scan, der bei OFF fehlt oder ohne kcal ist
+  const [form, setForm] = useState<ProductFormValues | null>(scan?.create ?? null)
   const [calendarMonth, setCalendarMonth] = useState(date.slice(0, 7))
   const [busy, setBusy] = useState(false)
   const [quick, setQuick] = useState<QuickValues>(() => (editing?.kind === 'quick' ? quickFromEntry(editing) : emptyQuick()))
@@ -165,6 +182,10 @@ function AddFlow({ slots, initialSlotId, editing, onHeader }: FlowProps) {
       const value = parseKeypadValue(amount)
       if (!slot || value === null || value <= 0) return
       const entry = await addEntry(foodEntry(food, value, viewed, slot.id))
+      if (pendingScanId) {
+        await resolvePendingScan(pendingScanId)
+        setPendingScanId(null)
+      }
       showNewEntry(slot.id, entry.id)
       toast(addedMessage(food.name, entry.nutrients.kcal, slot.name))
       // Im Sheet bleiben: zurück zur Suche für das nächste Lebensmittel
@@ -326,6 +347,21 @@ function AddFlow({ slots, initialSlotId, editing, onHeader }: FlowProps) {
           </div>
         )}
       </motion.div>
+
+      {form && (
+        <Overlay>
+          <div className="bg-bg absolute inset-0 z-10 flex flex-col">
+            <ProductForm
+              initial={form}
+              onBack={() => setForm(null)}
+              onSaved={(product) => {
+                setForm(null)
+                pick(choiceFromProduct(product))
+              }}
+            />
+          </div>
+        </Overlay>
+      )}
 
       {scanning && (
         <Overlay>

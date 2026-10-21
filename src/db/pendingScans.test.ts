@@ -1,7 +1,14 @@
 import 'fake-indexeddb/auto' // IndexedDB in Node nachbilden, vor dem Import von db
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from './db.ts'
-import { addPendingScan, getPendingScans, resolvePendingScan } from './pendingScans.ts'
+import type { Network } from './off.ts'
+import {
+  addPendingScan,
+  getPendingScans,
+  loadPendingItems,
+  resolvePendingScan,
+  syncPendingScans,
+} from './pendingScans.ts'
 
 const T0 = new Date('2026-10-21T18:00:00.000Z')
 const T1 = new Date('2026-10-21T18:05:00.000Z')
@@ -47,5 +54,65 @@ describe('pendingScans', () => {
 
   it('unbekannte oder schon erledigte id: nichts passiert', async () => {
     await expect(resolvePendingScan('gibt-es-nicht')).resolves.toBeUndefined()
+  })
+})
+
+/** OFF-Attrappe: Antwort je Barcode; fehlt der Code, wirft fetch (Netz weg) */
+function off(answers: Record<string, unknown>, online = true) {
+  const fetchMock = vi.fn<typeof fetch>(async (input) => {
+    const code = /product\/(\d+)\.json/.exec(String(input))?.[1] ?? ''
+    if (!(code in answers)) throw new TypeError('Load failed')
+    const body = answers[code]
+    return new Response(JSON.stringify(body), { status: (body as { status: number }).status === 0 ? 404 : 200 })
+  })
+  const net: Network = { fetch: fetchMock, isOnline: () => online, timeoutMs: 1000 }
+  return { net, fetchMock }
+}
+
+const found = (name: string, kcal?: number) => ({
+  status: 1,
+  product: { product_name: name, nutriments: kcal === undefined ? {} : { 'energy-kcal_100g': kcal } },
+})
+
+describe('syncPendingScans', () => {
+  it('lädt Treffer nach und speichert sie; nicht gefunden und ohne kcal kommen als Ergebnis zurück', async () => {
+    const at = (minutes: number) => new Date(T0.getTime() + minutes * 60_000)
+    await addPendingScan('4002971243802', 'a', '2026-10-21', at(0))
+    await addPendingScan('4000000001232', 'a', '2026-10-21', at(1))
+    await addPendingScan('4000417025005', 'a', '2026-10-21', at(2))
+    const { net } = off({
+      '4002971243802': found('Skyr natur', 63),
+      '4000000001232': { status: 0 },
+      '4000417025005': found('Marzipan'),
+    })
+    const outcomes = await syncPendingScans(net)
+
+    expect(outcomes.get('4000000001232')).toEqual({ kind: 'notFound' })
+    expect(outcomes.get('4000417025005')?.kind).toBe('noNutrients')
+    expect(outcomes.has('4002971243802')).toBe(false)
+    const items = await loadPendingItems()
+    expect(items.map((i) => i.product?.name ?? null)).toEqual(['Skyr natur', null, null])
+    // Scans bleiben offen, bis sie eingetragen oder verworfen sind
+    expect(await getPendingScans()).toHaveLength(3)
+  })
+
+  it('jeder Code nur einmal abgefragt, lokal vorhandene gar nicht', async () => {
+    await addPendingScan('4002971243802', 'a', '2026-10-21', T0)
+    await addPendingScan('4002971243802', 'b', '2026-10-21', T0)
+    const first = off({ '4002971243802': found('Skyr natur', 63) })
+    await syncPendingScans(first.net)
+    expect(first.fetchMock).toHaveBeenCalledTimes(1)
+
+    const second = off({})
+    await syncPendingScans(second.net)
+    expect(second.fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('bricht ab, sobald das Netz fehlt', async () => {
+    await addPendingScan('4002971243802', 'a', '2026-10-21', T0)
+    await addPendingScan('4000000001232', 'a', '2026-10-21', T1)
+    const { net, fetchMock } = off({})
+    expect((await syncPendingScans(net)).size).toBe(0)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 })

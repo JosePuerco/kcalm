@@ -1,6 +1,7 @@
 // Tagebuch nach Kern.dc.html und Leer.dc.html. Aufbau von oben: Tagesleiste · (Monatskalender) ·
-// Übersichtskarte · (leerer Tag) · Slot-Karten · „vollständig getrackt“. Die Wasser-Kachel kommt in Phase 7.
-import { useState } from 'react'
+// Übersichtskarte · (gemerkte Scans) · (leerer Tag) · Slot-Karten · „vollständig getrackt“.
+// Die Wasser-Kachel kommt in Phase 7.
+import { useCallback, useState } from 'react'
 import { openAddSheet, openEditSheet, setDiaryDate, setSlotOpen, useDiaryState, useToday } from '../app/diaryState.ts'
 import { useToast } from '../components/ui/toastContext.ts'
 import { setDayComplete } from '../db/days.ts'
@@ -8,6 +9,7 @@ import { copyEntries, deleteEntry } from '../db/entries.ts'
 import type { Entry } from '../db/types.ts'
 import { loadDiary } from '../db/diary.ts'
 import { useLiveQuery } from '../db/live.ts'
+import { loadPendingItems } from '../db/pendingScans.ts'
 import { addDays } from '../logic/dates.ts'
 import { canEditAsFood } from '../logic/addFood.ts'
 import { copiedMessage } from '../logic/copyDay.ts'
@@ -18,6 +20,7 @@ import { DayBar } from './tagebuch/DayBar.tsx'
 import { EmptyDayCard } from './tagebuch/EmptyDayCard.tsx'
 import { MonthCalendar } from './tagebuch/MonthCalendar.tsx'
 import { OverviewCard } from './tagebuch/OverviewCard.tsx'
+import { PendingScansRow, PendingScansSheet } from './tagebuch/PendingScans.tsx'
 import { SlotCard } from './tagebuch/SlotCard.tsx'
 
 export function Tagebuch() {
@@ -30,9 +33,11 @@ export function Tagebuch() {
   const [weekOpen, setWeekOpen] = useState(false)
   const [swipedId, setSwipedId] = useState<string | null>(null)
   const [copyOpen, setCopyOpen] = useState(false)
+  const [pendingOpen, setPendingOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const toast = useToast()
   const data = useLiveQuery(() => loadDiary(date, calendarMonth), [date, calendarMonth])
+  const pending = useLiveQuery(loadPendingItems, [])
 
   const goTo = (next: string) => {
     setDiaryDate(next, today)
@@ -69,6 +74,8 @@ export function Tagebuch() {
       console.error(error)
       toast('Speichern fehlgeschlagen')
     })
+
+  const closePending = useCallback(() => setPendingOpen(false), [])
 
   const toggleCalendar = () => {
     if (!calendarOpen) setCalendarMonth(date.slice(0, 7))
@@ -109,6 +116,9 @@ export function Tagebuch() {
               complete={data.complete}
               weekComplete={data.weekComplete}
             />
+            {pending && pending.length > 0 && (
+              <PendingScansRow count={pending.length} onOpen={() => setPendingOpen(true)} />
+            )}
             {data.dayEntries.length === 0 && (
               <EmptyDayCard
                 label={date === today ? 'Gestern' : 'Vortag'}
@@ -140,6 +150,15 @@ export function Tagebuch() {
           </>
         )}
       </main>
+      {data && pending && (
+        <PendingScansSheet
+          open={pendingOpen}
+          onClose={closePending}
+          items={pending}
+          slots={data.slots}
+          today={today}
+        />
+      )}
       {data && (
         <CopyDaySheet
           open={copyOpen}
