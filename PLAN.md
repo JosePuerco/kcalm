@@ -290,7 +290,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 - [x] Schnelleintrag (kcal + Makros) mit Plausibilitätshinweis
 - [x] Profile mit Versionen, Zuweisung ab Datum, Wechsel „ab nächstem Montag“ / „ab heute“
 - [x] Rechenlogik festes und dynamisches Tagesziel, Wochenstand, Makros in g / % / g/kg / Rest, Profilwechsel mit Tests
-- [ ] Tag kopieren, „wie gestern“, zuletzt gegessen, Tag als vollständig markieren, leerer Tag
+- [x] Tag kopieren, „wie gestern“, zuletzt gegessen, Tag als vollständig markieren, leerer Tag
 
 ### Phase 4 – Open Food Facts und Barcode
 
@@ -362,6 +362,13 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**21.10.2026 · Phase 3 umgesetzt, iPhone-Test offen** – alle Punkte erledigt (Teilschritte 3a–3g, je ein Commit), 433 Tests grün, Build und Lint sauber. Im Browser per Skript geprüft; Sichtprüfung (Screenshots gingen nicht) und Test auf dem iPhone durch Jan stehen aus. Danach Phase 3 abschließen, nächster Schritt Phase 4.
+
+- Erledigt: Rechenlogik `dates.ts`, `goals.ts`, `profiles.ts`, `diary.ts`, `addFood.ts`, `quickEntry.ts`, `copyDay.ts`, `slots.ts`, `profileForm.ts`; Ersteinrichtung (4 Schritte, speichert am Ende in einer Transaktion), Slot-Editor, Tagesansicht, Hinzufügen-Sheet, Bearbeiten/Verschieben/Löschen, Schnelleintrag, Profile und Ziele, Tag kopieren / „Wie gestern“ / vollständig.
+- Mit Jan abgestimmt: Künftige Tage zeigen das heutige Ziel (vorgeplante Einträge zählen nicht), in künftigen Wochen Budget ÷ 7; dynamisches Ziel darf negativ werden („kcal drüber“); Rest negativ → 0 g + Hinweis; g/kg ohne Gewicht → unbekannt; Override „ab heute“ gilt nur in seiner Woche; Bearbeiten des aktiven Profils gilt ab heute (anteilig); erstes Profil mitten in der Woche bekommt den anteiligen Wochenrest, Tage davor zählen nicht (`countFrom`); festes Tagesziel immer aus dem Wochenbudget der Version.
+- Abweichungen vom Prototyp (mit Jan abgestimmt): Monatspfeile im Kalender, Kalenderfelder 44 px, Tageszeile zum Verschieben im Bearbeiten-Sheet, „Zurück“ beim Bearbeiten schließt, Schnelleintrag zeigt „–“ statt „0“, „Sichern“ in Profile und Ziele, Profilformular mit Name und Vorlagen-Umschalter, Schalter „Tag vollständig getrackt“ unter den Slots, Kopier-Sheet eigenes Design. Wasser-Kachel und Wasser-Ziel folgen in Phase 7, Scan/OFF in Phase 4, Mahlzeiten/Rezepte in Phase 5.
+- Einträge speichern bis Phase 7 `waterMl: 0`.
 
 **21.10.2026 · Phase 2 abgeschlossen** – alle Punkte erledigt, deployt, Backup-Test (anlegen → sichern → App löschen → neu installieren → importieren) von Jan auf dem iPhone bestanden. Nächster Schritt: Phase 3 (Tagebuch und Ziele).
 

@@ -1,9 +1,10 @@
 // Tagebucheinträge speichern und die Quellen fürs Hinzufügen-Sheet laden.
 
 import type { EntryChanges, NewEntryFields } from '../logic/addFood.ts'
+import { copiedEntries } from '../logic/copyDay.ts'
 import { db } from './db.ts'
 import { newRecord, softDelete, touch } from './records.ts'
-import type { BlsPref, Entry, Product, ProductOverride } from './types.ts'
+import type { BlsPref, Entry, LocalDate, Product, ProductOverride } from './types.ts'
 
 export async function addEntry(fields: NewEntryFields, now = new Date()): Promise<Entry> {
   const entry = newRecord<Entry>(fields, now)
@@ -56,4 +57,26 @@ export async function loadFoodSources(): Promise<FoodSources> {
     db.entries.orderBy('updatedAt').reverse().limit(RECENT_SCAN).toArray(),
   ])
   return { products, overrides, blsPrefs, recent }
+}
+
+/** Nicht gelöschte Einträge eines Tages */
+export async function getDayEntries(date: LocalDate): Promise<Entry[]> {
+  return db.entries.where('date').equals(date).filter((e) => e.deletedAt === null).toArray()
+}
+
+/** Tag oder einen Slot in einen anderen Tag kopieren; liefert die neuen Einträge */
+export async function copyEntries(
+  sourceDate: LocalDate,
+  targetDate: LocalDate,
+  slotId?: string,
+  now = new Date(),
+): Promise<Entry[]> {
+  if (sourceDate === targetDate) throw new Error('Quell- und Zieltag sind gleich')
+  return db.transaction('rw', db.entries, async () => {
+    const copies = copiedEntries(await getDayEntries(sourceDate), targetDate, { slotId }).map((fields) =>
+      newRecord<Entry>(fields, now),
+    )
+    await db.entries.bulkAdd(copies)
+    return copies
+  })
 }

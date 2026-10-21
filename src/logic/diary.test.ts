@@ -7,6 +7,7 @@ import {
   dayLabel,
   dayOverview,
   entryCount,
+  entryCountDative,
   formatSum,
   kcalByDate,
   monthGrid,
@@ -68,6 +69,8 @@ describe('Beschriftungen', () => {
   it('entryCount', () => {
     expect(entryCount(1)).toBe('1 Eintrag')
     expect(entryCount(11)).toBe('11 Einträge')
+    expect(entryCountDative(1)).toBe('1 Eintrag')
+    expect(entryCountDative(11)).toBe('11 Einträgen')
   })
 
   it('formatSum mit „mind.“', () => {

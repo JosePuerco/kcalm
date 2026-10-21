@@ -59,6 +59,11 @@ export function entryCount(n: number): string {
   return `${formatNumber(n)} ${n === 1 ? 'Eintrag' : 'Einträge'}`
 }
 
+/** Nach „in“: „in 1 Eintrag“ / „in 11 Einträgen“ (Leer.dc.html) */
+export function entryCountDative(n: number): string {
+  return `${formatNumber(n)} ${n === 1 ? 'Eintrag' : 'Einträgen'}`
+}
+
 /** Summe mit „mind.“, wenn ein Teil unbekannt ist; ganz unbekannt = „–“ */
 export function formatSum(sum: NutrientSum, decimals = 0): string {
   const text = formatNumber(sum.value, decimals)

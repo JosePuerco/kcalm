@@ -65,6 +65,8 @@ describe('loadDiary', () => {
     expect(d.yesterday).toEqual({ kcal: 2850, count: 2 })
     expect(d.goal?.weekBudget).toBe(19600)
     expect([...d.completeDates]).toEqual(['2026-10-20'])
+    expect(d.complete).toBe(false)
+    expect((await loadDiary('2026-10-20', '2026-10')).complete).toBe(true)
   })
 
   it('Montag: Vortag aus der Woche davor, zählt aber nicht zur Woche', async () => {

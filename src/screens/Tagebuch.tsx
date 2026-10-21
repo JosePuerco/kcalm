@@ -1,15 +1,19 @@
 // Tagebuch nach Kern.dc.html und Leer.dc.html. Aufbau von oben: Tagesleiste · (Monatskalender) ·
-// Übersichtskarte · (leerer Tag) · Slot-Karten. Die Wasser-Kachel kommt in Phase 7.
+// Übersichtskarte · (leerer Tag) · Slot-Karten · „vollständig getrackt“. Die Wasser-Kachel kommt in Phase 7.
 import { useState } from 'react'
 import { openAddSheet, openEditSheet, setDiaryDate, setSlotOpen, useDiaryState, useToday } from '../app/diaryState.ts'
 import { useToast } from '../components/ui/toastContext.ts'
-import { deleteEntry } from '../db/entries.ts'
+import { setDayComplete } from '../db/days.ts'
+import { copyEntries, deleteEntry } from '../db/entries.ts'
 import type { Entry } from '../db/types.ts'
 import { loadDiary } from '../db/diary.ts'
 import { useLiveQuery } from '../db/live.ts'
 import { addDays } from '../logic/dates.ts'
 import { canEditAsFood } from '../logic/addFood.ts'
+import { copiedMessage } from '../logic/copyDay.ts'
 import { dayOverview, slotsForDay } from '../logic/diary.ts'
+import { CompleteDayRow } from './tagebuch/CompleteDayRow.tsx'
+import { CopyDaySheet } from './tagebuch/CopyDaySheet.tsx'
 import { DayBar } from './tagebuch/DayBar.tsx'
 import { EmptyDayCard } from './tagebuch/EmptyDayCard.tsx'
 import { MonthCalendar } from './tagebuch/MonthCalendar.tsx'
@@ -25,6 +29,8 @@ export function Tagebuch() {
   const [calendarMonth, setCalendarMonth] = useState(date.slice(0, 7))
   const [weekOpen, setWeekOpen] = useState(false)
   const [swipedId, setSwipedId] = useState<string | null>(null)
+  const [copyOpen, setCopyOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
   const toast = useToast()
   const data = useLiveQuery(() => loadDiary(date, calendarMonth), [date, calendarMonth])
 
@@ -45,6 +51,24 @@ export function Tagebuch() {
   }
 
   const edit = (entry: Entry) => (canEditAsFood(entry) || entry.kind === 'quick') && openEditSheet(entry.id)
+
+  const likeYesterday = async () => {
+    setBusy(true)
+    try {
+      toast(copiedMessage((await copyEntries(addDays(date, -1), date)).length))
+    } catch (error) {
+      console.error(error)
+      toast('Kopieren fehlgeschlagen')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const markComplete = (complete: boolean) =>
+    setDayComplete(date, complete).catch((error: unknown) => {
+      console.error(error)
+      toast('Speichern fehlgeschlagen')
+    })
 
   const toggleCalendar = () => {
     if (!calendarOpen) setCalendarMonth(date.slice(0, 7))
@@ -83,7 +107,13 @@ export function Tagebuch() {
               onToggleWeek={() => setWeekOpen(!weekOpen)}
             />
             {data.dayEntries.length === 0 && (
-              <EmptyDayCard label={date === today ? 'Gestern' : 'Vortag'} yesterday={data.yesterday} />
+              <EmptyDayCard
+                label={date === today ? 'Gestern' : 'Vortag'}
+                yesterday={data.yesterday}
+                busy={busy}
+                onLikeYesterday={() => void likeYesterday()}
+                onCopy={() => setCopyOpen(true)}
+              />
             )}
             {slotsForDay(data.slots, data.dayEntries).map((day) => {
               // Standard: Slots mit Einträgen offen; eingeklappte merkt sich die App bis zum Neustart
@@ -103,9 +133,19 @@ export function Tagebuch() {
                 />
               )
             })}
+            <CompleteDayRow complete={data.complete} onChange={(c) => void markComplete(c)} />
           </>
         )}
       </main>
+      {data && (
+        <CopyDaySheet
+          open={copyOpen}
+          onClose={() => setCopyOpen(false)}
+          target={date}
+          slots={data.slots}
+          completeDates={data.completeDates}
+        />
+      )}
     </>
   )
 }

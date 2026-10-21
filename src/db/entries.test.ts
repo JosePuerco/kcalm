@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto' // IndexedDB in Node nachbilden, vor dem Import von
 import { beforeEach, describe, expect, it } from 'vitest'
 import { choiceFromEntry, choiceFromProduct, editedEntry, foodEntry } from '../logic/addFood.ts'
 import { db } from './db.ts'
-import { addEntry, deleteEntry, getEntry, loadFoodSources, updateEntry } from './entries.ts'
+import { addEntry, copyEntries, deleteEntry, getDayEntries, getEntry, loadFoodSources, updateEntry } from './entries.ts'
 import { createProduct, updateProduct } from './products.ts'
 import { unknownNutrients } from './records.ts'
 
@@ -72,5 +72,31 @@ describe('updateEntry / deleteEntry', () => {
     expect(await db.entries.get(e.id)).toMatchObject({ deletedAt: t1.toISOString(), updatedAt: t1.toISOString() })
     await expect(getEntry(e.id)).rejects.toThrow()
     await expect(deleteEntry(e.id, t1)).rejects.toThrow()
+  })
+})
+
+describe('copyEntries', () => {
+  it('kopiert den ganzen Tag oder einen Slot mit Snapshots; Quelle bleibt unverändert', async () => {
+    const product = await createProduct(skyr, t0)
+    const food = choiceFromProduct(product)
+    await addEntry(foodEntry(food, 250, '2026-10-20', 'frueh'), t0)
+    await addEntry(foodEntry(food, 100, '2026-10-20', 'abend'), new Date(t0.getTime() + 1000))
+    // Produkt ändert sich danach: Kopie übernimmt trotzdem den gespeicherten Wert
+    await updateProduct(product.id, { ...skyr, per100: { ...skyr.per100, kcal: 80 } }, t0)
+
+    const all = await copyEntries('2026-10-20', '2026-10-21', undefined, t1)
+    expect(all.map((e) => [e.date, e.slotId, e.nutrients.kcal])).toEqual([
+      ['2026-10-21', 'frueh', 157.5],
+      ['2026-10-21', 'abend', 63],
+    ])
+    expect(all[0]?.createdAt).toBe(t1.toISOString())
+    expect(await getDayEntries('2026-10-20')).toHaveLength(2)
+
+    const one = await copyEntries('2026-10-20', '2026-10-22', 'abend', t1)
+    expect(one).toHaveLength(1)
+  })
+
+  it('nicht in denselben Tag', async () => {
+    await expect(copyEntries('2026-10-20', '2026-10-20')).rejects.toThrow()
   })
 })
