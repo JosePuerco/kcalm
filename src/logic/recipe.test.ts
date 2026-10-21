@@ -9,9 +9,12 @@ import {
   cookingLoss,
   cookingLossText,
   rawWeight,
+  recipeMeta,
   recipePer100,
   recipeTotals,
   stepFinalWeight,
+  validateRecipe,
+  type RecipeFormValues,
   type RecipeLine,
 } from './recipe.ts'
 
@@ -226,5 +229,67 @@ describe('choiceFromRecipe', () => {
 
   it('kein gültiges Endgewicht → null', () => {
     expect(choiceFromRecipe({ ...recipe, finalWeightG: 0 }, (ref) => foods.get(ref))).toBeNull()
+  })
+})
+
+describe('validateRecipe', () => {
+  const values: RecipeFormValues = {
+    name: ' Chili con Carne ',
+    ingredients: chili.map((l) => l.ingredient),
+    finalWeightG: 1400,
+    portions: [{ label: '1 Teller', amount: 450 }],
+  }
+
+  it('gültig: Name wird getrimmt', () => {
+    const r = validateRecipe(values)
+    expect(r.ok && r.data.name).toBe('Chili con Carne')
+    expect(r.ok && r.data.finalWeightG).toBe(1400)
+  })
+
+  it('Name fehlt', () => {
+    expect(validateRecipe({ ...values, name: '' })).toEqual({ ok: false, error: 'Bitte einen Namen eingeben' })
+  })
+
+  it('ohne Zutaten', () => {
+    expect(validateRecipe({ ...values, ingredients: [] })).toEqual({
+      ok: false,
+      error: 'Mindestens eine Zutat hinzufügen',
+    })
+  })
+
+  it('Rezept als Zutat ist nicht erlaubt', () => {
+    const r = validateRecipe({ ...values, ingredients: [{ ref: 'recipe:x', amount: 100 }] })
+    expect(r).toEqual({ ok: false, error: 'Ein Rezept kann keine Zutat sein' })
+  })
+
+  it('Zutatmenge 0 oder ungültig', () => {
+    expect(validateRecipe({ ...values, ingredients: [{ ref: 'bls:a', amount: 0 }] }).ok).toBe(false)
+    expect(validateRecipe({ ...values, ingredients: [{ ref: 'bls:a', amount: Number.NaN }] }).ok).toBe(false)
+  })
+
+  it('Endgewicht fehlt, 0 oder ungültig', () => {
+    for (const finalWeightG of [null, 0, -5, Number.NaN]) {
+      expect(validateRecipe({ ...values, finalWeightG })).toEqual({ ok: false, error: 'Bitte das Endgewicht eingeben' })
+    }
+  })
+
+  it('Endgewicht über roh ist erlaubt (nur Hinweis)', () => {
+    expect(validateRecipe({ ...values, finalWeightG: 3000 }).ok).toBe(true)
+  })
+})
+
+describe('recipeMeta', () => {
+  it('Endgewicht und erste Portion', () => {
+    expect(recipeMeta({ finalWeightG: 1400, portions: [{ label: '1 Teller', amount: 450 }] })).toBe(
+      '1.400 g fertig · 1 Teller = 450 g',
+    )
+  })
+
+  it('ohne Portion', () => {
+    expect(recipeMeta({ finalWeightG: 620, portions: [] })).toBe('620 g fertig')
+  })
+
+  it('Etikett ist schon die Menge → nicht doppelt', () => {
+    expect(recipeMeta({ finalWeightG: 620, portions: [{ label: '200 g', amount: 200 }] })).toBe('620 g fertig · 200 g')
   })
 })

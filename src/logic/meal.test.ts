@@ -9,9 +9,12 @@ import {
   lineNutrients,
   mealAddLabel,
   mealEntries,
+  mealKcal,
   mealTotals,
+  partCount,
   scaledAmount,
   stepLineAmount,
+  validateMeal,
   type MealLine,
 } from './meal.ts'
 
@@ -268,5 +271,61 @@ describe('mealEntries', () => {
         'g',
       ),
     ).toThrow(RangeError)
+  })
+})
+
+describe('validateMeal', () => {
+  const items = meal.items
+
+  it('gültig: Name wird getrimmt', () => {
+    expect(validateMeal({ name: '  Frühstück  ', items })).toEqual({ ok: true, data: { name: 'Frühstück', items } })
+  })
+
+  it('Name fehlt oder ist zu lang', () => {
+    expect(validateMeal({ name: '   ', items })).toEqual({ ok: false, error: 'Bitte einen Namen eingeben' })
+    expect(validateMeal({ name: 'x'.repeat(121), items }).ok).toBe(false)
+    expect(validateMeal({ name: 'x'.repeat(120), items }).ok).toBe(true)
+  })
+
+  it('ohne Bestandteile', () => {
+    expect(validateMeal({ name: 'Leer', items: [] })).toEqual({
+      ok: false,
+      error: 'Mindestens einen Bestandteil hinzufügen',
+    })
+  })
+
+  it('Menge 0, negativ oder ungültig', () => {
+    for (const amount of [0, -10, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(validateMeal({ name: 'X', items: [{ ...meal.items[0]!, amount }] }).ok).toBe(false)
+    }
+  })
+
+  it('Rezept als Bestandteil ist erlaubt', () => {
+    const chili = { ref: 'recipe:chili' as const, amount: 450, unit: 'g' as const, portionLabel: '1 Teller' }
+    expect(validateMeal({ name: 'Chili mit Reis', items: [chili] }).ok).toBe(true)
+  })
+})
+
+describe('mealKcal', () => {
+  it('Summe der Vorlage bei ×1', () => {
+    expect(mealKcal(meal, (ref) => foods.get(ref)).value).toBeCloseTo(452.3, 10)
+    expect(mealKcal(meal, (ref) => foods.get(ref)).atLeast).toBe(false)
+  })
+
+  it('fehlendes Lebensmittel → „mind.“', () => {
+    const sum = mealKcal(meal, (ref) => (ref === milch.ref ? undefined : foods.get(ref)))
+    expect(sum.value).toBeCloseTo(334.8, 10)
+    expect(sum.atLeast).toBe(true)
+  })
+
+  it('nichts auflösbar → unbekannt', () => {
+    expect(mealKcal(meal, () => undefined)).toEqual({ value: null, atLeast: false })
+  })
+})
+
+describe('partCount', () => {
+  it('Einzahl und Mehrzahl', () => {
+    expect(partCount(1)).toBe('1 Bestandteil')
+    expect(partCount(4)).toBe('4 Bestandteile')
   })
 })

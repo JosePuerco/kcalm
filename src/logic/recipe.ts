@@ -4,6 +4,8 @@
 import { NUTRIENT_KEYS } from '../db/records.ts'
 import type { FoodRef, Nutrients, Recipe, RecipeIngredient } from '../db/types.ts'
 import type { FoodChoice } from './addFood.ts'
+import { formatAmount } from './format.ts'
+import { NAME_MAX } from './meal.ts'
 import { nutrientsForAmount, sumNutrients, type NutrientSum } from './nutrients.ts'
 
 /** Eine Zutat mit dem aufgelösten Lebensmittel */
@@ -105,4 +107,45 @@ export function choiceFromRecipe(recipe: Recipe, resolve: (ref: FoodRef) => Food
     portions: recipe.portions,
     archived: recipe.archived,
   }
+}
+
+// ── Rezept anlegen und bearbeiten ──
+
+export type RecipeFormData = Pick<Recipe, 'name' | 'ingredients' | 'finalWeightG' | 'portions'>
+export type RecipeFormValues = Omit<RecipeFormData, 'finalWeightG'> & {
+  /** null = noch nicht eingegeben */
+  finalWeightG: number | null
+}
+export type RecipeFormResult = { ok: true; data: RecipeFormData } | { ok: false; error: string }
+
+/** Name Pflicht, mindestens eine Zutat (kein Rezept), Mengen und Endgewicht über 0 */
+export function validateRecipe(values: RecipeFormValues): RecipeFormResult {
+  const name = values.name.trim()
+  if (name === '') return { ok: false, error: 'Bitte einen Namen eingeben' }
+  if (name.length > NAME_MAX) return { ok: false, error: `Name: höchstens ${NAME_MAX} Zeichen` }
+  if (values.ingredients.length === 0) return { ok: false, error: 'Mindestens eine Zutat hinzufügen' }
+  // Kein Rezept im Rezept: sonst wären Kreisbezüge möglich
+  if (values.ingredients.some((i) => i.ref.startsWith('recipe:'))) {
+    return { ok: false, error: 'Ein Rezept kann keine Zutat sein' }
+  }
+  if (values.ingredients.some((i) => !Number.isFinite(i.amount) || i.amount <= 0)) {
+    return { ok: false, error: 'Jede Zutat braucht eine Menge über 0' }
+  }
+  const final = values.finalWeightG
+  if (final === null || !Number.isFinite(final) || final <= 0) {
+    return { ok: false, error: 'Bitte das Endgewicht eingeben' }
+  }
+  return { ok: true, data: { name, ingredients: values.ingredients, finalWeightG: final, portions: values.portions } }
+}
+
+/** Zeile in der Lebensmittel-Liste: „1.400 g fertig · 1 Teller = 450 g“ */
+export function recipeMeta(recipe: Pick<Recipe, 'finalWeightG' | 'portions'>): string {
+  const parts = [`${formatAmount(recipe.finalWeightG)} g fertig`]
+  const first = recipe.portions[0]
+  if (first) {
+    const amount = `${formatAmount(first.amount)} g`
+    // Ist das Etikett schon die Menge („450 g“), nicht doppelt
+    parts.push(first.label.trim() === amount ? amount : `${first.label} = ${amount}`)
+  }
+  return parts.join(' · ')
 }

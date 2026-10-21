@@ -4,7 +4,7 @@ import type { EntryChanges, NewEntryFields } from '../logic/addFood.ts'
 import { copiedEntries } from '../logic/copyDay.ts'
 import { db } from './db.ts'
 import { newRecord, softDelete, touch } from './records.ts'
-import type { BlsPref, Entry, LocalDate, Product, ProductOverride } from './types.ts'
+import type { BlsPref, Entry, LocalDate, Meal, Product, ProductOverride, Recipe } from './types.ts'
 
 export async function addEntry(fields: NewEntryFields, now = new Date()): Promise<Entry> {
   const entry = newRecord<Entry>(fields, now)
@@ -42,6 +42,9 @@ export interface FoodSources {
   products: Product[]
   overrides: ProductOverride[]
   blsPrefs: BlsPref[]
+  /** auch archivierte; die Suche blendet sie aus */
+  meals: Meal[]
+  recipes: Recipe[]
   /** jüngste Einträge (für „Zuletzt gegessen“) */
   recent: Entry[]
 }
@@ -50,13 +53,15 @@ export interface FoodSources {
 const RECENT_SCAN = 300
 
 export async function loadFoodSources(): Promise<FoodSources> {
-  const [products, overrides, blsPrefs, recent] = await Promise.all([
+  const [products, overrides, blsPrefs, meals, recipes, recent] = await Promise.all([
     db.products.filter((p) => p.deletedAt === null).toArray(),
     db.productOverrides.filter((o) => o.deletedAt === null).toArray(),
     db.blsPrefs.filter((b) => b.deletedAt === null).toArray(),
+    db.meals.filter((m) => m.deletedAt === null).toArray(),
+    db.recipes.filter((r) => r.deletedAt === null).toArray(),
     db.entries.orderBy('updatedAt').reverse().limit(RECENT_SCAN).toArray(),
   ])
-  return { products, overrides, blsPrefs, recent }
+  return { products, overrides, blsPrefs, meals, recipes, recent }
 }
 
 /** Nicht gelöschte Einträge eines Tages */

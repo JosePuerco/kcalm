@@ -119,3 +119,43 @@ export function mealEntries(
   if (entries.length === 0) throw new RangeError('Mindestens ein Bestandteil muss angehakt sein')
   return entries
 }
+
+// ── Vorlage anlegen und bearbeiten ──
+
+export type MealFormData = Pick<Meal, 'name' | 'items'>
+export type MealFormResult = { ok: true; data: MealFormData } | { ok: false; error: string }
+
+/** Längster Name, wie beim Schnelleintrag */
+export const NAME_MAX = 120
+
+/** Name Pflicht, mindestens ein Bestandteil, Mengen über 0. Rezepte als Bestandteil sind erlaubt. */
+export function validateMeal(values: MealFormData): MealFormResult {
+  const name = values.name.trim()
+  if (name === '') return { ok: false, error: 'Bitte einen Namen eingeben' }
+  if (name.length > NAME_MAX) return { ok: false, error: `Name: höchstens ${NAME_MAX} Zeichen` }
+  if (values.items.length === 0) return { ok: false, error: 'Mindestens einen Bestandteil hinzufügen' }
+  if (values.items.some((i) => !Number.isFinite(i.amount) || i.amount <= 0)) {
+    return { ok: false, error: 'Jeder Bestandteil braucht eine Menge über 0' }
+  }
+  return { ok: true, data: { name, items: values.items } }
+}
+
+/** kcal der Vorlage bei ×1; fehlende Lebensmittel oder unbekannte Werte → „mind.“, gar nichts auflösbar → unbekannt */
+export function mealKcal(meal: Pick<Meal, 'items'>, resolve: (ref: FoodRef) => FoodChoice | undefined): NutrientSum {
+  const lines = meal.items.map((item) => ({
+    ref: item.ref,
+    food: resolve(item.ref) ?? null,
+    on: true,
+    amount: item.amount,
+  }))
+  // Nichts auflösbar → unbekannt, nicht 0
+  if (lines.every((l) => l.food === null)) return { value: null, atLeast: false }
+  const sum = mealTotals(lines, 1).nutrients.kcal
+  const missing = lines.some((l) => l.food === null)
+  return missing && sum.value !== null ? { value: sum.value, atLeast: true } : sum
+}
+
+/** „4 Bestandteile“ / „1 Bestandteil“ */
+export function partCount(n: number): string {
+  return `${n} ${n === 1 ? 'Bestandteil' : 'Bestandteile'}`
+}

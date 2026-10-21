@@ -52,6 +52,8 @@ describe('loadFoodSources', () => {
     const s = await loadFoodSources()
     expect(s.products.map((p) => p.name)).toEqual(['Quark'])
     expect(s.recent).toHaveLength(1)
+    expect(s.meals).toEqual([])
+    expect(s.recipes).toEqual([])
   })
 })
 

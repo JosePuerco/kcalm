@@ -86,6 +86,6 @@ export function filterFoodRows(rows: readonly FoodRow[], filter: FoodFilter, arc
   })
 }
 
-export function countArchived(rows: readonly FoodRow[]): number {
+export function countArchived(rows: readonly { archived: boolean }[]): number {
   return rows.filter((r) => r.archived).length
 }
