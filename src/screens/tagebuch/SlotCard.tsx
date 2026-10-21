@@ -9,11 +9,13 @@ import { formatAmount, formatNumber } from '../../logic/format.ts'
 type Props = {
   day: DaySlot
   open: boolean
+  /** Eintrag, der nach dem Hinzufügen kurz aufblinkt */
+  flashId: string | null
   onToggle: () => void
   onAdd: () => void
 }
 
-export function SlotCard({ day, open, onToggle, onAdd }: Props) {
+export function SlotCard({ day, open, flashId, onToggle, onAdd }: Props) {
   const { slot, entries, kcal } = day
   const count = entries.length === 0 ? 'leer' : open ? '' : entryCount(entries.length)
   return (
@@ -49,7 +51,7 @@ export function SlotCard({ day, open, onToggle, onAdd }: Props) {
       {open && entries.length > 0 && (
         <Reveal className="pb-1.5 pl-3">
           {entries.map((e) => (
-            <EntryRow key={e.id} entry={e} />
+            <EntryRow key={e.id} entry={e} flash={e.id === flashId} />
           ))}
         </Reveal>
       )}
@@ -57,11 +59,11 @@ export function SlotCard({ day, open, onToggle, onAdd }: Props) {
   )
 }
 
-function EntryRow({ entry }: { entry: Entry }) {
+function EntryRow({ entry, flash }: { entry: Entry; flash: boolean }) {
   const amount = entry.amount === null || entry.unit === null ? null : `${formatAmount(entry.amount)} ${entry.unit}`
   return (
     <div className="border-line border-t">
-      <div className="text-label flex min-h-10 items-center justify-between gap-3 pr-3">
+      <div className={`text-label flex min-h-10 items-center justify-between gap-3 rounded-[8px] pr-3 ${flash ? 'flash-new' : ''}`}>
         <span className="min-w-0">
           {entry.nameSnapshot}
           {amount && <span className="text-muted"> {amount}</span>}

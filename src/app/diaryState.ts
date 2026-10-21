@@ -3,15 +3,20 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { toLocalDate } from '../logic/dates.ts'
 import type { LocalDate } from '../db/types.ts'
+import tokens from '../../design/tokens.json'
+
+const FLASH_MS = tokens.motion.newEntryFlash.durationMs
 
 type State = {
   /** null = folgt „heute“, auch über Mitternacht */
   date: LocalDate | null
   /** vom Nutzer eingeklappte bzw. aufgeklappte Slots (Slot-id → offen?) */
   open: Record<string, boolean>
+  /** zuletzt hinzugefügter Eintrag, blinkt kurz in der Tagesansicht */
+  flashId: string | null
 }
 
-let state: State = { date: null, open: {} }
+let state: State = { date: null, open: {}, flashId: null }
 const listeners = new Set<() => void>()
 
 function set(next: Partial<State>) {
@@ -35,6 +40,13 @@ export function setDiaryDate(date: LocalDate, today: LocalDate) {
 
 export function setSlotOpen(slotId: string, open: boolean) {
   set({ open: { ...state.open, [slotId]: open } })
+}
+
+/** Nach dem Hinzufügen: Slot aufklappen und den neuen Eintrag blinken lassen */
+export function showNewEntry(slotId: string, entryId: string) {
+  set({ open: { ...state.open, [slotId]: true }, flashId: entryId })
+  // Danach zurücksetzen, sonst blinkt der Eintrag nach einem Screen-Wechsel erneut
+  setTimeout(() => state.flashId === entryId && set({ flashId: null }), FLASH_MS)
 }
 
 /** Heutiges Datum; aktualisiert sich um Mitternacht und beim Zurückkehren in die App */

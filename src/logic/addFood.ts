@@ -1,0 +1,136 @@
+// Hinzufügen-Sheet (Kern.dc.html): Lebensmittel zur Auswahl aufbereiten, „Zuletzt gegessen“, Mengen-Schritt
+// und der neue Tagebucheintrag mit Nährwert-Snapshot. Reine Funktionen.
+
+import { NUTRIENT_KEYS } from '../db/records.ts'
+import type {
+  BlsPref,
+  Entry,
+  FoodRef,
+  LocalDate,
+  Nutrients,
+  Portion,
+  Product,
+  ProductOverride,
+  Unit,
+} from '../db/types.ts'
+import type { BlsFood } from './blsFoods.ts'
+import { SOURCE_LABEL } from './foodList.ts'
+import { formatAmount, formatNumber } from './format.ts'
+import { nutrientsForAmount } from './nutrients.ts'
+
+/** Ein Lebensmittel, wie es Suche und Mengen-Schritt brauchen */
+export interface FoodChoice {
+  ref: FoodRef
+  name: string
+  /** „Open Food Facts“, „Eigenes Produkt“, „BLS“ */
+  source: string
+  verified: boolean
+  unit: Unit
+  /** Werte, die für neue Einträge gelten (mit Korrekturschicht, falls gewählt) */
+  per100: Nutrients
+  portions: Portion[]
+  archived: boolean
+}
+
+/** Korrekturschicht über das Original legen; fehlendes Feld = Original (Verifizieren kommt in Phase 6) */
+export function applyOverride(base: Nutrients, override: ProductOverride | undefined): Nutrients {
+  if (!override || override.deletedAt !== null) return base
+  const result = { ...base }
+  for (const key of NUTRIENT_KEYS) if (key in override.per100) result[key] = override.per100[key] ?? null
+  return result
+}
+
+const isVerified = (o: ProductOverride | undefined) => !!o && o.deletedAt === null && o.verifiedAt !== null
+
+export function choiceFromProduct(p: Product, override?: ProductOverride): FoodChoice {
+  return {
+    ref: `product:${p.id}`,
+    name: p.name,
+    source: SOURCE_LABEL[p.source],
+    verified: isVerified(override),
+    unit: p.unit,
+    per100: p.useOverride ? applyOverride(p.per100, override) : p.per100,
+    portions: p.portions,
+    archived: p.archived,
+  }
+}
+
+export function choiceFromBls(food: BlsFood, pref?: BlsPref, override?: ProductOverride): FoodChoice {
+  return {
+    ref: `bls:${food.code}`,
+    name: food.name,
+    source: SOURCE_LABEL.bls,
+    verified: isVerified(override),
+    // BLS-Werte gelten pro 100 g essbaren Anteil
+    unit: 'g',
+    per100: applyOverride(food.per100, override),
+    portions: pref && pref.deletedAt === null ? pref.portions : [],
+    archived: false,
+  }
+}
+
+/** „Zuletzt gegessen“: Lebensmittel der jüngsten Einträge, jedes einmal, neueste zuerst */
+export function recentRefs(entries: readonly Entry[], limit = 15): FoodRef[] {
+  const sorted = entries
+    .filter((e) => e.deletedAt === null && e.kind === 'food' && e.ref !== null)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const refs: FoodRef[] = []
+  for (const e of sorted) {
+    if (refs.length >= limit) break
+    if (!refs.includes(e.ref as FoodRef)) refs.push(e.ref as FoodRef)
+  }
+  return refs
+}
+
+/** Startmenge im Mengen-Schritt: erste Portion (wie im Prototyp), sonst 100 */
+export function initialAmount(food: FoodChoice): number {
+  return food.portions[0]?.amount ?? 100
+}
+
+/** Zahl für den Ziffernblock: 250 → „250“, 12.5 → „12,5“ */
+export function amountToKeypad(amount: number): string {
+  return String(amount).replace('.', ',')
+}
+
+/** Portions-Chip: „1 Becher · 250 g“; ist das Etikett schon die Menge („40 g“), nur das */
+export function portionChipLabel(portion: Portion, unit: Unit): string {
+  const amount = `${formatAmount(portion.amount)} ${unit}`
+  return portion.label.trim() === amount ? amount : `${portion.label} · ${amount}`
+}
+
+/** Portionsname für den Eintrag, wenn die Menge genau einer Portion entspricht */
+export function portionLabelFor(food: FoodChoice, amount: number): string | null {
+  return food.portions.find((p) => p.amount === amount)?.label ?? null
+}
+
+/** „372 kcal/100 g“ */
+export function per100Label(food: FoodChoice): string {
+  return `${formatNumber(food.per100.kcal)} kcal/100 ${food.unit}`
+}
+
+export type NewEntryFields = Omit<Entry, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
+
+/** Neuer Tagebucheintrag; speichert die absoluten Nährwerte als Snapshot (spätere Produktänderungen ändern ihn nie) */
+export function foodEntry(food: FoodChoice, amount: number, date: LocalDate, slotId: string): NewEntryFields {
+  if (!Number.isFinite(amount) || amount <= 0) throw new RangeError(`Ungültige Menge: ${amount}`)
+  return {
+    date,
+    slotId,
+    kind: 'food',
+    ref: food.ref,
+    nameSnapshot: food.name,
+    amount,
+    unit: food.unit,
+    portionLabel: portionLabelFor(food, amount),
+    nutrients: nutrientsForAmount(food.per100, amount),
+    // Wassergehalt von Getränken kommt mit Phase 7
+    waterMl: 0,
+    mealGroupId: null,
+    mealName: null,
+  }
+}
+
+/** Toast nach dem Hinzufügen: „Skyr natur · 158 kcal zu Snacks“ */
+export function addedMessage(name: string, kcal: number | null, slotName: string): string {
+  return `${name} · ${formatNumber(kcal)} kcal zu ${slotName}`
+}

@@ -78,6 +78,19 @@ textarea {
   }
 }
 
+/* Neuer Eintrag blinkt kurz im Akzent-Ton (Kern.dc.html, motion.newEntryFlash) */
+@keyframes kc-flash {
+  from {
+    background-color: color-mix(in srgb, var(--kc-accent) 18%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+@utility flash-new {
+  animation: kc-flash var(--kc-motion-new-entry-flash-duration) ease-out;
+}
+
 /* Press-Effekt für alle Knöpfe */
 @utility press {
   transition: transform var(--kc-motion-press-duration) var(--kc-motion-press-easing);

@@ -2,7 +2,6 @@
 // Gescrollt wird nur im Scrollbereich des jeweiligen Screens.
 import { useEffect, type ComponentType } from 'react'
 import { OverlayProvider } from '../components/ui/overlay.tsx'
-import { Sheet } from '../components/ui/Sheet.tsx'
 import { ToastProvider } from '../components/ui/Toast.tsx'
 import { Einstellungen } from '../screens/Einstellungen.tsx'
 import { Lebensmittel } from '../screens/Lebensmittel.tsx'
@@ -10,9 +9,10 @@ import { Statistik } from '../screens/Statistik.tsx'
 import { Tagebuch } from '../screens/Tagebuch.tsx'
 import { Vorschau } from '../screens/Vorschau.tsx'
 import { Setup } from '../screens/setup/Setup.tsx'
+import { AddSheet } from '../screens/add/AddSheet.tsx'
 import { useLiveQuery } from '../db/live.ts'
 import { isSetupDone } from '../db/setup.ts'
-import { closeAddSheet, openAddSheet, useAddSheet } from './diaryState.ts'
+import { openAddSheet } from './diaryState.ts'
 import { Navigation } from './Navigation.tsx'
 import { useRoute, useSubPath, type Route } from './router.ts'
 import { initTheme } from './theme.ts'
@@ -29,7 +29,6 @@ export function App() {
   const route = useRoute()
   // Unterseiten (z. B. Produktdetail) zeigen keine schwebende Navigation (Produkt.dc.html)
   const isSubPage = useSubPath().length > 0
-  const addSheet = useAddSheet()
 
   useEffect(initTheme, [])
   // undefined = lädt noch; live, damit nach Abschluss oder Backup-Import sofort das Tagebuch kommt
@@ -47,8 +46,7 @@ export function App() {
             <>
               <CurrentScreen key={route} />
               {!isSubPage && <Navigation current={route} onAdd={() => openAddSheet()} />}
-              {/* Inhalt (Suche, Mengen-Schritt) kommt in Phase 3 */}
-              <Sheet open={addSheet.open} onClose={closeAddSheet} title="Hinzufügen" />
+              <AddSheet />
             </>
           )}
         </ToastProvider>

@@ -74,6 +74,7 @@ export function Tagebuch() {
                   key={day.slot.id}
                   day={day}
                   open={open}
+                  flashId={state.flashId}
                   onToggle={() => setSlotOpen(day.slot.id, !open)}
                   onAdd={() => openAddSheet(day.slot.id)}
                 />
