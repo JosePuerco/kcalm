@@ -44,8 +44,7 @@ export function Tagebuch() {
     }
   }
 
-  // Schnelleinträge bekommen ihr eigenes Bearbeiten mit Teilschritt 3e
-  const edit = (entry: Entry) => canEditAsFood(entry) && openEditSheet(entry.id)
+  const edit = (entry: Entry) => (canEditAsFood(entry) || entry.kind === 'quick') && openEditSheet(entry.id)
 
   const toggleCalendar = () => {
     if (!calendarOpen) setCalendarMonth(date.slice(0, 7))

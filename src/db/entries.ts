@@ -17,8 +17,12 @@ export async function getEntry(id: string): Promise<Entry> {
   return entry
 }
 
-/** Menge, Slot oder Tag ändern (Verschieben); updatedAt wird gesetzt */
-export async function updateEntry(id: string, changes: EntryChanges, now = new Date()): Promise<Entry> {
+/** Menge, Slot oder Tag ändern (Verschieben), beim Schnelleintrag auch den Namen; updatedAt wird gesetzt */
+export async function updateEntry(
+  id: string,
+  changes: EntryChanges & Partial<Pick<Entry, 'nameSnapshot'>>,
+  now = new Date(),
+): Promise<Entry> {
   return db.transaction('rw', db.entries, async () => {
     const updated = touch(await getEntry(id), changes, now)
     await db.entries.put(updated)

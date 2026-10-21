@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
+import { IconBack } from '../icons/icons.tsx'
 import { Button } from './Button.tsx'
 import { Overlay } from './overlay.tsx'
 import { useRegisterSheet } from './sheetRegistry.ts'
@@ -12,10 +13,12 @@ type Props = {
   onClose: () => void
   title: string
   doneLabel?: string
+  /** Zurück-Pfeil links vom Titel, z. B. im Schnelleintrag (Schnell.dc.html) */
+  onBack?: () => void
   children?: ReactNode
 }
 
-export function Sheet({ open, onClose, title, doneLabel = 'Fertig', children }: Props) {
+export function Sheet({ open, onClose, title, doneLabel = 'Fertig', onBack, children }: Props) {
   const reduced = useReduced()
   const titleId = useId()
   const panel = useRef<HTMLDivElement>(null)
@@ -55,7 +58,17 @@ export function Sheet({ open, onClose, title, doneLabel = 'Fertig', children }: 
             exit={{ y: '100%', transition: reduced ? instant : motionTokens.sheetOut }}
           >
             <div className="bg-track mx-auto mt-2 mb-1 h-[5px] w-10 flex-none rounded-full" aria-hidden="true" />
-            <div className="flex flex-none items-center justify-between pr-2 pl-4">
+            <div className={`flex flex-none items-center justify-between pr-2 ${onBack ? 'pl-1' : 'pl-4'}`}>
+              {onBack && (
+                <button
+                  type="button"
+                  aria-label="Zurück"
+                  onClick={onBack}
+                  className="press text-text flex size-11 items-center justify-center"
+                >
+                  <IconBack />
+                </button>
+              )}
               <h2 id={titleId} className="text-sheet-title">
                 {title}
               </h2>

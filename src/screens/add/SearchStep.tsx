@@ -1,5 +1,5 @@
 // Such-Schritt im Hinzufügen-Sheet nach Kern.dc.html: Suchfeld, Liste „Zuletzt gegessen“ bzw. „Treffer lokal“
-// (Name, Quelle, geprüft-Häkchen, kcal/100). Scan, Mahlzeiten, Rezepte und die Suche in Open Food Facts
+// (Name, Quelle, geprüft-Häkchen, kcal/100), darüber „Schnelleintrag“. Scan, Mahlzeiten, Rezepte und OFF-Suche
 // kommen in ihren Phasen dazu.
 import { useMemo } from 'react'
 import { IconCheck, IconChevronRight, IconSearch } from '../../components/icons/icons.tsx'
@@ -18,9 +18,10 @@ type Props = {
   bls: BlsData | null
   resolver: FoodResolver
   onPick: (food: FoodChoice) => void
+  onQuick: () => void
 }
 
-export function SearchStep({ query, onQuery, sources, bls, resolver, onPick }: Props) {
+export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQuick }: Props) {
   const { resolve, productIndex } = resolver
   const searching = query.trim() !== ''
   const results = useMemo(() => {
@@ -54,7 +55,16 @@ export function SearchStep({ query, onQuery, sources, bls, resolver, onPick }: P
         </label>
       </div>
 
-      <span className="text-small text-muted px-4 pt-3.5 pb-1 tracking-[0.6px] uppercase">
+      <div className="flex gap-2 px-4 pt-2.5 pb-1.5">
+        <button
+          type="button"
+          onClick={onQuick}
+          className="press bg-card text-text rounded-small-button text-secondary flex min-h-9 items-center px-3 font-medium"
+        >
+          Schnelleintrag
+        </button>
+      </div>
+      <span className="text-small text-muted px-4 pt-2 pb-1 tracking-[0.6px] uppercase">
         {searching ? 'Treffer lokal' : 'Zuletzt gegessen'}
       </span>
       <div className="scroll-area px-screen-x pb-[calc(24px+env(safe-area-inset-bottom))]">

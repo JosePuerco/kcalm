@@ -3,7 +3,7 @@
 // Bearbeiten (Tipp auf einen Eintrag): Mengen-Schritt mit „Speichern“ + „Löschen“; Verschieben über die
 // Slot-Chips und die Tageszeile darunter (Tageszeile ist eine Ergänzung zum Prototyp, mit Jan abgestimmt).
 import { motion } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   closeAddSheet,
   showNewEntry,
@@ -34,10 +34,19 @@ import {
 import { dayLabel } from '../../logic/diary.ts'
 import { formatTime } from '../../logic/format.ts'
 import { parseKeypadValue } from '../../logic/keypad.ts'
+import {
+  editedQuick,
+  emptyQuick,
+  quickEntry,
+  quickFromEntry,
+  validateQuick,
+  type QuickValues,
+} from '../../logic/quickEntry.ts'
 import { slotForTime } from '../../logic/slots.ts'
 import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
 import { MonthCalendar } from '../tagebuch/MonthCalendar.tsx'
 import { AmountStep } from './AmountStep.tsx'
+import { QuickStep } from './QuickStep.tsx'
 import { SearchStep } from './SearchStep.tsx'
 import { useFoodResolver } from './useFoodResolver.ts'
 
@@ -56,22 +65,47 @@ export function AddSheet() {
   const current = sheet.editId !== null && editing?.id === sheet.editId ? editing : null
   const ready = slots && (sheet.editId === null || current !== null || editing === null)
   // Nicht bearbeitbare oder gelöschte Einträge: Sheet bleibt leer statt abzustürzen
-  const editable = current && canEditAsFood(current) ? current : null
+  const editable = current && (canEditAsFood(current) || current.kind === 'quick') ? current : null
+  // Kopf des Sheets; der Schnelleintrag hat eigenen Titel und Zurück-Pfeil (Schnell.dc.html)
+  const [header, setHeader] = useState<Header | null>(null)
   return (
-    <Sheet open={sheet.open} onClose={closeAddSheet} title={sheet.editId ? 'Bearbeiten' : 'Hinzufügen'}>
+    <Sheet
+      open={sheet.open}
+      onClose={closeAddSheet}
+      title={header?.title ?? (sheet.editId ? 'Bearbeiten' : 'Hinzufügen')}
+      onBack={header?.onBack}
+    >
       {/* Inhalt erst mit Slots: dann stimmt die Vorauswahl; jedes Öffnen beginnt frisch */}
       {ready && (sheet.editId === null || editable) && (
-        <AddFlow key={sheet.editId ?? 'neu'} slots={slots} initialSlotId={sheet.slotId} editing={editable} />
+        <AddFlow
+          key={sheet.editId ?? 'neu'}
+          slots={slots}
+          initialSlotId={sheet.slotId}
+          editing={editable}
+          onHeader={setHeader}
+        />
       )}
     </Sheet>
   )
 }
 
-type Step = { kind: 'search' } | { kind: 'amount'; food: FoodChoice } | { kind: 'edit'; entry: Entry } | { kind: 'date'; entry: Entry }
+type Header = { title: string; onBack?: () => void }
 
-type FlowProps = { slots: Slot[]; initialSlotId: string | null; editing: Entry | null }
+type Step =
+  | { kind: 'search' }
+  | { kind: 'amount'; food: FoodChoice }
+  | { kind: 'quick' }
+  | { kind: 'edit'; entry: Entry }
+  | { kind: 'date'; entry: Entry }
 
-function AddFlow({ slots, initialSlotId, editing }: FlowProps) {
+type FlowProps = {
+  slots: Slot[]
+  initialSlotId: string | null
+  editing: Entry | null
+  onHeader: (header: Header | null) => void
+}
+
+function AddFlow({ slots, initialSlotId, editing, onHeader }: FlowProps) {
   const toast = useToast()
   const reduced = useReduced()
   const today = useToday()
@@ -92,6 +126,15 @@ function AddFlow({ slots, initialSlotId, editing }: FlowProps) {
   const [amount, setAmount] = useState(editing?.amount ? amountToKeypad(editing.amount) : '')
   const [calendarMonth, setCalendarMonth] = useState(date.slice(0, 7))
   const [busy, setBusy] = useState(false)
+  const [quick, setQuick] = useState<QuickValues>(() => (editing?.kind === 'quick' ? quickFromEntry(editing) : emptyQuick()))
+  const [quickError, setQuickError] = useState<string | null>(null)
+
+  const inQuick = step.kind === 'quick'
+  useEffect(() => {
+    onHeader(inQuick ? { title: 'Schnelleintrag', onBack: () => setStep({ kind: 'search' }) } : null)
+  }, [inQuick, onHeader])
+  // Beim Schließen den Kopf zurücksetzen, damit das nächste Öffnen mit „Hinzufügen“ beginnt
+  useEffect(() => () => onHeader(null), [onHeader])
   // Beim Bearbeiten eines Eintrags in einem archivierten Slot ist kein Chip aktiv; Speichern behält den Slot
   const slot = slots.find((s) => s.id === slotId) ?? (editing ? undefined : slots[0])
 
@@ -122,6 +165,31 @@ function AddFlow({ slots, initialSlotId, editing }: FlowProps) {
       // Im Sheet bleiben: zurück zur Suche für das nächste Lebensmittel
       setQuery('')
       setStep({ kind: 'search' })
+    })
+
+  const addQuick = () =>
+    run(async () => {
+      const check = validateQuick(quick)
+      if (!slot) return
+      if (!check.ok) return setQuickError(check.error)
+      setQuickError(null)
+      const entry = await addEntry(quickEntry(quick, viewed, slot.id))
+      showNewEntry(slot.id, entry.id)
+      toast(addedMessage(entry.nameSnapshot, entry.nutrients.kcal, slot.name))
+      // Im Sheet bleiben wie beim Lebensmittel
+      setQuick(emptyQuick())
+      setStep({ kind: 'search' })
+    })
+
+  const saveQuick = (entry: Entry) =>
+    run(async () => {
+      const check = validateQuick(quick)
+      if (!check.ok) return setQuickError(check.error)
+      const target = slot?.id ?? entry.slotId
+      await updateEntry(entry.id, editedQuick(quick, date, target))
+      showNewEntry(target, entry.id)
+      toast(`${check.changes.nameSnapshot} gespeichert`)
+      closeAddSheet()
     })
 
   const save = (entry: Entry, food: FoodChoice) =>
@@ -175,8 +243,27 @@ function AddFlow({ slots, initialSlotId, editing }: FlowProps) {
       >
         {step.kind === 'search' &&
           sources && (
-            <SearchStep query={query} onQuery={setQuery} sources={sources} bls={blsData} resolver={resolver} onPick={pick} />
+            <SearchStep
+              query={query}
+              onQuery={setQuery}
+              sources={sources}
+              bls={blsData}
+              resolver={resolver}
+              onPick={pick}
+              onQuick={() => setStep({ kind: 'quick' })}
+            />
           )}
+
+        {step.kind === 'quick' && (
+          <QuickStep
+            values={quick}
+            onChange={setQuick}
+            error={quickError}
+            confirmLabel={`Zu ${slot?.name ?? ''} hinzufügen`}
+            onConfirm={() => void addQuick()}
+            busy={busy}
+          />
+        )}
 
         {step.kind === 'amount' && (
           <AmountStep
@@ -190,7 +277,23 @@ function AddFlow({ slots, initialSlotId, editing }: FlowProps) {
           />
         )}
 
-        {step.kind === 'edit' && (
+        {step.kind === 'edit' && step.entry.kind === 'quick' && (
+          <QuickStep
+            values={quick}
+            onChange={setQuick}
+            error={quickError}
+            confirmLabel="Speichern"
+            onConfirm={() => void saveQuick(step.entry)}
+            busy={busy}
+            secondary={
+              <Button variant="danger" disabled={busy} onClick={() => void remove(step.entry)}>
+                Löschen
+              </Button>
+            }
+          />
+        )}
+
+        {step.kind === 'edit' && step.entry.kind !== 'quick' && (
           <EditStep
             food={choiceFromEntry(step.entry, step.entry.ref ? resolver.resolve(step.entry.ref) : undefined)}
             amount={amount}

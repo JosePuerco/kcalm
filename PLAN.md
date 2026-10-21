@@ -287,7 +287,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 - [x] Tagesansicht nach Prototyp `Kern.dc.html`, Tageswechsel, Monatskalender, einklappbare Slots
 - [x] Hinzufügen-Sheet mit Suche, Mengen-Schritt, Ziffernblock, Portions-Chips; im Sheet bleiben
 - [x] Einträge bearbeiten, verschieben, löschen (Wischen + Sheet)
-- [ ] Schnelleintrag (kcal + Makros) mit Plausibilitätshinweis
+- [x] Schnelleintrag (kcal + Makros) mit Plausibilitätshinweis
 - [ ] Profile mit Versionen, Zuweisung ab Datum, Wechsel „ab nächstem Montag“ / „ab heute“
 - [x] Rechenlogik festes und dynamisches Tagesziel, Wochenstand, Makros in g / % / g/kg / Rest, Profilwechsel mit Tests
 - [ ] Tag kopieren, „wie gestern“, zuletzt gegessen, Tag als vollständig markieren, leerer Tag
