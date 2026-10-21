@@ -50,8 +50,8 @@ Kcalm ist eine minimalistische Kalorien-Tracking-PWA fürs iPhone. Alle Daten bl
 - Vor größeren Änderungen (neue Struktur, Schema, Bibliothek, mehrere Dateien) zuerst den Plan zeigen und auf OK warten.
 - Bei Unklarheit nachfragen statt raten. Entscheidungen, die vom Plan abweichen, nie still treffen.
 - Rechenlogik: erst Funktionen mit Tests zeigen, dann Oberfläche.
-- Nach jedem Schritt Tests laufen lassen, dann einen Commit mit klarer Nachricht vorschlagen.
-- Nicht mitten in einer Phase auf `main` pushen (jeder Push deployt). Lokale Commits reichen.
+- Nach jedem Schritt Tests laufen lassen, dann selbst lokal committen (klare Nachricht) und den Commit nennen.
+- Pushen nur nach Jans ausdrücklichem OK (jeder Push deployt). Nicht mitten in einer Phase auf `main` pushen, außer Jan braucht den Stand zum Testen auf dem iPhone.
 - Erledigte Punkte in `PLAN.md` abhaken. Beim Pausieren den Zwischenstand in Abschnitt 8 von `PLAN.md` eintragen und lokal committen.
 - Befehle für Windows PowerShell angeben. Pfade mit Leerzeichen in Anführungszeichen.
 - Keine neuen Abhängigkeiten ohne kurze Begründung.

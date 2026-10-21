@@ -33,13 +33,18 @@ export function initTheme() {
   const query = darkQuery()
   query.addEventListener('change', updateThemeColor)
   apply()
-  getSetting<ThemePref>('theme').then(
-    (saved) => {
-      if (saved === 'light' || saved === 'dark') change(saved)
-    },
-    (error: unknown) => console.error('Theme nicht lesbar', error),
-  )
+  void reloadThemePref()
   return () => query.removeEventListener('change', updateThemeColor)
+}
+
+/** Gespeicherte Wahl neu lesen, z. B. nach einem Backup-Import */
+export async function reloadThemePref() {
+  try {
+    const saved = await getSetting<ThemePref>('theme')
+    change(saved === 'light' || saved === 'dark' ? saved : 'system')
+  } catch (error) {
+    console.error('Theme nicht lesbar', error)
+  }
 }
 
 function change(next: ThemePref) {

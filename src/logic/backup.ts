@@ -23,6 +23,7 @@ import type {
   Timestamp,
   Weight,
 } from '../db/types.ts'
+import { formatTime } from './format.ts'
 
 export const BACKUP_APP = 'kcalm'
 export const BACKUP_FORMAT_VERSION = 1
@@ -431,7 +432,7 @@ export function backupStatus(lastBackupAt: Timestamp | null, now = new Date()): 
   if (lastBackupAt === null) return { text: 'Noch kein Backup · bitte sichern', warn: true }
   const last = new Date(lastBackupAt)
   const days = Math.max(0, calendarDaysBetween(last, now))
-  if (days === 0) return { text: `Gesichert heute, ${pad(last.getHours())}:${pad(last.getMinutes())}`, warn: false }
+  if (days === 0) return { text: `Gesichert heute, ${formatTime(last)}`, warn: false }
   if (days >= BACKUP_REMINDER_DAYS) return { text: `Letztes Backup vor ${days} Tagen · bitte sichern`, warn: true }
   if (days === 1) return { text: 'Letztes Backup gestern', warn: false }
   return { text: `Letztes Backup vor ${days} Tagen`, warn: false }

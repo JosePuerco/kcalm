@@ -275,9 +275,9 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 
 ### Phase 2 – Backup
 
-- [ ] Export als JSON mit `formatVersion` über Teilen-Menü, Ersatz per Download
-- [ ] Import mit Zod-Prüfung, „ersetzen“ und „zusammenführen“
-- [ ] Erinnerung nach 14 Tagen, `navigator.storage.persist()`
+- [x] Export als JSON mit `formatVersion` über Teilen-Menü, Ersatz per Download
+- [x] Import mit Zod-Prüfung, „ersetzen“ und „zusammenführen“
+- [x] Erinnerung nach 14 Tagen, `navigator.storage.persist()`
 - [ ] Test: Daten anlegen → exportieren → App löschen → neu installieren → importieren
 
 ### Phase 3 – Tagebuch und Ziele (Kern)
@@ -362,6 +362,12 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**21.10.2026 · Phase 2 (Backup) im Code fertig** – offen: Backup-Test auf dem iPhone durch Jan, danach Phase 2 abschließen und pushen.
+
+- Erledigt: `src/logic/backup.ts` (Format, Zod-Schema, Migrationsgerüst, Zusammenführen, Erinnerungstext), `src/db/backup.ts` (Ersetzen/Zusammenführen in einer Transaktion), `src/app/share.ts` (Teilen, Ersatz Download), Gruppe „Daten“ in den Einstellungen mit Import-Sheet, `navigator.storage.persist()` beim Start. 231 Tests grün, Build und Lint sauber.
+- Mit Jan abgestimmt: Zusammenführen vergleicht bei eindeutigen Schlüsseln (days.date, settings.key, productOverrides.productRef, blsPrefs.blsCode) über den Schlüssel; Abbrechen im Teilen-Menü zählt nicht als Backup; Import-Sheet ist eigenes Design (kein Prototyp); `lastBackupAt` in settings, nach Import der spätere aus eigenem Wert und `exportedAt`.
+- Prüfung: Struktur und Typen streng, Inhalte großzügig (z. B. keine Mindestwerte), damit eigene Daten immer importierbar bleiben.
 
 **17.10.2026 · Phase 1 abgeschlossen** – alle Punkte erledigt, deployt und von Jan auf dem iPhone getestet. Nächster Schritt: Phase 2 (Backup).
 

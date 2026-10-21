@@ -30,3 +30,15 @@ export function formatAmount(value: number): string {
   // Würde die eine Stelle auf „,0“ runden, ganz ohne Komma zeigen
   return formatNumber(value, Math.abs(value - Math.round(value)) < 0.05 ? 0 : 1)
 }
+
+const pad = (n: number) => String(n).padStart(2, '0')
+
+/** Uhrzeit in lokaler Zeit: „08:05“ */
+export function formatTime(date: Date): string {
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+/** Datum und Uhrzeit in lokaler Zeit: „21.10.2026, 18:04“ */
+export function formatDateTime(date: Date): string {
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}, ${formatTime(date)}`
+}

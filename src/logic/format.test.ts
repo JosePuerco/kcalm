@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatAmount, formatNumber, UNKNOWN } from './format.ts'
+import { formatAmount, formatDateTime, formatNumber, formatTime, UNKNOWN } from './format.ts'
 
 describe('formatNumber', () => {
   it('setzt Tausenderpunkte', () => {
@@ -48,5 +48,13 @@ describe('formatAmount', () => {
     expect(formatAmount(0.5)).toBe('0,5')
     expect(formatAmount(99.96)).toBe('100')
     expect(formatAmount(12.25)).toBe('12,3')
+  })
+})
+
+describe('formatTime / formatDateTime', () => {
+  it('lokale Zeit mit führenden Nullen', () => {
+    expect(formatTime(new Date(2026, 9, 21, 8, 5))).toBe('08:05')
+    expect(formatDateTime(new Date(2026, 9, 21, 18, 4))).toBe('21.10.2026, 18:04')
+    expect(formatDateTime(new Date(2026, 0, 5, 0, 0))).toBe('05.01.2026, 00:00')
   })
 })
