@@ -172,6 +172,7 @@ Der Stack entspricht Mixli, ergänzt um Scanner, Diagramme und ein Build-Skript 
 - Geladene Produkte lokal speichern; keine erneute Abfrage, solange nicht manuell aktualisiert
 - Lizenz ODbL: Quellenhinweis in der App; Produktdaten werden nicht veröffentlicht
 - Kurztest (21.10.2026): Produktabfrage `/api/v2/product/{code}.json` mit CORS (`*`), unbekannter Code = HTTP 404 mit `status: 0`; Textsuche `/cgi/search.pl` mit CORS, aber oft 503; `search.openfoodfacts.org` ohne CORS (im Browser gesperrt). Limits: 100 Produktabfragen und 10 Suchen pro Minute
+- Textsuche in Phase 4 (21.10.2026): `search.pl` antwortet meist mit 503; die App versucht es je Tipp bis zu dreimal (Pause 1 s, 2 s), danach Hinweis „antwortet gerade nicht“. Produktabfrage per Barcode ist nicht betroffen
 
 ### Bundeslebensmittelschlüssel (BLS 4.0)
 
@@ -297,7 +298,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 - [x] Kurztest: OFF aus dem Browser erreichbar (CORS), Antwortformat
 - [ ] Barcode-Scanner mit selbst gehostetem Decoder, Start per Tipp, Taschenlampe, manuelle Eingabe
 - [x] OFF-Abfrage mit App-Kennung, Zod-Prüfung, lokales Speichern
-- [ ] OFF-Textsuche auf Knopfdruck
+- [x] OFF-Textsuche auf Knopfdruck
 - [x] Offline-Scans merken und nachladen; „nicht gefunden“ → eigenes Produkt mit Barcode
 - [ ] Scanner-Test im Supermarkt
 

@@ -1,12 +1,14 @@
 // Such-Schritt im Hinzufügen-Sheet nach Kern.dc.html: Suchfeld, Liste „Zuletzt gegessen“ bzw. „Treffer lokal“
-// (Name, Quelle, geprüft-Häkchen, kcal/100), darüber „Schnelleintrag“, neben dem Suchfeld der Scan-Knopf.
-// Mahlzeiten, Rezepte und OFF-Suche kommen in ihren Phasen dazu.
+// (Name, Quelle, geprüft-Häkchen, kcal/100), darüber „Schnelleintrag“, neben dem Suchfeld der Scan-Knopf,
+// beim Suchen darunter „In Open Food Facts suchen“. Mahlzeiten und Rezepte kommen in Phase 5.
 import { useMemo } from 'react'
 import { IconBarcode, IconCheck, IconChevronRight, IconSearch } from '../../components/icons/icons.tsx'
 import type { BlsData } from '../../data/bls.ts'
 import type { FoodSources } from '../../db/entries.ts'
 import { per100Label, recentRefs, type FoodChoice } from '../../logic/addFood.ts'
+import type { OffProduct } from '../../logic/off.ts'
 import { search } from '../../logic/search.ts'
+import { OffSearch } from './OffSearch.tsx'
 import type { FoodResolver } from './useFoodResolver.ts'
 
 const BLS_LIMIT = 30
@@ -20,9 +22,10 @@ type Props = {
   onPick: (food: FoodChoice) => void
   onQuick: () => void
   onScan: () => void
+  onPickOff: (product: OffProduct) => void
 }
 
-export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQuick, onScan }: Props) {
+export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQuick, onScan, onPickOff }: Props) {
   const { resolve, productIndex } = resolver
   const searching = query.trim() !== ''
   const results = useMemo(() => {
@@ -109,6 +112,7 @@ export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQ
               : 'Noch nichts gegessen. Such nach einem Lebensmittel.'}
           </p>
         )}
+        {searching && <OffSearch query={query} onPick={onPickOff} />}
       </div>
     </div>
   )

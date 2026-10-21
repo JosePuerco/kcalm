@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   KJ_PER_KCAL,
   looseNumber,
+  offResultLabels,
   offNutrients,
   parseProductResponse,
   parseSearchResponse,
@@ -239,5 +240,15 @@ describe('parseSearchResponse', () => {
     expect(parseSearchResponse({ count: 0, products: [] })).toEqual([])
     expect(parseSearchResponse('<!DOCTYPE html>')).toBeNull()
     expect(parseSearchResponse({ products: 'x' })).toBeNull()
+  })
+})
+
+describe('offResultLabels', () => {
+  it('Marke · Quelle und kcal pro 100', () => {
+    const r = parseProductResponse(marzipan, '4000417025005')
+    if (r.kind !== 'found') throw new Error('nicht gefunden')
+    expect(offResultLabels(r.product)).toEqual({ meta: 'Ritter Sport · Open Food Facts', kcal: '496 kcal/100 g' })
+    const noBrand = { ...r.product, brand: null, unit: 'ml' as const, per100: { ...r.product.per100, kcal: null } }
+    expect(offResultLabels(noBrand)).toEqual({ meta: 'Open Food Facts', kcal: '– kcal/100 ml' })
   })
 })

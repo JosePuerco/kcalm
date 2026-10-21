@@ -6,6 +6,7 @@
 import { z } from 'zod'
 import type { Nutrients, Portion, Product, Unit } from '../db/types.ts'
 import { normalizeBarcode } from './barcode.ts'
+import { formatNumber } from './format.ts'
 
 export const OFF_BASE = 'https://world.openfoodfacts.org'
 
@@ -215,4 +216,12 @@ export function parseSearchResponse(json: unknown): OffProduct[] | null {
     products.push(offToProduct(raw.data, barcode))
   }
   return products
+}
+
+/** Zeile eines Suchtreffers: „Milbona · Open Food Facts“ und „63 kcal/100 g“ („– kcal“ = unbekannt) */
+export function offResultLabels(p: OffProduct): { meta: string; kcal: string } {
+  return {
+    meta: [p.brand, 'Open Food Facts'].filter(Boolean).join(' · '),
+    kcal: `${formatNumber(p.per100.kcal)} kcal/100 ${p.unit}`,
+  }
 }

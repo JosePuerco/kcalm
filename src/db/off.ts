@@ -36,6 +36,8 @@ export interface Network {
   fetch: typeof fetch
   isOnline: () => boolean
   timeoutMs: number
+  /** Warten zwischen zwei Versuchen (Tests: sofort) */
+  wait?: (ms: number) => Promise<void>
 }
 
 const browserNetwork = (): Network => ({
@@ -118,10 +120,28 @@ export async function lookupBarcode(barcode: string, net = browserNetwork(), now
 
 export type OffSearch = { kind: 'results'; products: OffProduct[] } | Failure
 
+/**
+ * Wartezeiten vor dem 2. und 3. Versuch. Die Textsuche antwortet oft mit 503 (Stand 21.10.2026 etwa
+ * drei von vier Anfragen); kurz danach klappt es meist. Höchstens 3 Anfragen je Tipp, OFF erlaubt 10 pro Minute.
+ */
+export const SEARCH_RETRY_MS = [1000, 2000]
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
 /** Textsuche bei OFF, nur auf Knopfdruck. Treffer werden erst beim Antippen gespeichert. */
 export async function searchOff(terms: string, net = browserNetwork()): Promise<OffSearch> {
-  const response = await getJson(searchUrl(terms, await offApp()), net)
-  if (response.kind !== 'json') return response
-  const products = parseSearchResponse(response.json)
-  return products === null ? { kind: 'unreachable' } : { kind: 'results', products }
+  const url = searchUrl(terms, await offApp())
+  const wait = net.wait ?? sleep
+  for (let attempt = 0; ; attempt++) {
+    const response = await getJson(url, net)
+    if (response.kind === 'json') {
+      const products = parseSearchResponse(response.json)
+      if (products !== null) return { kind: 'results', products }
+    }
+    // Ohne Netz hilft Warten nicht
+    if (response.kind === 'offline') return response
+    const delay = SEARCH_RETRY_MS[attempt]
+    if (delay === undefined) return { kind: 'unreachable' }
+    await wait(delay)
+  }
 }

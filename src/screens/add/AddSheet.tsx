@@ -20,6 +20,7 @@ import { Sheet } from '../../components/ui/Sheet.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { useBls } from '../../data/bls.ts'
 import { addEntry, deleteEntry, getEntry, loadFoodSources, updateEntry } from '../../db/entries.ts'
+import { saveOffProduct } from '../../db/off.ts'
 import { resolvePendingScan } from '../../db/pendingScans.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { getSlots } from '../../db/slots.ts'
@@ -46,7 +47,8 @@ import {
   validateQuick,
   type QuickValues,
 } from '../../logic/quickEntry.ts'
-import type { ProductFormValues } from '../../logic/productForm.ts'
+import type { OffProduct } from '../../logic/off.ts'
+import { productToForm, type ProductFormValues } from '../../logic/productForm.ts'
 import { slotForTime } from '../../logic/slots.ts'
 import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
 import { ProductForm } from '../lebensmittel/ProductForm.tsx'
@@ -165,6 +167,12 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
     setStep({ kind: 'amount', food })
   }
 
+  // OFF-Suchtreffer: lokal speichern, dann Menge; ohne kcal erst das Formular (wie beim Scan)
+  const pickOff = (product: OffProduct) => {
+    if (product.per100.kcal === null) return setForm(productToForm(product))
+    void run(async () => pick(choiceFromProduct(await saveOffProduct(product))))
+  }
+
   const run = async (action: () => Promise<void>) => {
     setBusy(true)
     try {
@@ -278,6 +286,7 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
               onPick={pick}
               onQuick={() => setStep({ kind: 'quick' })}
               onScan={() => setScanning(true)}
+              onPickOff={pickOff}
             />
           )}
 

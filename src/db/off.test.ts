@@ -187,8 +187,34 @@ describe('searchOff', () => {
     expect(new URL(String(fetchMock.mock.calls[0]![0])).searchParams.get('search_terms')).toBe('skyr')
   })
 
-  it('503 (laut Kurztest häufig) und offline', async () => {
-    expect(await searchOff('skyr', network({ status: 503, text: '<html>' }).net)).toEqual({ kind: 'unreachable' })
-    expect(await searchOff('skyr', network({ body: {} }, false).net)).toEqual({ kind: 'offline' })
+  it('503 (laut Kurztest häufig): zwei Wiederholungen mit Pause, dann nicht erreichbar', async () => {
+    const { net, fetchMock } = network({ status: 503, text: '<html>' })
+    const waits: number[] = []
+    net.wait = async (ms) => void waits.push(ms)
+    expect(await searchOff('skyr', net)).toEqual({ kind: 'unreachable' })
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(waits).toEqual([1000, 2000])
+  })
+
+  it('zweiter Versuch klappt', async () => {
+    let calls = 0
+    const net: Network = {
+      fetch: async () =>
+        ++calls === 1
+          ? new Response('<html>', { status: 503 })
+          : new Response(JSON.stringify({ products: [skyr.product] }), { status: 200 }),
+      isOnline: () => true,
+      timeoutMs: 1000,
+      wait: async () => undefined,
+    }
+    const result = await searchOff('skyr', net)
+    expect(result.kind === 'results' && result.products.length).toBe(1)
+    expect(calls).toBe(2)
+  })
+
+  it('offline: kein Versuch, keine Wiederholung', async () => {
+    const { net, fetchMock } = network({ body: {} }, false)
+    expect(await searchOff('skyr', net)).toEqual({ kind: 'offline' })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })
