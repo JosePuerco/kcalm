@@ -39,10 +39,11 @@ export default function Scanner({ onDetected, onClose, paused = false, children,
   const reduced = useReduced()
   const video = useRef<HTMLVideoElement>(null)
   const dialog = useRef<HTMLDivElement>(null)
-  const camera = useCamera(video)
+  const [typing, setTyping] = useState(false)
+  // Beim Eintippen ist die Kamera ganz aus (Akku, Kamera-Anzeige), nicht nur verdeckt
+  const camera = useCamera(video, !typing)
   const [detector, setDetector] = useState<Detector | null>(null)
   const [detectorFailed, setDetectorFailed] = useState(false)
-  const [typing, setTyping] = useState(false)
   // Safari zeigt das Video kurz in Standardgröße, bevor es die Bildmaße kennt; erst danach einblenden
   const [videoReady, setVideoReady] = useState(false)
 
@@ -125,7 +126,7 @@ export default function Scanner({ onDetected, onClose, paused = false, children,
     >
       <video
         ref={video}
-        className={`absolute inset-0 size-full object-cover ${videoReady ? '' : 'invisible'}`}
+        className={`absolute inset-0 size-full object-cover ${videoReady && !typing ? '' : 'invisible'}`}
         autoPlay
         muted
         playsInline

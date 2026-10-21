@@ -1,5 +1,6 @@
 // Rückkamera für den Scanner. Startet erst, wenn der Scanner offen ist (also nach dem Tipp auf
-// den Scan-Knopf), stoppt beim Schließen und wenn die App in den Hintergrund geht.
+// den Scan-Knopf), stoppt beim Schließen, beim Eintippen des Codes (enabled = false) und wenn die
+// App in den Hintergrund geht.
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 
@@ -29,14 +30,15 @@ async function openStream(): Promise<MediaStream | CameraStatus> {
   }
 }
 
-export function useCamera(video: RefObject<HTMLVideoElement | null>) {
+export function useCamera(video: RefObject<HTMLVideoElement | null>, enabled = true) {
   const visible = useVisible()
+  const active = visible && enabled
   const [status, setStatus] = useState<CameraStatus>('starting')
   const [torch, setTorch] = useState({ supported: false, on: false })
   const track = useRef<MediaStreamTrack | null>(null)
 
   useEffect(() => {
-    if (!visible) return
+    if (!active) return
     let cancelled = false
     let stream: MediaStream | null = null
 
@@ -63,7 +65,7 @@ export function useCamera(video: RefObject<HTMLVideoElement | null>) {
       track.current = null
       setStatus('starting')
     }
-  }, [visible, video])
+  }, [active, video])
 
   const toggleTorch = useCallback(async () => {
     const current = track.current
