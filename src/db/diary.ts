@@ -18,6 +18,8 @@ export interface DiaryData {
   completeDates: Set<LocalDate>
   /** angezeigter Tag als vollständig markiert */
   complete: boolean
+  /** vollständig markierte Tage der angezeigten Woche (Punkte unter den Wochenbalken) */
+  weekComplete: Set<LocalDate>
 }
 
 /** month = „YYYY-MM“ des Kalenders */
@@ -26,13 +28,14 @@ export async function loadDiary(date: LocalDate, month: string): Promise<DiaryDa
   // Montag: der Vortag liegt in der Woche davor
   const from = yesterdayDate < weekStart(date) ? yesterdayDate : weekStart(date)
   const to = weekDates(date)[6] as LocalDate
-  const [entries, slots, assignments, versions, days, day] = await Promise.all([
+  const [entries, slots, assignments, versions, days, day, weekDays] = await Promise.all([
     db.entries.where('date').between(from, to, true, true).filter((e) => e.deletedAt === null).toArray(),
     db.slots.filter((s) => s.deletedAt === null).toArray(),
     db.profileAssignments.toArray(),
     db.profileVersions.toArray(),
     db.days.filter((d) => d.deletedAt === null && d.complete && d.date.startsWith(month)).toArray(),
     db.days.where('date').equals(date).first(),
+    db.days.where('date').between(weekStart(date), to, true, true).toArray(),
   ])
   const byDay = kcalByDate(entries)
   const yesterdayEntries = entries.filter((e) => e.date === yesterdayDate)
@@ -45,5 +48,6 @@ export async function loadDiary(date: LocalDate, month: string): Promise<DiaryDa
     goal: goal && { version: goal.version, weekBudget: goal.weekBudget, countFrom: goal.countFrom },
     completeDates: new Set(days.map((d) => d.date)),
     complete: day?.deletedAt === null && day.complete,
+    weekComplete: new Set(weekDays.filter((d) => d.deletedAt === null && d.complete).map((d) => d.date)),
   }
 }

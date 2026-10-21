@@ -1,6 +1,7 @@
 // Profilfelder nach Start.dc.html: Name, Wochenbudget mit „= 2.800 / Tag“, Makros mit Modus-Chip
 // je Zeile und Ergebnis „≈ 133 g“, Körpergewicht für g/kg. Auch für Profile und Ziele (Profil.dc.html).
 // Zahlen über die iPhone-Zifferntastatur wie im Produktformular (inputMode decimal).
+import { useState } from 'react'
 import { IconInfo } from '../../components/icons/icons.tsx'
 import { Card } from '../../components/ui/Card.tsx'
 import { Segmented } from '../../components/ui/Segmented.tsx'
@@ -10,11 +11,14 @@ import {
   MACRO_PRESETS,
   MODE_LABEL,
   changeMode,
+  dailyFromWeekly,
   nextMode,
+  percentTotal,
   presetFor,
   presetMacros,
   profileFieldId,
   profilePreview,
+  weeklyFromDaily,
   type ProfileErrors,
   type ProfileFormValues,
 } from '../../logic/profileForm.ts'
@@ -22,7 +26,6 @@ import {
 const MACRO_LABEL: Record<MacroKey, string> = { protein: 'Eiweiß', fat: 'Fett', carbs: 'Kohlenhydrate' }
 // Reihenfolge wie im Prototyp
 const ROWS: readonly MacroKey[] = ['protein', 'fat', 'carbs']
-
 
 type Props = {
   values: ProfileFormValues
@@ -32,6 +35,9 @@ type Props = {
 
 export function ProfileFields({ values, errors, onChange }: Props) {
   const preview = profilePreview(values)
+  const total = percentTotal(values.macros)
+  // Während der Eingabe im Tagesfeld den getippten Text zeigen, sonst den Wert aus dem Wochenbudget
+  const [dailyText, setDailyText] = useState<string | null>(null)
   const set = <K extends keyof ProfileFormValues>(key: K, value: ProfileFormValues[K]) =>
     onChange({ ...values, [key]: value })
   const setMacroValue = (key: MacroKey, value: string) =>
@@ -73,9 +79,24 @@ export function ProfileFields({ values, errors, onChange }: Props) {
             />
             <span className="text-body-large text-muted font-medium"> kcal</span>
           </span>
-          <span className="text-label text-muted whitespace-nowrap">
-            = {preview.daily === null ? '–' : formatNumber(preview.daily)} / Tag
-          </span>
+          {/* Tagesbudget direkt eintippbar; die App rechnet × 7 (Wunsch von Jan, Ergänzung zum Prototyp) */}
+          <label className="text-label text-muted flex items-baseline whitespace-nowrap">
+            ={' '}
+            <input
+              inputMode="numeric"
+              aria-label="Tagesbudget in kcal"
+              value={dailyText ?? dailyFromWeekly(values.weeklyKcal)}
+              placeholder="2800"
+              onFocus={() => setDailyText(dailyFromWeekly(values.weeklyKcal))}
+              onBlur={() => setDailyText(null)}
+              onChange={(e) => {
+                setDailyText(e.target.value)
+                set('weeklyKcal', weeklyFromDaily(e.target.value))
+              }}
+              className="text-body-large text-text placeholder:text-chevron-muted border-line min-h-touch-min mx-1 w-[4.5ch] border-b bg-transparent text-right font-semibold outline-none"
+            />
+            / Tag
+          </label>
         </div>
         <FieldError text={errors.weeklyKcal} />
       </Card>
@@ -113,6 +134,11 @@ export function ProfileFields({ values, errors, onChange }: Props) {
           result={values.fiberG.trim() === '' ? '' : `${values.fiberG.trim()} g`}
           error={errors.fiberG}
         />
+        {total !== null && !errors.macros && (
+          <p className={`text-small pb-2 ${total === 100 ? 'text-muted' : 'text-warn-text'}`}>
+            Zusammen {formatNumber(total, total % 1 === 0 ? 0 : 1)} % von 100 %
+          </p>
+        )}
         <FieldError text={errors.macros} />
         {preview.restNegative && !errors.macros && (
           <p className="text-small text-warn-text pb-2">Die anderen Makros brauchen schon das ganze Tagesziel.</p>

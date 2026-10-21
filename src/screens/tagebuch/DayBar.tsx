@@ -1,6 +1,9 @@
 // Tagesleiste nach Kern.dc.html: Datum „Do 22.10. · Heute“ (Tipp öffnet den Monat), Pfeile, Kalender-Icon.
+// Vollständig getrackte Tage zeigen ein Häkchen-Badge, das beim Umschalten aufpoppt (Wunsch von Jan).
+import { AnimatePresence, motion } from 'motion/react'
 import type { ReactNode } from 'react'
-import { IconArrowLeft, IconArrowRight, IconCalendar, IconChevronDown } from '../../components/icons/icons.tsx'
+import { IconArrowLeft, IconArrowRight, IconCalendar, IconCheck, IconChevronDown } from '../../components/icons/icons.tsx'
+import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
 import { dayLabel } from '../../logic/diary.ts'
 import type { LocalDate } from '../../db/types.ts'
 
@@ -8,11 +11,14 @@ type Props = {
   date: LocalDate
   today: LocalDate
   calendarOpen: boolean
+  /** Tag als vollständig getrackt markiert */
+  complete: boolean
   onToggleCalendar: () => void
   onStep: (days: -1 | 1) => void
 }
 
-export function DayBar({ date, today, calendarOpen, onToggleCalendar, onStep }: Props) {
+export function DayBar({ date, today, calendarOpen, complete, onToggleCalendar, onStep }: Props) {
+  const reduced = useReduced()
   const label = dayLabel(date, today)
   const chevron = {
     transform: calendarOpen ? 'rotate(180deg)' : 'none',
@@ -28,6 +34,21 @@ export function DayBar({ date, today, calendarOpen, onToggleCalendar, onStep }: 
       >
         {label.date}
         {label.relative && <span className="text-muted font-normal">· {label.relative}</span>}
+        <AnimatePresence initial={false}>
+          {complete && (
+            <motion.span
+              key={date}
+              role="img"
+              aria-label="vollständig getrackt"
+              className="bg-accent text-on-accent flex size-5 items-center justify-center rounded-full"
+              initial={reduced ? false : { scale: 0.4, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1, transition: reduced ? instant : motionTokens.toast }}
+              exit={{ scale: 0.4, opacity: 0, transition: reduced ? instant : motionTokens.sheetOut }}
+            >
+              <IconCheck size={13} strokeWidth={2.8} />
+            </motion.span>
+          )}
+        </AnimatePresence>
         <IconChevronDown className="text-muted" style={chevron} />
       </button>
       <div className="flex">

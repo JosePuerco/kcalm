@@ -1,5 +1,6 @@
 // Übersichtskarte nach Kern.dc.html: Ring „kcal übrig“ (dynamisches Tagesziel) links, 4 Makro-Balken rechts,
 // darunter aufklappbare Zeile „Woche 10.302 / 19.600 kcal“ mit 7 Tagesbalken und gestricheltem Tagesziel.
+// Vollständig getrackt: Karte dezent blau getönt, in der Woche ein Punkt unter vollständigen Tagen (Wunsch von Jan).
 import { IconChevronDown } from '../../components/icons/icons.tsx'
 import { AnimatedNumber } from '../../components/ui/AnimatedNumber.tsx'
 import { Card } from '../../components/ui/Card.tsx'
@@ -22,9 +23,13 @@ type Props = {
   selected: LocalDate
   weekOpen: boolean
   onToggleWeek: () => void
+  /** angezeigter Tag vollständig getrackt */
+  complete: boolean
+  /** vollständige Tage dieser Woche */
+  weekComplete: Set<LocalDate>
 }
 
-export function OverviewCard({ overview: o, selected, weekOpen, onToggleWeek }: Props) {
+export function OverviewCard({ overview: o, selected, weekOpen, onToggleWeek, complete, weekComplete }: Props) {
   // Vor dem ersten Profil gibt es kein Ziel: dann zeigt der Ring nur, was gegessen wurde
   const ring =
     o.remaining === null
@@ -32,7 +37,11 @@ export function OverviewCard({ overview: o, selected, weekOpen, onToggleWeek }: 
       : { value: Math.abs(o.remaining), label: o.over ? 'kcal drüber' : 'kcal übrig' }
 
   return (
-    <Card summary padded={false} className="px-4 pt-4 pb-1">
+    <Card
+      summary
+      padded={false}
+      className={`px-4 pt-4 pb-1 transition-colors duration-300 ${complete ? 'bg-accent-soft!' : ''}`}
+    >
       <div className="flex items-center gap-[18px]">
         <Ring progress={o.progress} value={ring.value} label={ring.label} over={o.over} />
         <div className="flex min-w-0 flex-1 flex-col gap-[9px]">
@@ -66,14 +75,16 @@ export function OverviewCard({ overview: o, selected, weekOpen, onToggleWeek }: 
               <IconChevronDown className="text-muted" style={chevronStyle(weekOpen)} />
             </span>
           </button>
-          {weekOpen && <WeekBars week={o.week} selected={selected} />}
+          {weekOpen && <WeekBars week={o.week} selected={selected} complete={weekComplete} />}
         </>
       )}
     </Card>
   )
 }
 
-function WeekBars({ week, selected }: { week: NonNullable<DayOverview['week']>; selected: LocalDate }) {
+type WeekProps = { week: NonNullable<DayOverview['week']>; selected: LocalDate; complete: Set<LocalDate> }
+
+function WeekBars({ week, selected, complete }: WeekProps) {
   const scale = weekBarScale(week)
   const px = (kcal: number) => Math.round((Math.min(kcal, scale) / scale) * BAR_HEIGHT)
   return (
@@ -100,11 +111,13 @@ function WeekBars({ week, selected }: { week: NonNullable<DayOverview['week']>; 
           <div key={d.date} className="text-tiny flex flex-col items-center gap-px">
             <span className="text-muted">{weekdayShort(d.date)}</span>
             <span>{d.kcal ? formatNumber(d.kcal) : '–'}</span>
+            {/* Punkt = vollständig, wie im Monatskalender */}
+            <span className={`mt-0.5 size-1 rounded-full ${complete.has(d.date) ? 'bg-accent' : ''}`} />
           </div>
         ))}
       </div>
       <span className="text-tiny text-muted mt-2 block">
-        Gestrichelt: festes Tagesziel {formatNumber(week.fixedTarget)}
+        Gestrichelt: festes Tagesziel {formatNumber(week.fixedTarget)} · Punkt = vollständig
       </span>
     </Reveal>
   )

@@ -3,7 +3,7 @@
 
 import type { MacroMode, MacroTarget, ProfileVersion } from '../db/types.ts'
 import { formatNumber } from './format.ts'
-import { GPERKG_MACROS, MACRO_KEYS, fixedDailyTarget, macroGoals, type MacroKey } from './goals.ts'
+import { GPERKG_MACROS, KCAL_PER_GRAM, MACRO_KEYS, fixedDailyTarget, macroGoals, type MacroKey } from './goals.ts'
 import { parseDecimal, toInput } from './productForm.ts'
 
 export interface MacroInput {
@@ -84,13 +84,34 @@ export function nextMode(key: MacroKey, mode: MacroMode): MacroMode {
 }
 
 /**
- * Modus wechseln. Wird ein Makro zu „Rest“, wird ein bisheriger Rest zu Gramm mit seinem
- * aktuellen Ergebnis, damit immer höchstens ein Rest bleibt und sich nichts sprunghaft ändert.
+ * Wert für einen neuen Modus, so dass die Gramm gleich bleiben (gerundet: g und % ganzzahlig, g/kg eine Stelle).
+ * Beispiel: Eiweiß 133,2 g bei 2.800 kcal → 19 %; bei 74 kg → 1,8 g/kg. Ohne Grundlage bleibt der alte Text.
+ */
+export function convertMacroValue(
+  key: MacroKey,
+  grams: number | null,
+  mode: MacroMode,
+  daily: number | null,
+  weightKg: number | null,
+  fallback: string,
+): string {
+  if (mode === 'rest') return ''
+  if (grams === null) return fallback
+  if (mode === 'g') return toInput(Math.round(grams))
+  if (mode === 'percent') return daily ? toInput(Math.round(((grams * KCAL_PER_GRAM[key]) / daily) * 100)) : fallback
+  return weightKg ? toInput(Math.round((grams / weightKg) * 10) / 10) : fallback
+}
+
+/**
+ * Modus wechseln und den Wert umrechnen, damit die Gramm gleich bleiben. Wird ein Makro zu „Rest“,
+ * wird ein bisheriger Rest zu Gramm mit seinem aktuellen Ergebnis, damit höchstens ein Rest bleibt.
  */
 export function changeMode(values: ProfileFormValues, key: MacroKey, mode: MacroMode): ProfileFormValues {
-  const macros = { ...values.macros, [key]: { mode, value: mode === 'rest' ? '' : values.macros[key].value } }
+  const preview = profilePreview(values)
+  const weight = number(values.weightKg)
+  const value = convertMacroValue(key, preview.grams[key], mode, preview.daily, weight, values.macros[key].value)
+  const macros = { ...values.macros, [key]: { mode, value } }
   if (mode === 'rest') {
-    const preview = profilePreview(values)
     for (const other of MACRO_KEYS) {
       if (other !== key && macros[other].mode === 'rest') {
         const grams = preview.grams[other]
@@ -99,6 +120,24 @@ export function changeMode(values: ProfileFormValues, key: MacroKey, mode: Macro
     }
   }
   return { ...values, macros }
+}
+
+/** Tagesbudget eingetippt → Wochenbudget (× 7) für das Formular; ungültig = leer */
+export function weeklyFromDaily(dailyText: string): string {
+  const v = parseDecimal(dailyText)
+  return typeof v === 'number' ? toInput(Math.round(v * 7 * 10) / 10) : ''
+}
+
+/** Tagesbudget fürs Eingabefeld aus dem Wochenbudget, ganzzahlig gerundet */
+export function dailyFromWeekly(weeklyText: string): string {
+  const v = parseDecimal(weeklyText)
+  return typeof v === 'number' && v > 0 ? toInput(Math.round(fixedDailyTarget(v))) : ''
+}
+
+/** Summe der Prozente, wenn alle drei Makros in % sind (muss 100 ergeben); sonst null */
+export function percentTotal(macros: Record<MacroKey, MacroInput>): number | null {
+  if (!MACRO_KEYS.every((k) => macros[k].mode === 'percent')) return null
+  return MACRO_KEYS.reduce((sum, k) => sum + (number(macros[k].value) ?? 0), 0)
 }
 
 export interface ProfilePreview {
@@ -188,7 +227,10 @@ export function validateProfileForm(values: ProfileFormValues): ProfileFormResul
     (sum, k) => (targets[k].mode === 'percent' ? sum + (targets[k].value ?? 0) : sum),
     0,
   )
-  if (percentSum > 100) errors.macros = 'Prozente ergeben zusammen mehr als 100 %'
+  const allPercent = percentTotal(values.macros)
+  if (allPercent !== null && Math.abs(allPercent - 100) > 1e-9) {
+    errors.macros = `Prozente ergeben zusammen ${formatNumber(allPercent, allPercent % 1 === 0 ? 0 : 1)} %, es müssen 100 % sein`
+  } else if (percentSum > 100) errors.macros = 'Prozente ergeben zusammen mehr als 100 %'
 
   const usesWeight = MACRO_KEYS.some((k) => targets[k].mode === 'gPerKg')
   const weight = parseDecimal(values.weightKg)

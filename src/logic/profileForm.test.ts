@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest'
 import type { ProfileVersion } from '../db/types.ts'
 import {
   changeMode,
+  dailyFromWeekly,
+  percentTotal,
+  weeklyFromDaily,
   emptyProfileForm,
   nextMode,
   presetFor,
@@ -77,8 +80,65 @@ describe('Modi und Vorlagen', () => {
     expect(v.macros.carbs).toEqual({ mode: 'g', value: '392' })
   })
 
-  it('changeMode: anderer Modus behält den Wert', () => {
-    expect(changeMode(aufbau, 'fat', 'g').macros.fat).toEqual({ mode: 'g', value: '25' })
+  it('changeMode rechnet um, die Gramm bleiben (gerundet)', () => {
+    // Fett 25 % von 2.800 = 77,8 g
+    expect(changeMode(aufbau, 'fat', 'g').macros.fat).toEqual({ mode: 'g', value: '78' })
+    // Eiweiß 1,8 × 74 = 133,2 g → 133,2 × 4 ÷ 2.800 = 19 %
+    expect(changeMode(aufbau, 'protein', 'percent').macros.protein).toEqual({ mode: 'percent', value: '19' })
+    // 77,8 g ÷ 74 kg = 1,05 → 1,1 g/kg
+    expect(changeMode(aufbau, 'fat', 'gPerKg').macros.fat).toEqual({ mode: 'gPerKg', value: '1,1' })
+    // Rest → g übernimmt das Ergebnis
+    expect(changeMode(aufbau, 'carbs', 'g').macros.carbs).toEqual({ mode: 'g', value: '392' })
+  })
+
+  it('changeMode ohne Grundlage behält den Text', () => {
+    const noWeight = { ...aufbau, weightKg: '' }
+    expect(changeMode(noWeight, 'fat', 'gPerKg').macros.fat).toEqual({ mode: 'gPerKg', value: '25' })
+    expect(changeMode({ ...aufbau, weeklyKcal: '' }, 'fat', 'g').macros.fat).toEqual({ mode: 'g', value: '25' })
+  })
+})
+
+describe('Tagesbudget', () => {
+  it('weeklyFromDaily: × 7, Dezimalkomma', () => {
+    expect(weeklyFromDaily('2800')).toBe('19600')
+    expect(weeklyFromDaily('2142,5')).toBe('14997,5')
+    expect(weeklyFromDaily('')).toBe('')
+    expect(weeklyFromDaily('abc')).toBe('')
+  })
+
+  it('dailyFromWeekly: ÷ 7 gerundet', () => {
+    expect(dailyFromWeekly('19600')).toBe('2800')
+    expect(dailyFromWeekly('15000')).toBe('2143')
+    expect(dailyFromWeekly('')).toBe('')
+    expect(dailyFromWeekly('0')).toBe('')
+  })
+})
+
+describe('Prozente', () => {
+  const pct = (p: string, f: string, c: string) => ({
+    protein: { mode: 'percent' as const, value: p },
+    fat: { mode: 'percent' as const, value: f },
+    carbs: { mode: 'percent' as const, value: c },
+  })
+
+  it('percentTotal nur, wenn alle drei in %', () => {
+    expect(percentTotal(pct('20', '30', '40'))).toBe(90)
+    expect(percentTotal(aufbau.macros)).toBeNull()
+  })
+
+  it('alle in %: genau 100 nötig, darunter und darüber Fehler', () => {
+    expect(validateProfileForm({ ...aufbau, macros: pct('20', '30', '50') }).ok).toBe(true)
+    expect(validateProfileForm({ ...aufbau, macros: pct('20', '30', '40') })).toMatchObject({
+      ok: false,
+      errors: { macros: 'Prozente ergeben zusammen 90 %, es müssen 100 % sein' },
+    })
+    expect(validateProfileForm({ ...aufbau, macros: pct('20', '30', '55,5') })).toMatchObject({
+      errors: { macros: 'Prozente ergeben zusammen 105,5 %, es müssen 100 % sein' },
+    })
+  })
+
+  it('mit Rest sind unter 100 % normal', () => {
+    expect(validateProfileForm(aufbau).ok).toBe(true)
   })
 })
 

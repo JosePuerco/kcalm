@@ -81,6 +81,7 @@ export function Tagebuch() {
         date={date}
         today={today}
         calendarOpen={calendarOpen}
+        complete={data?.complete ?? false}
         onToggleCalendar={toggleCalendar}
         onStep={(by) => goTo(addDays(date, by))}
       />
@@ -105,6 +106,8 @@ export function Tagebuch() {
               selected={date}
               weekOpen={weekOpen}
               onToggleWeek={() => setWeekOpen(!weekOpen)}
+              complete={data.complete}
+              weekComplete={data.weekComplete}
             />
             {data.dayEntries.length === 0 && (
               <EmptyDayCard

@@ -66,6 +66,7 @@ describe('loadDiary', () => {
     expect(d.goal?.weekBudget).toBe(19600)
     expect([...d.completeDates]).toEqual(['2026-10-20'])
     expect(d.complete).toBe(false)
+    expect([...d.weekComplete]).toEqual(['2026-10-20'])
     expect((await loadDiary('2026-10-20', '2026-10')).complete).toBe(true)
   })
 
