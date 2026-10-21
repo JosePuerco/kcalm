@@ -378,7 +378,7 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**21.10.2026 · Phase 6 umgesetzt** – alle Punkte erledigt (Teilschritte 6a–6d, je ein Commit), noch nicht gepusht und nicht auf dem iPhone getestet. 683 Tests grün, Build und Lint sauber. Nächster Schritt: Jans iPhone-Test, danach Phase 7 (Wasser).
+**21.10.2026 · Phase 6 abgeschlossen** – alle Punkte erledigt (Teilschritte 6a–6d, je ein Commit), deployt und von Jan auf dem iPhone getestet. 683 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 7 (Wasser).
 
 - Erledigt: `src/logic/verify.ts` (Zusammenführen, Vergleich, `canVerify`, `rebaseOnOffUpdate`), `src/db/verify.ts` (Korrektur, Prüfen, Umschalter), `refreshOffProduct` in `src/db/off.ts`; Produkt- und BLS-Detail mit Tabelle Original · Meine; Korrekturformular („Werte bearbeiten“ bei OFF und BLS); Prüf-Dialog im Hinzufügen-Sheet.
 - Eigene Produkte gelten als geprüft: Häkchen in Liste und Suche, Filter „Geprüft“ zeigt sie mit. In der Liste zeigt kcal /100 die genutzten Werte (Korrektur bzw. Original).
