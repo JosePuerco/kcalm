@@ -363,7 +363,9 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**21.10.2026 · Phase 3 umgesetzt, iPhone-Test offen** – alle Punkte erledigt (Teilschritte 3a–3g, je ein Commit), 433 Tests grün, Build und Lint sauber. Im Browser per Skript geprüft; Sichtprüfung (Screenshots gingen nicht) und Test auf dem iPhone durch Jan stehen aus. Danach Phase 3 abschließen, nächster Schritt Phase 4.
+**21.10.2026 · Phase 3 abgeschlossen** – alle Punkte erledigt (Teilschritte 3a–3g, je ein Commit), deployt und von Jan auf dem iPhone getestet. 439 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 4 (Open Food Facts und Barcode), vorher Kurztest OFF aus dem Browser (CORS).
+
+- Nach Jans iPhone-Test ergänzt (`77d08d6`): Tagesbudget im Profil direkt eintippbar (× 7 aufs Wochenbudget), Modus-Chip rechnet den Wert um (Gramm bleiben gleich, gerundet), alle drei Makros in % müssen genau 100 % ergeben (Summe live sichtbar), vollständige Tage sichtbar (Häkchen-Badge in der Tagesleiste, Übersichts- und Schalter-Karte blau getönt, Punkte in der Woche).
 
 - Erledigt: Rechenlogik `dates.ts`, `goals.ts`, `profiles.ts`, `diary.ts`, `addFood.ts`, `quickEntry.ts`, `copyDay.ts`, `slots.ts`, `profileForm.ts`; Ersteinrichtung (4 Schritte, speichert am Ende in einer Transaktion), Slot-Editor, Tagesansicht, Hinzufügen-Sheet, Bearbeiten/Verschieben/Löschen, Schnelleintrag, Profile und Ziele, Tag kopieren / „Wie gestern“ / vollständig.
 - Mit Jan abgestimmt: Künftige Tage zeigen das heutige Ziel (vorgeplante Einträge zählen nicht), in künftigen Wochen Budget ÷ 7; dynamisches Ziel darf negativ werden („kcal drüber“); Rest negativ → 0 g + Hinweis; g/kg ohne Gewicht → unbekannt; Override „ab heute“ gilt nur in seiner Woche; Bearbeiten des aktiven Profils gilt ab heute (anteilig); erstes Profil mitten in der Woche bekommt den anteiligen Wochenrest, Tage davor zählen nicht (`countFrom`); festes Tagesziel immer aus dem Wochenbudget der Version.
