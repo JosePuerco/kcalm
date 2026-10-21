@@ -309,10 +309,10 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 
 ### Phase 6 – Verifizieren
 
-- [ ] Korrekturschicht für OFF- und BLS-Werte, Status „geprüft“, Tabelle mit Abweichungen, Umschalter Meine/Original
-- [ ] „Als geprüft markieren“ nur, wenn alle Pflichtangaben der Nährwerttabelle vorhanden sind (`REQUIRED_NUTRIENTS`)
-- [ ] OFF-Aktualisierung überschreibt Korrekturen nicht (Test)
-- [ ] Prüf-Dialog beim Scan und bei der Auswahl aus der Suche: ungeprüftes OFF-Produkt → einmalig Nährwerte vs. Etikett, „Stimmt so“ (geprüft) / Werte korrigieren (Korrekturschicht) / „Später prüfen“ (fragt beim nächsten Scan bzw. der nächsten Auswahl wieder), danach direkt zur Menge; eigene Produkte gelten automatisch als geprüft (Jan, 21.10.2026)
+- [x] Korrekturschicht für OFF- und BLS-Werte, Status „geprüft“, Tabelle mit Abweichungen, Umschalter Meine/Original
+- [x] „Als geprüft markieren“ nur, wenn alle Pflichtangaben der Nährwerttabelle vorhanden sind (`REQUIRED_NUTRIENTS`)
+- [x] OFF-Aktualisierung überschreibt Korrekturen nicht (Test)
+- [x] Prüf-Dialog beim Scan und bei der Auswahl aus der Suche: ungeprüftes OFF-Produkt → einmalig Nährwerte vs. Etikett, „Stimmt so“ (geprüft) / Werte korrigieren (Korrekturschicht) / „Später prüfen“ (fragt beim nächsten Scan bzw. der nächsten Auswahl wieder), danach direkt zur Menge; eigene Produkte gelten automatisch als geprüft (Jan, 21.10.2026)
 
 ### Phase 7 – Wasser
 
@@ -365,6 +365,9 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 | Rezept: Nährwert bei einer Zutat unbekannt | Pro 100 g unbekannt (`null`); die Topf-Summe auf dem Rezept-Screen zeigt „mind. …“ (Jan, 21.10.2026) |
 | Rezept: Zutaten in ml | Zählen beim Rohgewicht wie g (1 ml ≈ 1 g) (Jan, 21.10.2026) |
 | Mahlzeit: −/+ bei Skalierung | Schritt auf der angezeigten Menge (unter 50 → 5, unter 200 → 10, sonst 50), rastet auf Vielfache ein, nicht unter 5 (Jan, 21.10.2026) |
+| Umschalter Meine/Original bei BLS | Feld `useOverride` in `blsPrefs`, Backup-Format 3 und Datenbank-Version 3 (Bestand: `true`) (Jan, 21.10.2026) |
+| OFF-Update bei vorhandener Korrektur | Felder, die OFF ändert, werden mit dem alten Wert in der Korrektur festgehalten: „Meine Werte“ bleiben gleich, die Änderung erscheint als Abweichung. Ohne Korrektur übernimmt das Produkt das neue Original. Liefert OFF keine kcal mehr, bleibt alles (Jan, 21.10.2026) |
+| Prüfstatus | „Geprüft“ bezieht sich auf „Meine Werte“; „Original nutzen“ und „Werte bearbeiten“ behalten die Prüfung; „Prüfung entfernen“ lässt Korrekturen stehen; Korrektur ohne Felder und ohne Prüfung bekommt den Löschmarker (Jan, 21.10.2026) |
 | Spalten „Monatsauswertung Claude“ | Ebene Tage, JSON: Datum, Vollständig, kcal, Eiweiß, Kohlenhydrate, Fett, Ballaststoffe, Budget, Gewicht |
 
 Offen nur noch:
@@ -374,6 +377,13 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**21.10.2026 · Phase 6 umgesetzt** – alle Punkte erledigt (Teilschritte 6a–6d, je ein Commit), noch nicht gepusht und nicht auf dem iPhone getestet. 683 Tests grün, Build und Lint sauber. Nächster Schritt: Jans iPhone-Test, danach Phase 7 (Wasser).
+
+- Erledigt: `src/logic/verify.ts` (Zusammenführen, Vergleich, `canVerify`, `rebaseOnOffUpdate`), `src/db/verify.ts` (Korrektur, Prüfen, Umschalter), `refreshOffProduct` in `src/db/off.ts`; Produkt- und BLS-Detail mit Tabelle Original · Meine; Korrekturformular („Werte bearbeiten“ bei OFF und BLS); Prüf-Dialog im Hinzufügen-Sheet.
+- Eigene Produkte gelten als geprüft: Häkchen in Liste und Suche, Filter „Geprüft“ zeigt sie mit. In der Liste zeigt kcal /100 die genutzten Werte (Korrektur bzw. Original).
+- Eigenes Design (kein Prototyp): Korrekturformular (startet mit „Meine Werte“, zeigt „Original …“ unter abweichenden Feldern) und Prüf-Dialog (Kopf wie der Mengen-Schritt, Tabelle, „Stimmt so“ / „Werte korrigieren“ / „Später prüfen“). Nach „Werte korrigieren“ im Prüf-Dialog gilt das Produkt als geprüft, wenn alle Pflichtangaben da sind. Fehlen Pflichtangaben, ist „Stimmt so“ bzw. „Als geprüft markieren“ gesperrt, mit dem Hinweis „Zum Prüfen fehlt noch: …“.
+- Abweichungen vom Prototyp: Umschalter Meine/Original erst sichtbar, wenn etwas korrigiert ist; nicht genutzte Spalte in `muted` statt im helleren Grau des Prototyps (kein Token); Zellen-Radius 9 statt 8 px (`segmentItem`); Menge in der Meta-Zeile fehlt weiterhin (wird nicht gespeichert).
 
 **21.10.2026 · Phase 5 abgeschlossen** – alle Punkte erledigt (Teilschritte 5a–5d, je ein Commit), deployt und von Jan auf dem iPhone getestet. 628 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 6 (Verifizieren).
 
