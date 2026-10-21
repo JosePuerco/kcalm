@@ -296,11 +296,11 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 ### Phase 4 – Open Food Facts und Barcode
 
 - [x] Kurztest: OFF aus dem Browser erreichbar (CORS), Antwortformat
-- [ ] Barcode-Scanner mit selbst gehostetem Decoder, Start per Tipp, Taschenlampe, manuelle Eingabe
+- [x] Barcode-Scanner mit selbst gehostetem Decoder, Start per Tipp, Taschenlampe, manuelle Eingabe
 - [x] OFF-Abfrage mit App-Kennung, Zod-Prüfung, lokales Speichern
 - [x] OFF-Textsuche auf Knopfdruck
 - [x] Offline-Scans merken und nachladen; „nicht gefunden“ → eigenes Produkt mit Barcode
-- [ ] Scanner-Test im Supermarkt
+- [x] Scanner-Test im Supermarkt
 
 ### Phase 5 – Mahlzeiten und Rezepte
 
@@ -371,6 +371,14 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**21.10.2026 · Phase 4 abgeschlossen** – alle Punkte erledigt (Teilschritte 4a–4e plus Nachbesserungen nach Jans iPhone-Test), deployt; Scanner, Taschenlampe und Supermarkt-Test von Jan auf dem iPhone bestätigt. 527 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 5 (Mahlzeiten und Rezepte), danach Phase 6 mit dem Prüf-Dialog.
+
+- Vorab: Nährwert Alkohol entfernt (Backup-Format 2, Datenbank-Version 2 mit Upgrade).
+- Erledigt: `src/logic/barcode.ts` (Prüfziffer, Einheitsform), `src/logic/off.ts` (Adressen, Zod, Umwandlung, kJ → kcal), `src/db/off.ts` (lokal zuerst, Zeitlimit, Textsuche mit Wiederholung), `src/scanner/detector.ts` (barcode-detector, WASM aus dem eigenen Build, Test auf Version/SHA-256), Scanner-Screen, Ablauf nach dem Scan, `pendingScans` mit Nachladen im Hintergrund, OFF-Textsuche.
+- Nach Jans iPhone-Test: Kamera erst sichtbar, wenn das erste Bild läuft (kein Sprung aus kleinem Fenster); Treffer direkt zur Menge; Kamera aus beim Eintippen. Vibration bewusst nicht (iOS unterstützt sie in Web-Apps nicht).
+- Tokens ergänzt (mit Jans OK): `color.scanner`, `shadow.laser`, `radius.scanFrame`, `motion.scanLaser`.
+- Kamera-Erlaubnis: iOS fragt einmal pro App-Start; im Code nicht änderbar. Jan kann sie in Safari pro Website erlauben (aA → Website-Einstellungen → Kamera).
 
 **21.10.2026 · Phase 3 abgeschlossen** – alle Punkte erledigt (Teilschritte 3a–3g, je ein Commit), deployt und von Jan auf dem iPhone getestet. 439 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 4 (Open Food Facts und Barcode), vorher Kurztest OFF aus dem Browser (CORS).
 
