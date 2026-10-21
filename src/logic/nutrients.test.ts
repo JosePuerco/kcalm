@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { NUTRIENT_KEYS, unknownNutrients } from '../db/records.ts'
 import type { Nutrients } from '../db/types.ts'
 import { formatNumber } from './format.ts'
-import { nutrientsForAmount, valueForAmount } from './nutrients.ts'
+import { nutrientsForAmount, sumNutrients, valueForAmount } from './nutrients.ts'
 
 // Haferflocken pro 100 g, Ballaststoffe und Alkohol hier bewusst unbekannt
 const oats: Nutrients = {
@@ -102,5 +102,32 @@ describe('nutrientsForAmount', () => {
     expect(() => nutrientsForAmount(oats, -1)).toThrow(RangeError)
     expect(() => nutrientsForAmount(oats, Number.NaN)).toThrow('Ungültige Menge')
     expect(() => nutrientsForAmount(oats, Number.POSITIVE_INFINITY)).toThrow(RangeError)
+  })
+})
+
+describe('sumNutrients', () => {
+  const a = { ...unknownNutrients(), kcal: 223.2, protein: 8.1, fiber: null }
+  const b = { ...unknownNutrients(), kcal: 160, protein: 8.5, fiber: 2 }
+
+  it('summiert exakt', () => {
+    const s = sumNutrients([a, b])
+    expect(s.kcal).toEqual({ value: 383.2, atLeast: false })
+    expect(s.protein.value).toBeCloseTo(16.6, 10)
+  })
+
+  it('teilweise unbekannt → „mind.“, unbekannt zählt nicht als 0', () => {
+    expect(sumNutrients([a, b]).fiber).toEqual({ value: 2, atLeast: true })
+  })
+
+  it('bei allen unbekannt → unbekannt', () => {
+    expect(sumNutrients([a, b]).salt).toEqual({ value: null, atLeast: false })
+  })
+
+  it('keine Einträge → bekannt 0', () => {
+    for (const key of NUTRIENT_KEYS) expect(sumNutrients([])[key]).toEqual({ value: 0, atLeast: false })
+  })
+
+  it('bekannte 0 macht nichts zu „mind.“', () => {
+    expect(sumNutrients([{ ...b, fiber: 0 }, b]).fiber).toEqual({ value: 2, atLeast: false })
   })
 })

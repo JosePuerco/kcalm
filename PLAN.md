@@ -289,7 +289,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 - [ ] Einträge bearbeiten, verschieben, löschen (Wischen + Sheet)
 - [ ] Schnelleintrag (kcal + Makros) mit Plausibilitätshinweis
 - [ ] Profile mit Versionen, Zuweisung ab Datum, Wechsel „ab nächstem Montag“ / „ab heute“
-- [ ] Rechenlogik festes und dynamisches Tagesziel, Wochenstand, Makros in g / % / g/kg / Rest, Profilwechsel mit Tests
+- [x] Rechenlogik festes und dynamisches Tagesziel, Wochenstand, Makros in g / % / g/kg / Rest, Profilwechsel mit Tests
 - [ ] Tag kopieren, „wie gestern“, zuletzt gegessen, Tag als vollständig markieren, leerer Tag
 
 ### Phase 4 – Open Food Facts und Barcode

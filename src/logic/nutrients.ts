@@ -22,3 +22,30 @@ export function nutrientsForAmount(per100: Nutrients, amount: number): Nutrients
   for (const key of NUTRIENT_KEYS) result[key] = valueForAmount(per100[key], amount)
   return result
 }
+
+/** Summe eines Nährwerts über mehrere Einträge */
+export interface NutrientSum {
+  /** Summe der bekannten Werte; null = bei allen Einträgen unbekannt */
+  value: number | null
+  /** Mindestens ein Eintrag unbekannt, andere bekannt → Anzeige „mind. …“ */
+  atLeast: boolean
+}
+
+/**
+ * Summe je Nährwert. Unbekannte Werte werden nicht als 0 gezählt, sondern machen die Summe zu „mind.“.
+ * Keine Einträge = bekannt 0.
+ */
+export function sumNutrients(list: readonly Nutrients[]): Record<keyof Nutrients, NutrientSum> {
+  const result = {} as Record<keyof Nutrients, NutrientSum>
+  for (const key of NUTRIENT_KEYS) {
+    let value: number | null = list.length === 0 ? 0 : null
+    let unknown = 0
+    for (const n of list) {
+      const v = n[key]
+      if (v === null) unknown++
+      else value = (value ?? 0) + v
+    }
+    result[key] = { value, atLeast: value !== null && unknown > 0 }
+  }
+  return result
+}
