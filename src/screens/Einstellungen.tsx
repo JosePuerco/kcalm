@@ -7,20 +7,30 @@ import { useLiveQuery } from '../db/live.ts'
 import { getSlots } from '../db/slots.ts'
 import { formatNumber } from '../logic/format.ts'
 import { BackupCard } from './BackupCard.tsx'
+import { ProfilesScreen } from './einstellungen/ProfilesScreen.tsx'
 import { SlotsScreen } from './einstellungen/SlotsScreen.tsx'
+import { useToday } from '../app/diaryState.ts'
+import { loadProfiles } from '../db/profiles.ts'
+import { profileStatus } from '../logic/profiles.ts'
 
 // Einstellungen und Unterseiten über den Hash-Pfad
 //  #/einstellungen          Übersicht
+//  #/einstellungen/profile  Profile und Ziele
 //  #/einstellungen/slots    Mahlzeiten-Slots
 export function Einstellungen() {
   const [view] = useSubPath()
   if (view === 'slots') return <SlotsScreen />
+  if (view === 'profile') return <ProfilesScreen />
   return <Overview />
 }
 
-// Gruppen nach Einstellungen.dc.html. Profile, Funktionen, Darstellung und Über folgen später.
+// Gruppen nach Einstellungen.dc.html. Funktionen, Darstellung und Über folgen in späteren Phasen.
 function Overview() {
   const slots = useLiveQuery(getSlots, [])
+  const today = useToday()
+  const profiles = useLiveQuery(loadProfiles, [])
+  const activeId = profiles && profileStatus(profiles.assignments, profiles.versions, today).activeProfileId
+  const activeName = profiles?.profiles.find((p) => p.id === activeId)?.name ?? ''
   const slotsMeta = slots
     ? `${formatNumber(slots.length)}${slots.some((s) => s.timeFrom) ? ' · mit Uhrzeiten' : ''}`
     : ''
@@ -29,7 +39,8 @@ function Overview() {
     <Screen title="Einstellungen">
       <Group title="Ziele">
         <Card padded={false}>
-          <LinkRow to={href('einstellungen', 'slots')} label="Mahlzeiten-Slots" meta={slotsMeta} />
+          <LinkRow to={href('einstellungen', 'profile')} label="Profile und Ziele" meta={activeName} />
+          <LinkRow to={href('einstellungen', 'slots')} label="Mahlzeiten-Slots" meta={slotsMeta} border />
         </Card>
       </Group>
       <Group title="Daten">

@@ -3,6 +3,7 @@ import { newRecord, unknownNutrients } from '../db/records.ts'
 import type { Entry, Nutrients, Slot } from '../db/types.ts'
 import {
   addMonths,
+  dateWithWeekday,
   dayLabel,
   dayOverview,
   entryCount,
@@ -50,6 +51,10 @@ describe('Beschriftungen', () => {
 
   it('dayLabel: anderes Jahr mit Jahreszahl', () => {
     expect(dayLabel('2025-12-31', '2026-01-02').date).toBe('Mi 31.12.2025')
+  })
+
+  it('dateWithWeekday', () => {
+    expect(dateWithWeekday('2026-09-01')).toBe('Di 01.09.2026')
   })
 
   it('monthLabel, addMonths über Jahresgrenzen', () => {

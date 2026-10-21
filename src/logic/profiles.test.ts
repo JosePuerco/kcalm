@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { dynamicTargetFor, weekStatus } from './goals.ts'
-import { assignmentFor, goalFor, switchFromNextMonday, switchFromToday } from './profiles.ts'
+import {
+  assignmentFor,
+  goalFor,
+  latestVersion,
+  profileStatus,
+  switchFromNextMonday,
+  switchFromToday,
+  targetsChanged,
+} from './profiles.ts'
 
 const assignment = (
   validFrom: string,
@@ -119,5 +127,76 @@ describe('goalFor', () => {
     // (17.700 − 8.900) ÷ 4 = 2.200 = 15.400 ÷ 7
     expect(dynamicTargetFor(today, today, kcal, goal.weekBudget)).toBeCloseTo(2200, 10)
     expect(weekStatus(today, today, kcal, goal.weekBudget).remaining).toBeCloseTo(8800, 10)
+  })
+})
+
+describe('latestVersion', () => {
+  const v = (id: string, profileId: string, createdAt: string, deletedAt: string | null = null) => ({ id, profileId, createdAt, deletedAt })
+  it('neueste nicht gelöschte Version des Profils', () => {
+    const list = [v('a1', 'a', '2026-10-01'), v('a2', 'a', '2026-10-10'), v('b1', 'b', '2026-10-20'), v('a3', 'a', '2026-10-15', '2026-10-16')]
+    expect(latestVersion(list, 'a')?.id).toBe('a2')
+    expect(latestVersion(list, 'x')).toBeNull()
+  })
+})
+
+describe('profileStatus', () => {
+  const versions = [
+    { id: 'aufbau1', profileId: 'aufbau', createdAt: '2026-09-01', deletedAt: null },
+    { id: 'aufbau2', profileId: 'aufbau', createdAt: '2026-10-05', deletedAt: null },
+    { id: 'diaet1', profileId: 'diaet', createdAt: '2026-10-01', deletedAt: null },
+  ]
+  const a = (id: string, validFrom: string, versionId: string, createdAt = `${validFrom}T08:00:00.000Z`, deletedAt: string | null = null) => ({
+    id,
+    ...assignment(validFrom, versionId, null, createdAt, deletedAt),
+  })
+
+  it('aktiv seit dem ersten Tag der Strecke, auch über neue Versionen hinweg', () => {
+    const list = [a('1', '2026-09-01', 'aufbau1'), a('2', '2026-10-05', 'aufbau2')]
+    expect(profileStatus(list, versions, '2026-10-21')).toMatchObject({ activeProfileId: 'aufbau', activeSince: '2026-09-01', scheduled: null })
+  })
+
+  it('nach einem Wechsel zählt die Strecke ab dem Wechsel', () => {
+    const list = [a('1', '2026-09-01', 'aufbau1'), a('2', '2026-10-12', 'diaet1'), a('3', '2026-10-19', 'aufbau2')]
+    expect(profileStatus(list, versions, '2026-10-21')).toMatchObject({ activeProfileId: 'aufbau', activeSince: '2026-10-19' })
+  })
+
+  it('geplanter Wechsel ab nächstem Montag', () => {
+    const list = [a('1', '2026-09-01', 'aufbau1'), a('2', '2026-10-26', 'diaet1')]
+    const s = profileStatus(list, versions, '2026-10-21')
+    expect(s.activeProfileId).toBe('aufbau')
+    expect(s.scheduled).toMatchObject({ id: '2', validFrom: '2026-10-26', profileId: 'diaet' })
+  })
+
+  it('gleicher Tag zweimal: zuletzt angelegte gilt, auch für „aktiv seit“', () => {
+    const list = [
+      a('1', '2026-09-01', 'aufbau1'),
+      a('2', '2026-10-21', 'diaet1', '2026-10-21T08:00:00.000Z'),
+      a('3', '2026-10-21', 'aufbau2', '2026-10-21T09:00:00.000Z'),
+    ]
+    expect(profileStatus(list, versions, '2026-10-21')).toMatchObject({ activeProfileId: 'aufbau', activeSince: '2026-09-01' })
+  })
+
+  it('ohne Zuweisung, gelöschte zählen nicht', () => {
+    expect(profileStatus([], versions, '2026-10-21')).toEqual({ activeProfileId: null, activeSince: null, scheduled: null })
+    const list = [a('1', '2026-09-01', 'aufbau1'), a('2', '2026-10-26', 'diaet1', undefined, '2026-10-22T00:00:00.000Z')]
+    expect(profileStatus(list, versions, '2026-10-21').scheduled).toBeNull()
+  })
+})
+
+describe('targetsChanged', () => {
+  const t = {
+    weeklyKcal: 19600,
+    protein: { mode: 'gPerKg' as const, value: 1.8 },
+    fat: { mode: 'percent' as const, value: 25 },
+    carbs: { mode: 'rest' as const, value: null },
+    fiberG: 30,
+    waterMl: null,
+    manualWeightKg: 74,
+  }
+  it('gleich / Budget / Modus / Gewicht', () => {
+    expect(targetsChanged(t, { ...t })).toBe(false)
+    expect(targetsChanged(t, { ...t, weeklyKcal: 15400 })).toBe(true)
+    expect(targetsChanged(t, { ...t, fat: { mode: 'g', value: 25 } })).toBe(true)
+    expect(targetsChanged(t, { ...t, manualWeightKg: 75 })).toBe(true)
   })
 })

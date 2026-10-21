@@ -191,3 +191,8 @@ export function weekBarScale(week: WeekStatus): number {
   const max = Math.max(...week.days.map((d) => d.kcal), 0)
   return Math.max(week.fixedTarget / 0.875, max, 1)
 }
+
+/** „Mo 01.09.2026“ (Hinweise wie „Aktiv seit …“) */
+export function dateWithWeekday(date: LocalDate): string {
+  return `${weekdayShort(date)} ${date.slice(8, 10)}.${date.slice(5, 7)}.${date.slice(0, 4)}`
+}

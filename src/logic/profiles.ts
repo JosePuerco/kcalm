@@ -77,3 +77,75 @@ export function switchFromToday(today: LocalDate, newWeeklyKcal: number, consume
     weekBudgetOverride: (newWeeklyKcal * daysLeftInWeek(today)) / 7 + consumedBefore,
   }
 }
+
+type VersionRef = Pick<ProfileVersion, 'id' | 'profileId' | 'createdAt' | 'deletedAt'>
+
+/** Neueste Version eines Profils (Bearbeiten legt neue an) */
+export function latestVersion<V extends VersionRef>(versions: readonly V[], profileId: string): V | null {
+  let best: V | null = null
+  for (const v of versions) {
+    if (v.deletedAt !== null || v.profileId !== profileId) continue
+    if (!best || v.createdAt > best.createdAt) best = v
+  }
+  return best
+}
+
+export interface ProfileStatus {
+  /** Profil, das heute gilt */
+  activeProfileId: string | null
+  /** Erster Tag der laufenden Strecke dieses Profils („Aktiv seit Mo 01.09.2026“) */
+  activeSince: LocalDate | null
+  /** Nächster geplanter Wechsel nach heute */
+  scheduled: (Assignment & { id: string; profileId: string }) | null
+}
+
+/** Welches Profil gilt heute, seit wann, und ist ein Wechsel geplant? */
+export function profileStatus(
+  assignments: readonly (Assignment & { id: string })[],
+  versions: readonly VersionRef[],
+  today: LocalDate,
+): ProfileStatus {
+  const profileOf = new Map(versions.map((v) => [v.id, v.profileId]))
+  const live = assignments
+    .filter((a) => a.deletedAt === null && profileOf.has(a.profileVersionId))
+    .sort((a, b) => a.validFrom.localeCompare(b.validFrom) || a.createdAt.localeCompare(b.createdAt))
+
+  const current = assignmentFor(live, today)
+  const activeProfileId = current ? (profileOf.get(current.profileVersionId) ?? null) : null
+
+  // Rückwärts, solange dasselbe Profil gilt; je Startdatum zählt nur die zuletzt angelegte Zuweisung
+  let activeSince: LocalDate | null = null
+  if (current) {
+    const past = live.filter((a) => a.validFrom <= today)
+    const winners = past.filter((a, i) => past[i + 1]?.validFrom !== a.validFrom)
+    for (let i = winners.length - 1; i >= 0; i--) {
+      const a = winners[i]!
+      if (profileOf.get(a.profileVersionId) !== activeProfileId) break
+      activeSince = a.validFrom
+    }
+  }
+
+  const future = live.filter((a) => a.validFrom > today)
+  const firstDate = future[0]?.validFrom
+  const next = future.filter((a) => a.validFrom === firstDate).at(-1)
+  const scheduled = next ? { ...next, profileId: profileOf.get(next.profileVersionId) as string } : null
+
+  return { activeProfileId, activeSince, scheduled }
+}
+
+type Targets = Pick<ProfileVersion, 'weeklyKcal' | 'protein' | 'fat' | 'carbs' | 'fiberG' | 'waterMl' | 'manualWeightKg'>
+
+/** Haben sich die Ziele geändert? Nur dann braucht es eine neue Version (Umbenennen allein nicht) */
+export function targetsChanged(a: Targets, b: Targets): boolean {
+  const same = (x: { mode: string; value: number | null }, y: { mode: string; value: number | null }) =>
+    x.mode === y.mode && x.value === y.value
+  return (
+    a.weeklyKcal !== b.weeklyKcal ||
+    !same(a.protein, b.protein) ||
+    !same(a.fat, b.fat) ||
+    !same(a.carbs, b.carbs) ||
+    a.fiberG !== b.fiberG ||
+    a.waterMl !== b.waterMl ||
+    a.manualWeightKg !== b.manualWeightKg
+  )
+}
