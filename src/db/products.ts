@@ -81,13 +81,22 @@ export async function getBlsPref(code: string): Promise<BlsPref | undefined> {
 }
 
 /** Eigene Einstellung zu einem BLS-Lebensmittel ändern; legt sie bei Bedarf an (eindeutig je Code) */
-async function updateBlsPref(code: string, changes: Partial<Pick<BlsPref, 'portions' | 'isDrink'>>, now: Date) {
+async function updateBlsPref(
+  code: string,
+  changes: Partial<Pick<BlsPref, 'portions' | 'isDrink' | 'useOverride'>>,
+  now: Date,
+) {
   await db.transaction('rw', db.blsPrefs, async () => {
     const existing = await db.blsPrefs.where('blsCode').equals(code).first()
     const base =
       existing && existing.deletedAt === null
-        ? { portions: existing.portions, isDrink: existing.isDrink, countsAsWater: existing.countsAsWater }
-        : { portions: [], isDrink: null, countsAsWater: null }
+        ? {
+            portions: existing.portions,
+            isDrink: existing.isDrink,
+            countsAsWater: existing.countsAsWater,
+            useOverride: existing.useOverride,
+          }
+        : { portions: [], isDrink: null, countsAsWater: null, useOverride: true }
     await db.blsPrefs.put(upsertByKey<BlsPref>(existing, { ...base, ...changes, blsCode: code }, now))
   })
 }
@@ -97,3 +106,6 @@ export const saveBlsPortions = (code: string, portions: Portion[], now = new Dat
 
 export const setBlsIsDrink = (code: string, isDrink: boolean, now = new Date()) =>
   updateBlsPref(code, { isDrink }, now)
+
+export const setBlsUseOverride = (code: string, useOverride: boolean, now = new Date()) =>
+  updateBlsPref(code, { useOverride }, now)

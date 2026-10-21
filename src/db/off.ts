@@ -12,10 +12,12 @@ import {
   type OffApp,
   type OffProduct,
 } from '../logic/off.ts'
+import { rebaseOnOffUpdate } from '../logic/verify.ts'
 import { db } from './db.ts'
-import { newRecord } from './records.ts'
+import { newRecord, touch } from './records.ts'
 import { getSetting, setSetting } from './settings.ts'
-import type { Product } from './types.ts'
+import type { FoodRef, Product } from './types.ts'
+import { getOverride, putOverride } from './verify.ts'
 
 export const APP_UUID_KEY = 'offAppUuid'
 /** Danach gilt OFF als nicht erreichbar */
@@ -116,6 +118,47 @@ export async function lookupBarcode(barcode: string, net = browserNetwork(), now
   if (result.kind === 'invalid') return { kind: 'unreachable' }
   if (result.product.per100.kcal === null) return { kind: 'noNutrients', data: result.product }
   return { kind: 'fetched', product: await saveOffProduct(result.product, now) }
+}
+
+export type OffRefresh =
+  | { kind: 'updated'; product: Product }
+  | { kind: 'notFound' }
+  /** OFF liefert keine kcal mehr: Original bleibt wie es ist */
+  | { kind: 'noNutrients' }
+  | Failure
+
+/**
+ * „Original jetzt aktualisieren“: Name, Marke und Nährwerte neu von OFF.
+ * Die Korrektur wird nicht überschrieben; was OFF ändert, hält sie mit dem alten Wert fest,
+ * damit „Meine Werte“ gleich bleiben (rebaseOnOffUpdate). Portionen und Getränk bleiben.
+ */
+export async function refreshOffProduct(id: string, net = browserNetwork(), now = new Date()): Promise<OffRefresh> {
+  const product = await db.products.get(id)
+  if (!product || product.deletedAt !== null || product.source !== 'off' || product.barcode === null) {
+    throw new Error(`Kein OFF-Produkt: ${id}`)
+  }
+  const response = await getJson(productUrl(product.barcode, await offApp()), net)
+  if (response.kind !== 'json') return response
+  const result = parseProductResponse(response.json, product.barcode)
+  if (result.kind === 'notFound') return result
+  if (result.kind === 'invalid') return { kind: 'unreachable' }
+  if (result.product.per100.kcal === null) return { kind: 'noNutrients' }
+  const fresh = result.product
+
+  return db.transaction('rw', db.products, db.productOverrides, async () => {
+    // Neu lesen: Während der Abfrage kann sich lokal etwas geändert haben
+    const current = await db.products.get(id)
+    if (!current) throw new Error(`Produkt fehlt: ${id}`)
+    const ref: FoodRef = `product:${id}`
+    const override = await getOverride(ref)
+    if (override) {
+      await putOverride(ref, rebaseOnOffUpdate(current.per100, fresh.per100, override.per100), override.verifiedAt, now)
+    }
+    const changes = { name: fresh.name, brand: fresh.brand, per100: fresh.per100, offFetchedAt: now.toISOString() }
+    const updated = touch(current, changes, now)
+    await db.products.put(updated)
+    return { kind: 'updated' as const, product: updated }
+  })
 }
 
 export type OffSearch = { kind: 'results'; products: OffProduct[] } | Failure

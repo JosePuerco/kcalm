@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { newRecord, softDelete, touch, unknownNutrients } from '../db/records.ts'
-import type { Day, Entry, Product, ProductOverride, Setting } from '../db/types.ts'
+import type { BlsPref, Day, Entry, Product, ProductOverride, Setting } from '../db/types.ts'
 import {
   backupFileName,
   backupStatus,
@@ -94,7 +94,7 @@ describe('buildBackup / serializeBackup', () => {
   it('erzeugt app, formatVersion, exportedAt und alle Tabellen', () => {
     const backup = buildBackup(sampleTables(), T2)
     expect(backup.app).toBe('kcalm')
-    expect(backup.formatVersion).toBe(2)
+    expect(backup.formatVersion).toBe(3)
     expect(backup.exportedAt).toBe('2026-10-09T10:00:00.000Z')
     expect(Object.keys(backup.tables).sort()).toEqual([...TABLE_NAMES].sort())
   })
@@ -146,7 +146,7 @@ describe('parseBackup – Ablehnung', () => {
   })
 
   it('neuere formatVersion als die App', () => {
-    expect(parse({ ...valid(), formatVersion: 3 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
+    expect(parse({ ...valid(), formatVersion: 4 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
   })
 
   it('fehlende Tabelle', () => {
@@ -250,7 +250,7 @@ describe('parseBackup – Migration Format 1 → 2', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     const { tables } = result.backup
-    expect(result.backup.formatVersion).toBe(2)
+    expect(result.backup.formatVersion).toBe(3)
     expect(tables.products.every((p) => !('alcohol' in p.per100))).toBe(true)
     expect(tables.entries.every((e) => !('alcohol' in e.nutrients))).toBe(true)
     expect(tables.productOverrides[0]!.per100).toEqual({ kcal: 40 })
@@ -275,6 +275,42 @@ describe('parseBackup – Migration Format 1 → 2', () => {
       ok: false,
       error: 'Backup ist beschädigt (exportedAt)',
     })
+  })
+})
+
+describe('parseBackup – Migration Format 2 → 3', () => {
+  function v2Backup(blsPrefs: unknown[]) {
+    const data = JSON.parse(serializeBackup(buildBackup(sampleTables(), T2))) as {
+      formatVersion: number
+      tables: Record<string, unknown[]>
+    }
+    data.formatVersion = 2
+    data.tables.blsPrefs = blsPrefs
+    return data
+  }
+  const pref = newRecord<BlsPref>(
+    { blsCode: 'F503100', portions: [], isDrink: null, countsAsWater: null, useOverride: false },
+    T0,
+  )
+  function withoutUseOverride() {
+    const old: Record<string, unknown> = { ...pref }
+    delete old.useOverride
+    return old
+  }
+
+  it('BLS-Einstellungen bekommen useOverride = true (bisher galt immer die Korrektur)', () => {
+    const result = parseBackup(JSON.stringify(v2Backup([withoutUseOverride()])))
+    expect(result.ok && result.backup.tables.blsPrefs[0]!.useOverride).toBe(true)
+  })
+
+  it('vorhandener Wert bleibt', () => {
+    const result = parseBackup(JSON.stringify(v2Backup([pref])))
+    expect(result.ok && result.backup.tables.blsPrefs[0]!.useOverride).toBe(false)
+  })
+
+  it('Format 3 ohne useOverride ist beschädigt', () => {
+    const data = { ...v2Backup([withoutUseOverride()]), formatVersion: 3 }
+    expect(parseBackup(JSON.stringify(data))).toEqual({ ok: false, error: 'Backup ist beschädigt (blsPrefs[0].useOverride)' })
   })
 })
 

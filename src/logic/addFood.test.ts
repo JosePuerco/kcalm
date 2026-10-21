@@ -73,7 +73,7 @@ describe('choiceFromProduct / choiceFromBls', () => {
 
   it('BLS: Gramm, eigene Portionen aus blsPrefs', () => {
     const food = { code: 'F110100', name: 'Apfel roh', per100: { ...unknownNutrients(), kcal: 54 } }
-    const pref = newRecord<BlsPref>({ blsCode: 'F110100', portions: [{ label: '1 Stück', amount: 150 }], isDrink: null, countsAsWater: null })
+    const pref = newRecord<BlsPref>({ blsCode: 'F110100', portions: [{ label: '1 Stück', amount: 150 }], isDrink: null, countsAsWater: null, useOverride: true })
     expect(choiceFromBls(food, pref)).toMatchObject({ ref: 'bls:F110100', source: 'BLS', unit: 'g', portions: [{ amount: 150 }] })
     expect(choiceFromBls(food).portions).toEqual([])
   })

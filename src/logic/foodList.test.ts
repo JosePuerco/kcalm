@@ -36,7 +36,7 @@ const bls = new Map([
 ])
 
 const prefs = (code: string, portions = [{ label: '1 Stück', amount: 120 }]) =>
-  newRecord<BlsPref>({ blsCode: code, portions, isDrink: null, countsAsWater: null })
+  newRecord<BlsPref>({ blsCode: code, portions, isDrink: null, countsAsWater: null, useOverride: true })
 
 const verifiedOverride = (ref: ProductOverride['productRef'], verifiedAt: string | null = '2026-10-12T10:00:00.000Z') =>
   newRecord<ProductOverride>({ productRef: ref, per100: {}, verifiedAt, note: null })

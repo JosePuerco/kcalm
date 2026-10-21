@@ -26,7 +26,7 @@ import type {
 import { formatTime } from './format.ts'
 
 export const BACKUP_APP = 'kcalm'
-export const BACKUP_FORMAT_VERSION = 2
+export const BACKUP_FORMAT_VERSION = 3
 /** Ab so vielen Tagen ohne Backup warnt die Einstellungsseite */
 export const BACKUP_REMINDER_DAYS = 14
 
@@ -128,6 +128,7 @@ const blsPref = z.object({
   portions: z.array(portion),
   isDrink: z.boolean().nullable(),
   countsAsWater: z.boolean().nullable(),
+  useOverride: z.boolean(),
 })
 
 const meal = z.object({
@@ -284,6 +285,17 @@ export const MIGRATIONS: Record<number, (data: Record<string, unknown>) => Recor
     }
     return { ...data, formatVersion: 2 }
   },
+  2: (data) => {
+    // Format 3: Umschalter Meine/Original auch für BLS (Jan, 21.10.2026)
+    const tables = isObject(data.tables) ? data.tables : {}
+    if (Array.isArray(tables.blsPrefs)) tables.blsPrefs.forEach(addBlsUseOverride)
+    return { ...data, formatVersion: 3 }
+  },
+}
+
+/** Ergänzt blsPrefs.useOverride = true, falls es fehlt (verändert record). Auch für das Datenbank-Update. */
+export function addBlsUseOverride(record: unknown): void {
+  if (isObject(record) && !('useOverride' in record)) record.useOverride = true
 }
 
 /** Tabellen mit Nährwert-Objekt und dessen Feldname */

@@ -75,6 +75,8 @@ export interface BlsPref extends SyncFields {
   /** null = Standard aus den BLS-Daten */
   isDrink: boolean | null
   countsAsWater: boolean | null
+  /** Korrekturschicht für künftige Einträge nutzen (wie Product.useOverride) */
+  useOverride: boolean
 }
 
 export interface MealItem {

@@ -3,7 +3,7 @@
 
 import type { BlsPref, FoodRef, Product, ProductOverride, Unit } from '../db/types.ts'
 import type { BlsFood } from './blsFoods.ts'
-import { effectiveNutrients, isVerified, mergeNutrients } from './verify.ts'
+import { effectiveNutrients, isVerified } from './verify.ts'
 
 export type FoodFilter = 'all' | 'verified' | 'own' | 'bls'
 
@@ -51,7 +51,8 @@ export function buildFoodRows({ products, blsPrefs, overrides, bls }: Input): Fo
   }
 
   // BLS: nur mit eigener Portion oder Prüfung (PLAN.md 2, Produkte)
-  const withPortion = new Set(blsPrefs.filter((b) => b.deletedAt === null && b.portions.length > 0).map((b) => b.blsCode))
+  const activePrefs = new Map(blsPrefs.filter((b) => b.deletedAt === null).map((b) => [b.blsCode, b]))
+  const withPortion = new Set([...activePrefs.values()].filter((b) => b.portions.length > 0).map((b) => b.blsCode))
   const blsCodes = new Set(withPortion)
   for (const ref of verified) if (ref.startsWith('bls:')) blsCodes.add(ref.slice(4))
 
@@ -65,7 +66,7 @@ export function buildFoodRows({ products, blsPrefs, overrides, bls }: Input): Fo
       name: food.name,
       brand: null,
       meta: withPortion.has(code) ? 'BLS · eigene Portion' : 'BLS',
-      kcalPer100: mergeNutrients(food.per100, byRef.get(ref)).kcal,
+      kcalPer100: effectiveNutrients(food.per100, byRef.get(ref), activePrefs.get(code)?.useOverride ?? true).kcal,
       unit: 'g',
       verified: verified.has(ref),
       archived: false,
