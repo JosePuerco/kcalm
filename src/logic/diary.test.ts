@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { newRecord, unknownNutrients } from '../db/records.ts'
 import type { Entry, Nutrients, Slot } from '../db/types.ts'
 import {
+  groupSlotEntries,
   addMonths,
   dateWithWeekday,
   dayLabel,
@@ -215,5 +216,47 @@ describe('weekBarScale', () => {
   it('festes Ziel bei 7/8 der Höhe, höhere Tage strecken', () => {
     expect(weekBarScale(weekStatus('2026-10-22', '2026-10-22', {}, 19600))).toBe(3200)
     expect(weekBarScale(weekStatus('2026-10-22', '2026-10-22', { '2026-10-20': 4000 }, 19600))).toBe(4000)
+  })
+})
+
+describe('groupSlotEntries', () => {
+  const inMeal = (e: Entry, groupId: string, name: string | null = 'Frühstück-Klassiker'): Entry => ({
+    ...e,
+    mealGroupId: groupId,
+    mealName: name,
+  })
+  const a = entry('s', { kcal: 100 })
+  const h = inMeal(entry('s', { kcal: 223.2 }), 'g1')
+  const m = inMeal(entry('s', { kcal: 117.5 }), 'g1')
+  const b = entry('s', { kcal: 50 })
+  const x = inMeal(entry('s', { kcal: null }), 'g2', null)
+
+  it('ohne Mahlzeiten: jede Zeile einzeln', () => {
+    expect(groupSlotEntries([a, b]).map((i) => i.kind)).toEqual(['entry', 'entry'])
+  })
+
+  it('Mahlzeit als Gruppe an der Stelle ihres ersten Eintrags, Summe der Bestandteile', () => {
+    const items = groupSlotEntries([a, h, b, m])
+    expect(items.map((i) => i.kind)).toEqual(['entry', 'meal', 'entry'])
+    const group = items[1]
+    expect(group?.kind === 'meal' && group.entries.map((e) => e.id)).toEqual([h.id, m.id])
+    expect(group?.kind === 'meal' && group.name).toBe('Frühstück-Klassiker')
+    expect(group?.kind === 'meal' && group.kcal.value).toBeCloseTo(340.7, 10)
+  })
+
+  it('mehrere Gruppen getrennt; fehlender Name → „Mahlzeit“; unbekannte kcal bleiben unbekannt', () => {
+    const items = groupSlotEntries([h, x, m])
+    expect(items).toHaveLength(2)
+    const second = items[1]
+    expect(second?.kind === 'meal' && second.name).toBe('Mahlzeit')
+    expect(second?.kind === 'meal' && second.kcal).toEqual({ value: null, atLeast: false })
+  })
+
+  it('ein übrig gebliebener Bestandteil bleibt Gruppe', () => {
+    expect(groupSlotEntries([h]).map((i) => i.kind)).toEqual(['meal'])
+  })
+
+  it('leer', () => {
+    expect(groupSlotEntries([])).toEqual([])
   })
 })

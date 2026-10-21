@@ -1,13 +1,17 @@
 // Such-Schritt im Hinzufügen-Sheet nach Kern.dc.html: Suchfeld, Liste „Zuletzt gegessen“ bzw. „Treffer lokal“
-// (Name, Quelle, geprüft-Häkchen, kcal/100), darüber „Schnelleintrag“, neben dem Suchfeld der Scan-Knopf,
-// beim Suchen darunter „In Open Food Facts suchen“. Auch als Zutaten-Auswahl im Rezept (ohne Schnelleintrag und Scan).
+// (Name, Quelle, geprüft-Häkchen, kcal/100), darüber „Schnelleintrag“ / „Mahlzeiten“ / „Rezepte“, neben dem Suchfeld
+// der Scan-Knopf, beim Suchen darunter „In Open Food Facts suchen“. Passende Mahlzeiten stehen oben in den Treffern.
+// Auch als Auswahl im Rezept und in der Mahlzeit (ohne diese Knöpfe und ohne Scan).
 import { useMemo } from 'react'
 import { IconBarcode, IconCheck, IconChevronRight, IconSearch } from '../../components/icons/icons.tsx'
 import type { BlsData } from '../../data/bls.ts'
 import type { FoodSources } from '../../db/entries.ts'
+import type { Meal } from '../../db/types.ts'
 import { per100Label, recentRefs, type FoodChoice } from '../../logic/addFood.ts'
+import { formatSum } from '../../logic/diary.ts'
+import { mealKcal, partCount } from '../../logic/meal.ts'
 import type { OffProduct } from '../../logic/off.ts'
-import { search } from '../../logic/search.ts'
+import { createSearchIndex, search } from '../../logic/search.ts'
 import { OffSearch } from './OffSearch.tsx'
 import type { FoodResolver } from './useFoodResolver.ts'
 
@@ -27,11 +31,34 @@ type Props = {
   onPickOff: (product: OffProduct) => void
   /** z. B. Rezepte als Zutat eines Rezepts ausblenden */
   exclude?: (food: FoodChoice) => boolean
+  /** fehlt = keine Knöpfe „Mahlzeiten“ / „Rezepte“ und keine Mahlzeiten in den Treffern */
+  onMeals?: () => void
+  onRecipes?: () => void
+  onPickMeal?: (meal: Meal) => void
 }
 
-export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQuick, onScan, onPickOff, exclude }: Props) {
+export function SearchStep({
+  query,
+  onQuery,
+  sources,
+  bls,
+  resolver,
+  onPick,
+  onQuick,
+  onScan,
+  onPickOff,
+  exclude,
+  onMeals,
+  onRecipes,
+  onPickMeal,
+}: Props) {
   const { resolve, productIndex } = resolver
   const searching = query.trim() !== ''
+  const mealIndex = useMemo(
+    () => createSearchIndex(sources.meals.filter((m) => !m.archived), (m) => m.name),
+    [sources.meals],
+  )
+  const mealHits = onPickMeal && searching ? search(mealIndex, query) : []
   const results = useMemo(() => {
     const keep = (c: FoodChoice | undefined): c is FoodChoice => !!c && !exclude?.(c)
     if (!searching) return recentRefs(sources.recent).map(resolve).filter(keep)
@@ -68,15 +95,25 @@ export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQ
         )}
       </div>
 
-      {onQuick ? (
+      {onQuick || onMeals || onRecipes ? (
         <div className="flex gap-2 px-4 pt-2.5 pb-1.5">
-          <button
-            type="button"
-            onClick={onQuick}
-            className="press bg-card text-text rounded-small-button text-secondary flex min-h-9 items-center px-3 font-medium"
-          >
-            Schnelleintrag
-          </button>
+          {[
+            { label: 'Schnelleintrag', onClick: onQuick },
+            { label: 'Mahlzeiten', onClick: onMeals },
+            { label: 'Rezepte', onClick: onRecipes },
+          ].map(
+            (b) =>
+              b.onClick && (
+                <button
+                  key={b.label}
+                  type="button"
+                  onClick={b.onClick}
+                  className="press bg-card text-text rounded-small-button text-secondary flex min-h-9 items-center px-3 font-medium"
+                >
+                  {b.label}
+                </button>
+              ),
+          )}
         </div>
       ) : (
         <div className="pt-1" />
@@ -85,14 +122,31 @@ export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQ
         {searching ? 'Treffer lokal' : 'Zuletzt gegessen'}
       </span>
       <div className="scroll-area px-screen-x pb-[calc(24px+env(safe-area-inset-bottom))]">
-        {results.length > 0 ? (
+        {results.length + mealHits.length > 0 ? (
           <div className="bg-card rounded-card overflow-hidden">
+            {mealHits.map((meal, i) => (
+              <button
+                key={meal.id}
+                type="button"
+                onClick={() => onPickMeal?.(meal)}
+                className={`flex min-h-14 w-full items-center gap-2.5 px-3.5 py-2 text-left ${i > 0 ? 'border-line border-t' : ''}`}
+              >
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="text-body font-medium break-words">{meal.name}</span>
+                  <span className="text-small text-muted">Mahlzeit · {partCount(meal.items.length)}</span>
+                </span>
+                <span className="text-secondary text-muted whitespace-nowrap">
+                  {formatSum(mealKcal(meal, resolve))} kcal
+                </span>
+                <IconChevronRight className="text-muted shrink-0" />
+              </button>
+            ))}
             {results.map((food, i) => (
               <button
                 key={food.ref}
                 type="button"
                 onClick={() => onPick(food)}
-                className={`flex min-h-14 w-full items-center gap-2.5 px-3.5 py-2 text-left ${i > 0 ? 'border-line border-t' : ''}`}
+                className={`flex min-h-14 w-full items-center gap-2.5 px-3.5 py-2 text-left ${i + mealHits.length > 0 ? 'border-line border-t' : ''}`}
               >
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="text-body font-medium break-words">{food.name}</span>

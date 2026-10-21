@@ -12,6 +12,16 @@ export async function addEntry(fields: NewEntryFields, now = new Date()): Promis
   return entry
 }
 
+/**
+ * Mehrere Einträge auf einmal (Mahlzeit): alle oder keiner. Je 1 ms Abstand, damit die Reihenfolge der
+ * Vorlage im Tagebuch erhalten bleibt (sortiert wird nach createdAt).
+ */
+export async function addEntries(list: readonly NewEntryFields[], now = new Date()): Promise<Entry[]> {
+  const entries = list.map((fields, i) => newRecord<Entry>(fields, new Date(now.getTime() + i)))
+  await db.entries.bulkAdd(entries)
+  return entries
+}
+
 export async function getEntry(id: string): Promise<Entry> {
   const entry = await db.entries.get(id)
   if (!entry || entry.deletedAt !== null) throw new Error(`Eintrag ${id} nicht gefunden`)
@@ -78,8 +88,9 @@ export async function copyEntries(
 ): Promise<Entry[]> {
   if (sourceDate === targetDate) throw new Error('Quell- und Zieltag sind gleich')
   return db.transaction('rw', db.entries, async () => {
-    const copies = copiedEntries(await getDayEntries(sourceDate), targetDate, { slotId }).map((fields) =>
-      newRecord<Entry>(fields, now),
+    // Je 1 ms Abstand wie bei addEntries, damit die Reihenfolge erhalten bleibt
+    const copies = copiedEntries(await getDayEntries(sourceDate), targetDate, { slotId }).map((fields, i) =>
+      newRecord<Entry>(fields, new Date(now.getTime() + i)),
     )
     await db.entries.bulkAdd(copies)
     return copies

@@ -304,8 +304,8 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 
 ### Phase 5 – Mahlzeiten und Rezepte
 
-- [ ] Mahlzeiten anlegen, eintragen mit Haken, anpassbaren Mengen und Skalierung
-- [ ] Rezepte mit Endgewicht und Kochverlust, Rechenfunktion mit Tests, Eintragen per Portion
+- [x] Mahlzeiten anlegen, eintragen mit Haken, anpassbaren Mengen und Skalierung
+- [x] Rezepte mit Endgewicht und Kochverlust, Rechenfunktion mit Tests, Eintragen per Portion
 
 ### Phase 6 – Verifizieren
 
@@ -374,6 +374,13 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**21.10.2026 · Phase 5 abgeschlossen (lokal)** – alle Punkte erledigt (Teilschritte 5a–5d, je ein Commit), im Browser durchgeklickt; noch nicht gepusht, iPhone-Test steht aus. 628 Tests grün, Build und Lint sauber. Nächster Schritt: Push nach Jans OK und iPhone-Test, dann Phase 6 (Verifizieren).
+
+- Erledigt: Rechenlogik `meal.ts` (Skalierung, −/+ mit Einrasten, Ziffernblock, Einträge mit Gruppe, Prüfung) und `recipe.ts` (Rohgewicht, pro 100 g, Kochverlust, Endgewicht ±50, Prüfung), `groupList.ts`, `groupSlotEntries` in `diary.ts`; `db/meals.ts`, `db/recipes.ts`, `addEntries`; Lebensmittel-Liste mit Reitern Mahlzeiten/Rezepte; Rezept-Screen, Mahlzeit-Formular, Auswahl-Sheet für Zutaten/Bestandteile; im Hinzufügen-Sheet Knöpfe Mahlzeiten/Rezepte, Mahlzeit-Schritt, Mahlzeiten und Rezepte in der Suche; Gruppen im Tagebuch.
+- Mit Jan abgestimmt (kein Prototyp): Mahlzeit-Formular wie der Rezept-Screen ohne Endgewicht; Rezepte dürfen in Mahlzeiten, nicht in Rezepte; Gruppe im Tagebuch mit schlichter Kopfzeile (nicht antippbar), Bestandteile eingerückt und einzeln bearbeitbar; Endgewicht beginnt leer, −/+ startet vom Rohgewicht.
+- Abweichungen vom Prototyp: Schriftgrößen ohne Token auf den nächsten Token (Endgewicht 34 statt 36 px, kcal/100 g 20 statt 22, Name 17 statt 18); Portionen im Rezept als eigene Karte mit kcal je Portion; −/+ in der Mahlzeit 44 statt 40 px (Touch-Ziel); „Vorlage bearbeiten“ unter der Liste statt oben rechts; Ziffernblock der Mahlzeit ersetzt unten den Knopf, solange eine Menge eingetippt wird; Hinweis „Zum Sichern fehlt noch: …“.
+- Nebenbei behoben: Mehrere Einträge auf einmal (Mahlzeit, Tag kopieren) bekamen denselben Zeitstempel, die Reihenfolge im Tagebuch war dann zufällig; jetzt je 1 ms Abstand.
 
 **21.10.2026 · Phase 4 abgeschlossen** – alle Punkte erledigt (Teilschritte 4a–4e plus Nachbesserungen nach Jans iPhone-Test), deployt; Scanner, Taschenlampe und Supermarkt-Test von Jan auf dem iPhone bestätigt. 527 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 5 (Mahlzeiten und Rezepte), danach Phase 6 mit dem Prüf-Dialog.
 

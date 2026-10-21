@@ -2,8 +2,9 @@
 // Nach dem Hinzufügen bleibt das Sheet offen (Toast als Bestätigung), „Fertig“ schließt.
 // Bearbeiten (Tipp auf einen Eintrag): Mengen-Schritt mit „Speichern“ + „Löschen“; Verschieben über die
 // Slot-Chips und die Tageszeile darunter (Tageszeile ist eine Ergänzung zum Prototyp, mit Jan abgestimmt).
+// Mahlzeiten (Mahlzeit.dc.html) und Rezepte über die Knöpfe unter dem Suchfeld oder die Suche.
 import { motion } from 'motion/react'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import {
   closeAddSheet,
   showNewEntry,
@@ -12,6 +13,7 @@ import {
   useToday,
   type ScanStart,
 } from '../../app/diaryState.ts'
+import { href, navigate } from '../../app/router.ts'
 import { IconChevronDown } from '../../components/icons/icons.tsx'
 import { Button } from '../../components/ui/Button.tsx'
 import { Chip } from '../../components/ui/Chip.tsx'
@@ -19,12 +21,12 @@ import { Overlay } from '../../components/ui/overlay.tsx'
 import { Sheet } from '../../components/ui/Sheet.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { useBls } from '../../data/bls.ts'
-import { addEntry, deleteEntry, getEntry, loadFoodSources, updateEntry } from '../../db/entries.ts'
+import { addEntries, addEntry, deleteEntry, getEntry, loadFoodSources, updateEntry } from '../../db/entries.ts'
 import { saveOffProduct } from '../../db/off.ts'
 import { resolvePendingScan } from '../../db/pendingScans.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { getSlots } from '../../db/slots.ts'
-import type { Entry, LocalDate, Slot } from '../../db/types.ts'
+import type { Entry, LocalDate, Meal, Slot } from '../../db/types.ts'
 import {
   addedMessage,
   amountToKeypad,
@@ -38,7 +40,10 @@ import {
 } from '../../logic/addFood.ts'
 import { dayLabel } from '../../logic/diary.ts'
 import { formatTime } from '../../logic/format.ts'
+import { buildMealRows, buildRecipeRows } from '../../logic/groupList.ts'
 import { parseKeypadValue } from '../../logic/keypad.ts'
+import { mealEntries, type MealLine } from '../../logic/meal.ts'
+import { sumNutrients } from '../../logic/nutrients.ts'
 import {
   editedQuick,
   emptyQuick,
@@ -54,6 +59,8 @@ import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
 import { ProductForm } from '../lebensmittel/ProductForm.tsx'
 import { MonthCalendar } from '../tagebuch/MonthCalendar.tsx'
 import { AmountStep } from './AmountStep.tsx'
+import { GroupListStep } from './GroupListStep.tsx'
+import { MealStep } from './MealStep.tsx'
 import { QuickStep } from './QuickStep.tsx'
 import { SearchStep } from './SearchStep.tsx'
 import { useFoodResolver } from './useFoodResolver.ts'
@@ -107,6 +114,10 @@ type Step =
   | { kind: 'search' }
   | { kind: 'amount'; food: FoodChoice }
   | { kind: 'quick' }
+  | { kind: 'meals' }
+  | { kind: 'recipes' }
+  /** from: wohin Zurück führt */
+  | { kind: 'meal'; meal: Meal; from: 'search' | 'meals' }
   | { kind: 'edit'; entry: Entry }
   | { kind: 'date'; entry: Entry }
 
@@ -153,10 +164,19 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
   const [quickError, setQuickError] = useState<string | null>(null)
   const [scanning, setScanning] = useState(false)
 
-  const inQuick = step.kind === 'quick'
-  useEffect(() => {
-    onHeader(inQuick ? { title: 'Schnelleintrag', onBack: () => setStep({ kind: 'search' }) } : null)
-  }, [inQuick, onHeader])
+  // Kopf des Sheets: eigene Titel mit Zurück-Pfeil für Schnelleintrag, Listen und Mahlzeit
+  const header = useMemo<Header | null>(() => {
+    const toSearch = () => setStep({ kind: 'search' })
+    if (step.kind === 'quick') return { title: 'Schnelleintrag', onBack: toSearch }
+    if (step.kind === 'meals') return { title: 'Mahlzeiten', onBack: toSearch }
+    if (step.kind === 'recipes') return { title: 'Rezepte', onBack: toSearch }
+    if (step.kind === 'meal') {
+      const back = step.from
+      return { title: step.meal.name, onBack: () => setStep(back === 'meals' ? { kind: 'meals' } : { kind: 'search' }) }
+    }
+    return null
+  }, [step])
+  useEffect(() => onHeader(header), [header, onHeader])
   // Beim Schließen den Kopf zurücksetzen, damit das nächste Öffnen mit „Hinzufügen“ beginnt
   useEffect(() => () => onHeader(null), [onHeader])
   // Beim Bearbeiten eines Eintrags in einem archivierten Slot ist kein Chip aktiv; Speichern behält den Slot
@@ -200,6 +220,24 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
       setQuery('')
       setStep({ kind: 'search' })
     })
+
+  const addMeal = (meal: Meal, lines: MealLine[], scale: number) =>
+    run(async () => {
+      if (!slot) return
+      const entries = await addEntries(mealEntries(meal, lines, scale, viewed, slot.id, crypto.randomUUID()))
+      const first = entries[0]
+      if (first) showNewEntry(slot.id, first.id)
+      toast(addedMessage(meal.name, sumNutrients(entries.map((e) => e.nutrients)).kcal.value, slot.name))
+      // Im Sheet bleiben wie beim Lebensmittel
+      setQuery('')
+      setStep({ kind: 'search' })
+    })
+
+  // Zum Anlegen oder Bearbeiten einer Vorlage das Sheet schließen und zu Lebensmittel wechseln
+  const goTo = (...path: string[]) => {
+    closeAddSheet()
+    navigate(href('lebensmittel', ...path))
+  }
 
   const addQuick = () =>
     run(async () => {
@@ -269,7 +307,7 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
         </button>
       )}
       <motion.div
-        key={step.kind === 'amount' ? step.food.ref : step.kind}
+        key={step.kind === 'amount' ? step.food.ref : step.kind === 'meal' ? `meal:${step.meal.id}` : step.kind}
         className="flex min-h-0 flex-1 flex-col"
         initial={reduced ? false : { opacity: 0, x: motionTokens.sheetStepOffsetX }}
         animate={{ opacity: 1, x: 0 }}
@@ -287,8 +325,50 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
               onQuick={() => setStep({ kind: 'quick' })}
               onScan={() => setScanning(true)}
               onPickOff={pickOff}
+              onMeals={() => setStep({ kind: 'meals' })}
+              onRecipes={() => setStep({ kind: 'recipes' })}
+              onPickMeal={(meal) => setStep({ kind: 'meal', meal, from: 'search' })}
             />
           )}
+
+        {step.kind === 'meals' && sources && (
+          <GroupListStep
+            rows={buildMealRows(sources.meals, resolver.resolve).filter((r) => !r.archived)}
+            empty="Noch keine Mahlzeiten. Eine Mahlzeit ist eine Gruppe von Lebensmitteln mit Standardmengen."
+            createLabel="Mahlzeit anlegen"
+            onCreate={() => goTo('mahlzeit', 'neu')}
+            onPick={(id) => {
+              const meal = sources.meals.find((m) => m.id === id)
+              if (meal) setStep({ kind: 'meal', meal, from: 'meals' })
+            }}
+          />
+        )}
+
+        {step.kind === 'recipes' && sources && (
+          <GroupListStep
+            rows={buildRecipeRows(sources.recipes, resolver.resolve).filter((r) => !r.archived)}
+            // Nicht rechenbar (z. B. BLS lädt noch): nicht wählbar
+            disabled={(row) => !resolver.resolve(`recipe:${row.id}`)}
+            empty="Noch keine Rezepte. Ein Rezept rechnet pro 100 g über das Endgewicht nach dem Kochen."
+            createLabel="Rezept anlegen"
+            onCreate={() => goTo('rezept', 'neu')}
+            onPick={(id) => {
+              const food = resolver.resolve(`recipe:${id}`)
+              if (food) pick(food)
+            }}
+          />
+        )}
+
+        {step.kind === 'meal' && (
+          <MealStep
+            meal={step.meal}
+            resolve={resolver.resolve}
+            slotName={slot?.name ?? ''}
+            busy={busy}
+            onAdd={(lines, scale) => void addMeal(step.meal, lines, scale)}
+            onEditTemplate={() => goTo('mahlzeit', step.meal.id)}
+          />
+        )}
 
         {step.kind === 'quick' && (
           <QuickStep

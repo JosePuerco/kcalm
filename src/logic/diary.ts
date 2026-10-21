@@ -101,6 +101,37 @@ export function slotsForDay(slots: readonly Slot[], entries: readonly Entry[]): 
   })
 }
 
+/** Zeile im Slot: einzelner Eintrag oder Mahlzeit mit ihren Bestandteilen */
+export type SlotItem =
+  | { kind: 'entry'; entry: Entry }
+  | { kind: 'meal'; groupId: string; name: string; kcal: NutrientSum; entries: Entry[] }
+
+/**
+ * Einträge einer Mahlzeit (gleiche mealGroupId) zusammenfassen. Die Gruppe steht dort, wo ihr erster Eintrag
+ * steht; Reihenfolge sonst wie übergeben. Auch ein einzelner übrig gebliebener Bestandteil bleibt unter dem
+ * Mahlzeit-Namen.
+ */
+export function groupSlotEntries(entries: readonly Entry[]): SlotItem[] {
+  const items: SlotItem[] = []
+  const groups = new Map<string, Extract<SlotItem, { kind: 'meal' }>>()
+  for (const entry of entries) {
+    if (entry.mealGroupId === null) {
+      items.push({ kind: 'entry', entry })
+      continue
+    }
+    let group = groups.get(entry.mealGroupId)
+    if (!group) {
+      const name = entry.mealName ?? 'Mahlzeit'
+      group = { kind: 'meal', groupId: entry.mealGroupId, name, kcal: { value: 0, atLeast: false }, entries: [] }
+      groups.set(entry.mealGroupId, group)
+      items.push(group)
+    }
+    group.entries.push(entry)
+  }
+  for (const group of groups.values()) group.kcal = sumNutrients(group.entries.map((e) => e.nutrients)).kcal
+  return items
+}
+
 /** kcal je Tag aus Einträgen (bekannte Werte, ohne gelöschte) */
 export function kcalByDate(entries: readonly Entry[]): Record<LocalDate, number> {
   const result: Record<LocalDate, number> = {}

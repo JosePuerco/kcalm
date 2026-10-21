@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto' // IndexedDB in Node nachbilden, vor dem Import von
 import { beforeEach, describe, expect, it } from 'vitest'
 import { choiceFromEntry, choiceFromProduct, editedEntry, foodEntry } from '../logic/addFood.ts'
 import { db } from './db.ts'
-import { addEntry, copyEntries, deleteEntry, getDayEntries, getEntry, loadFoodSources, updateEntry } from './entries.ts'
+import { addEntries, addEntry, copyEntries, deleteEntry, getDayEntries, getEntry, loadFoodSources, updateEntry } from './entries.ts'
 import { createProduct, updateProduct } from './products.ts'
 import { unknownNutrients } from './records.ts'
 
@@ -40,6 +40,28 @@ describe('addEntry', () => {
     const e = await addEntry(foodEntry(choiceFromProduct(product), 100, '2026-10-21', 's'), t0)
     await updateProduct(product.id, { ...skyr, name: 'Skyr neu', per100: { ...skyr.per100, kcal: 80 } }, t1)
     expect(await db.entries.get(e.id)).toMatchObject({ nameSnapshot: 'Skyr natur', nutrients: { kcal: 63 } })
+  })
+})
+
+describe('addEntries', () => {
+  it('speichert alle Einträge einer Mahlzeit mit gemeinsamer Gruppe', async () => {
+    const product = await createProduct(skyr, t0)
+    const fields = foodEntry(choiceFromProduct(product), 100, '2026-10-21', 's')
+    const group = { mealGroupId: crypto.randomUUID(), mealName: 'Frühstück' }
+    const saved = await addEntries([{ ...fields, ...group }, { ...fields, amount: 50, ...group }], t0)
+    expect(saved).toHaveLength(2)
+    const stored = await getDayEntries('2026-10-21')
+    expect(stored.map((e) => e.mealGroupId)).toEqual([group.mealGroupId, group.mealGroupId])
+    expect(new Set(stored.map((e) => e.id)).size).toBe(2)
+  })
+
+  it('Reihenfolge der Vorlage bleibt: createdAt steigt je Eintrag', async () => {
+    const product = await createProduct(skyr, t0)
+    const fields = foodEntry(choiceFromProduct(product), 100, '2026-10-21', 's')
+    const saved = await addEntries([1, 2, 3].map((n) => ({ ...fields, amount: n })), t0)
+    const sorted = [...saved].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    expect(sorted.map((e) => e.amount)).toEqual([1, 2, 3])
+    expect(saved[0]?.createdAt).toBe(t0.toISOString())
   })
 })
 
@@ -96,6 +118,16 @@ describe('copyEntries', () => {
 
     const one = await copyEntries('2026-10-20', '2026-10-22', 'abend', t1)
     expect(one).toHaveLength(1)
+  })
+
+  it('Kopien behalten die Reihenfolge (createdAt steigt), auch innerhalb einer Mahlzeit', async () => {
+    const product = await createProduct(skyr, t0)
+    const fields = foodEntry(choiceFromProduct(product), 100, '2026-10-20', 's')
+    const group = { mealGroupId: crypto.randomUUID(), mealName: 'Frühstück' }
+    await addEntries([1, 2, 3, 4].map((n) => ({ ...fields, amount: n, ...group })), t0)
+    const copies = await copyEntries('2026-10-20', '2026-10-21', undefined, t1)
+    const sorted = [...copies].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    expect(sorted.map((e) => e.amount)).toEqual([1, 2, 3, 4])
   })
 
   it('nicht in denselben Tag', async () => {
