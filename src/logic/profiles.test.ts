@@ -103,6 +103,13 @@ describe('goalFor', () => {
     expect(goalFor(list, versions, '2026-10-26')?.weekBudget).toBe(15400)
   })
 
+  it('countFrom: erster Profiltag nur in seiner Woche', () => {
+    const list = [assignment('2026-10-21', 'aufbau', 14000), assignment('2026-10-23', 'diaet', 12000)]
+    expect(goalFor(list, versions, '2026-10-21')?.countFrom).toBe('2026-10-21')
+    expect(goalFor(list, versions, '2026-10-24')?.countFrom).toBe('2026-10-21')
+    expect(goalFor(list, versions, '2026-10-26')?.countFrom).toBeNull()
+  })
+
   it('Ende zu Ende: nach dem Wechsel Do ergibt das dynamische Ziel das neue Restbudget ÷ 4', () => {
     const today = '2026-10-22'
     const kcal = { '2026-10-19': 2950, '2026-10-20': 3100, '2026-10-21': 2850 }

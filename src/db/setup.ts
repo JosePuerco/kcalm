@@ -5,7 +5,7 @@ import { toLocalDate } from '../logic/dates.ts'
 import type { ProfileFormData } from '../logic/profileForm.ts'
 import { switchFromToday } from '../logic/profiles.ts'
 import { db } from './db.ts'
-import { assignVersion, createProfile, weekKcalBefore } from './profiles.ts'
+import { assignVersion, createProfile } from './profiles.ts'
 import { getSetting, setSetting } from './settings.ts'
 import { saveSlots, type SlotData } from './slots.ts'
 
@@ -34,8 +34,9 @@ export async function completeSetup(data: SetupData, now = new Date()): Promise<
     async () => {
       await saveSlots(data.slots, now)
       const { version } = await createProfile(data.profile, now)
-      // Mitten in der Woche: nur der Rest der Woche bekommt Budget, sonst wäre das Tagesziel zu hoch
-      await assignVersion(version.id, switchFromToday(today, version.weeklyKcal, await weekKcalBefore(today)), now)
+      // Mitten in der Woche: nur der Rest der Woche bekommt Budget, sonst wäre das Tagesziel zu hoch.
+      // Vortage gehören zu keinem Profil, daher Verbrauch davor 0 (sie zählen auch später nicht, countFrom)
+      await assignVersion(version.id, switchFromToday(today, version.weeklyKcal, 0), now)
       await setSetting(WATER_KEY, data.water, now)
       await setSetting(ESTIMATE_KEY, data.estimate, now)
       await setSetting(SETUP_DONE_KEY, now.toISOString(), now)

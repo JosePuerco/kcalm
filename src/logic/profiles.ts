@@ -26,6 +26,8 @@ export interface DayGoal<V> {
   version: V
   /** Wochenbudget, das an diesem Tag gilt */
   weekBudget: number
+  /** Erster Tag mit Profil, wenn er in dieser Woche liegt; Tage davor zählen nicht gegen das Budget */
+  countFrom: LocalDate | null
 }
 
 /**
@@ -44,7 +46,12 @@ export function goalFor<V extends Pick<ProfileVersion, 'id' | 'weeklyKcal'>>(
   const sameWeek = weekStart(assignment.validFrom) === weekStart(date)
   const weekBudget =
     assignment.weekBudgetOverride !== null && sameWeek ? assignment.weekBudgetOverride : version.weeklyKcal
-  return { assignment, version, weekBudget }
+  const first = assignments.reduce<LocalDate | null>(
+    (min, a) => (a.deletedAt === null && (min === null || a.validFrom < min) ? a.validFrom : min),
+    null,
+  )
+  const countFrom = first !== null && weekStart(first) === weekStart(date) ? first : null
+  return { assignment, version, weekBudget, countFrom }
 }
 
 export interface PlannedSwitch {

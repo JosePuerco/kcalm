@@ -89,6 +89,11 @@ describe('dynamicTargetFor', () => {
     expect(dynamicTargetFor(today, today, withLastSunday, 19600)).toBe(2675)
   })
 
+  it('countFrom: Tage vor dem ersten Profil zählen nicht', () => {
+    // Profil ab Mi, Budget Mi–So 14.000 → Do: (14.000 − 2.850) ÷ 4
+    expect(dynamicTargetFor(today, today, week, 14000, { countFrom: '2026-10-21' })).toBe(2787.5)
+  })
+
   it('leere Vortage zählen als 0', () => {
     expect(dynamicTargetFor(today, today, {}, 19600)).toBe(4900)
   })
@@ -123,6 +128,12 @@ describe('weekStatus', () => {
     const s = weekStatus('2026-10-14', '2026-10-22', { '2026-10-18': 2500 }, 19600)
     expect(s.days.every((d) => !d.isFuture)).toBe(true)
     expect(s.consumed).toBe(2500)
+  })
+
+  it('countFrom und festes Ziel aus der Version', () => {
+    const s = weekStatus('2026-10-22', '2026-10-22', week, 14000, { countFrom: '2026-10-21', weeklyKcal: 19600 })
+    expect(s.consumed).toBe(2850)
+    expect(s.fixedTarget).toBe(2800)
   })
 
   it('drüber: Rest negativ', () => {

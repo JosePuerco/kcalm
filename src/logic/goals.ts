@@ -23,17 +23,33 @@ export function dynamicDailyTarget(weekBudget: number, consumedBefore: number, d
 /** kcal je Tag (bekannte Summe); fehlender Tag = 0 */
 export type KcalByDate = Readonly<Record<LocalDate, number>>
 
+export interface WeekOptions {
+  /**
+   * Erster Tag mit Profil, falls er in dieser Woche liegt. Tage davor gehören zu keinem Profil und
+   * zählen nicht gegen das (anteilige) Budget der Restwoche.
+   */
+  countFrom?: LocalDate | null
+}
+
+const counts = (d: LocalDate, options: WeekOptions) => !options.countFrom || d >= options.countFrom
+
 /**
  * Dynamisches Tagesziel für einen angezeigten Tag.
  * - Heute oder Vergangenheit: Vortage dieser Woche zählen, so wie es an dem Tag war.
  * - Zukunft: vorgeplante Einträge zählen nicht; in dieser Woche gilt das heutige Ziel ohne heutigen
  *   Verbrauch, in einer künftigen Woche das Budget ÷ 7.
  */
-export function dynamicTargetFor(date: LocalDate, today: LocalDate, kcalByDate: KcalByDate, weekBudget: number): number {
+export function dynamicTargetFor(
+  date: LocalDate,
+  today: LocalDate,
+  kcalByDate: KcalByDate,
+  weekBudget: number,
+  options: WeekOptions = {},
+): number {
   const monday = weekStart(date)
   const pivot = date <= today ? date : today > monday ? today : monday
   let consumedBefore = 0
-  for (const d of weekDates(date)) if (d < pivot) consumedBefore += kcalByDate[d] ?? 0
+  for (const d of weekDates(date)) if (d < pivot && counts(d, options)) consumedBefore += kcalByDate[d] ?? 0
   return dynamicDailyTarget(weekBudget, consumedBefore, daysLeftInWeek(pivot))
 }
 
@@ -52,24 +68,34 @@ export interface WeekStatus {
   budget: number
   /** Budget − Verbrauch; negativ = drüber */
   remaining: number
+  /** Wochenbudget der Version ÷ 7; bei anteiligem Budget nach einem Wechsel nicht Budget ÷ 7 */
   fixedTarget: number
 }
 
-/** Wochenstand für die Woche, in der das Datum liegt (Zeile „Woche 10.302 / 19.600 kcal“ + 7 Balken) */
-export function weekStatus(date: LocalDate, today: LocalDate, kcalByDate: KcalByDate, weekBudget: number): WeekStatus {
+/**
+ * Wochenstand für die Woche, in der das Datum liegt (Zeile „Woche 10.302 / 19.600 kcal“ + 7 Balken).
+ * weeklyKcal = Wochenbudget der Version für das feste Tagesziel; ohne Angabe das Wochenbudget.
+ */
+export function weekStatus(
+  date: LocalDate,
+  today: LocalDate,
+  kcalByDate: KcalByDate,
+  weekBudget: number,
+  options: WeekOptions & { weeklyKcal?: number } = {},
+): WeekStatus {
   const days = weekDates(date).map((d) => ({
     date: d,
     kcal: kcalByDate[d] ?? 0,
     isToday: d === today,
     isFuture: d > today,
   }))
-  const consumed = days.reduce((sum, d) => (d.isFuture ? sum : sum + d.kcal), 0)
+  const consumed = days.reduce((sum, d) => (d.isFuture || !counts(d.date, options) ? sum : sum + d.kcal), 0)
   return {
     days,
     consumed,
     budget: weekBudget,
     remaining: weekBudget - consumed,
-    fixedTarget: fixedDailyTarget(weekBudget),
+    fixedTarget: fixedDailyTarget(options.weeklyKcal ?? weekBudget),
   }
 }
 
