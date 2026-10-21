@@ -1,8 +1,8 @@
 // Such-Schritt im Hinzufügen-Sheet nach Kern.dc.html: Suchfeld, Liste „Zuletzt gegessen“ bzw. „Treffer lokal“
-// (Name, Quelle, geprüft-Häkchen, kcal/100), darüber „Schnelleintrag“. Scan, Mahlzeiten, Rezepte und OFF-Suche
-// kommen in ihren Phasen dazu.
+// (Name, Quelle, geprüft-Häkchen, kcal/100), darüber „Schnelleintrag“, neben dem Suchfeld der Scan-Knopf.
+// Mahlzeiten, Rezepte und OFF-Suche kommen in ihren Phasen dazu.
 import { useMemo } from 'react'
-import { IconCheck, IconChevronRight, IconSearch } from '../../components/icons/icons.tsx'
+import { IconBarcode, IconCheck, IconChevronRight, IconSearch } from '../../components/icons/icons.tsx'
 import type { BlsData } from '../../data/bls.ts'
 import type { FoodSources } from '../../db/entries.ts'
 import { per100Label, recentRefs, type FoodChoice } from '../../logic/addFood.ts'
@@ -19,9 +19,10 @@ type Props = {
   resolver: FoodResolver
   onPick: (food: FoodChoice) => void
   onQuick: () => void
+  onScan: () => void
 }
 
-export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQuick }: Props) {
+export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQuick, onScan }: Props) {
   const { resolve, productIndex } = resolver
   const searching = query.trim() !== ''
   const results = useMemo(() => {
@@ -53,6 +54,14 @@ export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQ
             className="text-body-large text-text placeholder:text-muted min-w-0 flex-1 bg-transparent outline-none"
           />
         </label>
+        <button
+          type="button"
+          aria-label="Barcode scannen"
+          onClick={onScan}
+          className="press rounded-field bg-card text-text flex size-[46px] shrink-0 items-center justify-center"
+        >
+          <IconBarcode />
+        </button>
       </div>
 
       <div className="flex gap-2 px-4 pt-2.5 pb-1.5">

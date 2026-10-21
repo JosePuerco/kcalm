@@ -3,7 +3,7 @@
 // Bearbeiten (Tipp auf einen Eintrag): Mengen-Schritt mit „Speichern“ + „Löschen“; Verschieben über die
 // Slot-Chips und die Tageszeile darunter (Tageszeile ist eine Ergänzung zum Prototyp, mit Jan abgestimmt).
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import {
   closeAddSheet,
   showNewEntry,
@@ -14,6 +14,7 @@ import {
 import { IconChevronDown } from '../../components/icons/icons.tsx'
 import { Button } from '../../components/ui/Button.tsx'
 import { Chip } from '../../components/ui/Chip.tsx'
+import { Overlay } from '../../components/ui/overlay.tsx'
 import { Sheet } from '../../components/ui/Sheet.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { useBls } from '../../data/bls.ts'
@@ -51,6 +52,9 @@ import { SearchStep } from './SearchStep.tsx'
 import { useFoodResolver } from './useFoodResolver.ts'
 
 const NO_DATES = new Set<LocalDate>()
+
+// Scanner samt Decoder erst laden, wenn er gebraucht wird
+const Scanner = lazy(() => import('../scan/Scanner.tsx'))
 
 export function AddSheet() {
   const sheet = useAddSheet()
@@ -128,6 +132,7 @@ function AddFlow({ slots, initialSlotId, editing, onHeader }: FlowProps) {
   const [busy, setBusy] = useState(false)
   const [quick, setQuick] = useState<QuickValues>(() => (editing?.kind === 'quick' ? quickFromEntry(editing) : emptyQuick()))
   const [quickError, setQuickError] = useState<string | null>(null)
+  const [scanning, setScanning] = useState(false)
 
   const inQuick = step.kind === 'quick'
   useEffect(() => {
@@ -251,6 +256,7 @@ function AddFlow({ slots, initialSlotId, editing, onHeader }: FlowProps) {
               resolver={resolver}
               onPick={pick}
               onQuick={() => setStep({ kind: 'quick' })}
+              onScan={() => setScanning(true)}
             />
           )}
 
@@ -320,6 +326,21 @@ function AddFlow({ slots, initialSlotId, editing, onHeader }: FlowProps) {
           </div>
         )}
       </motion.div>
+
+      {scanning && (
+        <Overlay>
+          <Suspense fallback={<div className="bg-scanner-bg absolute inset-0 z-10" />}>
+            <Scanner
+              onClose={() => setScanning(false)}
+              onDetected={(code) => {
+                // Auswertung (lokal, OFF, nicht gefunden, offline) folgt in 4c
+                setScanning(false)
+                toast(`Barcode ${code} erkannt`)
+              }}
+            />
+          </Suspense>
+        </Overlay>
+      )}
     </>
   )
 }

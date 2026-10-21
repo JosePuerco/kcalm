@@ -35,6 +35,19 @@ describe('tokensToCss', () => {
     }
   })
 
+  it('Scanner-Farben einmal für beide Modi, ohne Notiz-Schlüssel', () => {
+    expect(css).toContain('--kc-scanner-bg: #121316;')
+    expect(css).toContain('--color-scanner-laser: var(--kc-scanner-laser);')
+    expect(css.match(/--kc-scanner-bg:/g)).toHaveLength(1)
+    expect(css).not.toContain('scanner-_note')
+  })
+
+  it('Motion: Dauer, Kurve und Verschiebung als Variablen', () => {
+    expect(css).toContain('--kc-motion-scan-laser-duration: 1800ms;')
+    expect(css).toContain('--kc-motion-scan-laser-offset-y: 62px;')
+    expect(css).toContain('--kc-motion-sheet-step-offset-x: 18px;')
+  })
+
   it('schaltet Tailwinds eigene Paletten ab', () => {
     expect(css).toContain('--color-*: initial;')
     expect(css).toContain('--text-*: initial;')

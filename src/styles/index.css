@@ -91,6 +91,23 @@ textarea {
   animation: kc-flash var(--kc-motion-new-entry-flash-duration) ease-out;
 }
 
+/* Laser im Scanner-Rahmen (Scanner.dc.html, motion.scanLaser). Bei „Bewegung reduzieren“
+   steht er still in der Mitte des Rahmens. */
+@keyframes kc-laser {
+  from {
+    transform: translateY(calc(-1 * var(--kc-motion-scan-laser-offset-y)));
+  }
+  to {
+    transform: translateY(var(--kc-motion-scan-laser-offset-y));
+  }
+}
+@utility scan-laser {
+  animation: kc-laser var(--kc-motion-scan-laser-duration) var(--kc-motion-scan-laser-easing) infinite alternate;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
 /* Press-Effekt für alle Knöpfe */
 @utility press {
   transition: transform var(--kc-motion-press-duration) var(--kc-motion-press-easing);

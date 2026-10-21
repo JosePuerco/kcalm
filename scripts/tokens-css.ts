@@ -3,10 +3,11 @@
 
 type ColorSet = Record<string, string>
 type TypeToken = { size: number; weight: number; letterSpacing?: number }
-type MotionToken = { durationMs?: number; easing?: string }
+type MotionToken = { durationMs?: number; easing?: string; offsetX?: number; offsetY?: number }
 
 export type Tokens = {
-  color: { light: ColorSet; dark: ColorSet }
+  /** scanner: gleich in Hell und Dunkel; Schlüssel mit „_“ sind Notizen */
+  color: { light: ColorSet; dark: ColorSet; scanner?: ColorSet }
   font: { family: string; fallback: string; mono: string }
   type: Record<string, TypeToken>
   radius: Record<string, number>
@@ -52,13 +53,22 @@ export function tokensToCss(t: Tokens): string {
     if (typeof m !== 'object') continue
     if (m.durationMs !== undefined) motion.push(`  --kc-motion-${kebab(name)}-duration: ${m.durationMs}ms;`)
     if (m.easing !== undefined) motion.push(`  --kc-motion-${kebab(name)}-easing: ${cssEasing(m.easing)};`)
+    if (m.offsetX !== undefined) motion.push(`  --kc-motion-${kebab(name)}-offset-x: ${m.offsetX}px;`)
+    if (m.offsetY !== undefined) motion.push(`  --kc-motion-${kebab(name)}-offset-y: ${m.offsetY}px;`)
   }
   out.push(':root {\n' + motion.join('\n') + '\n}')
+
+  // Feste Farben ohne Hell/Dunkel, z. B. scanner.bg → --kc-scanner-bg
+  const fixed = Object.entries(t.color.scanner ?? {}).filter(([k]) => !k.startsWith('_'))
+  if (fixed.length > 0) {
+    out.push(':root {\n' + fixed.map(([k, v]) => `  --kc-scanner-${kebab(k)}: ${v};`).join('\n') + '\n}')
+  }
 
   // Tailwind-Theme: Standardpaletten abschalten, nur Tokens zulassen
   const th: string[] = []
   th.push('  --color-*: initial;')
   for (const k of Object.keys(t.color.light)) th.push(`  --color-${kebab(k)}: var(--kc-${kebab(k)});`)
+  for (const [k] of fixed) th.push(`  --color-scanner-${kebab(k)}: var(--kc-scanner-${kebab(k)});`)
 
   th.push(`  --font-sans: '${t.font.family}', ${t.font.fallback};`)
   th.push(`  --font-mono: '${t.font.mono}', ui-monospace, monospace;`)

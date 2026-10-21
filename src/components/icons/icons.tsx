@@ -82,6 +82,21 @@ export const IconBack = (p: IconProps) => (
   </Svg>
 )
 
+/** Scan-Knopf neben dem Suchfeld (Kern.dc.html) */
+export const IconBarcode = (p: IconProps) => (
+  <Svg size={20} {...p}>
+    <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M8 8v8M11 8v8M14 8v8M17 8v8" />
+  </Svg>
+)
+
+/** Taschenlampe im Scanner (Scanner.dc.html) */
+export const IconTorch = (p: IconProps) => (
+  <Svg size={20} {...p}>
+    <path d="M8 2h8l-1 5H9zM9 7h6l-1 13h-4z" />
+    <path d="M12 11v3" />
+  </Svg>
+)
+
 export const IconClose = (p: IconProps) => (
   <Svg strokeWidth={2} size={18} {...p}>
     <path d="M6 6l12 12M18 6L6 18" />

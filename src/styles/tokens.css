@@ -98,19 +98,33 @@
   --kc-motion-chevron-easing: cubic-bezier(.2,.8,.2,1);
   --kc-motion-expand-duration: 300ms;
   --kc-motion-expand-easing: cubic-bezier(.2,.9,.3,1);
+  --kc-motion-expand-offset-y: -8px;
   --kc-motion-number-tween-duration: 650ms;
   --kc-motion-number-tween-easing: cubic-bezier(.33,1,.68,1);
   --kc-motion-bars-and-ring-duration: 520ms;
   --kc-motion-bars-and-ring-easing: cubic-bezier(.2,.8,.2,1);
   --kc-motion-sheet-step-duration: 280ms;
   --kc-motion-sheet-step-easing: cubic-bezier(.2,.9,.3,1);
+  --kc-motion-sheet-step-offset-x: 18px;
   --kc-motion-toast-duration: 360ms;
   --kc-motion-toast-easing: cubic-bezier(.2,1.3,.4,1);
   --kc-motion-switch-knob-duration: 220ms;
   --kc-motion-switch-knob-easing: cubic-bezier(.2,1.2,.4,1);
   --kc-motion-row-swipe-snap-duration: 260ms;
   --kc-motion-row-swipe-snap-easing: cubic-bezier(.2,.9,.25,1.15);
+  --kc-motion-scan-laser-duration: 1800ms;
+  --kc-motion-scan-laser-easing: ease-in-out;
+  --kc-motion-scan-laser-offset-y: 62px;
   --kc-motion-new-entry-flash-duration: 1400ms;
+}
+
+:root {
+  --kc-scanner-bg: #121316;
+  --kc-scanner-mask: rgba(0,0,0,0.5);
+  --kc-scanner-control: rgba(0,0,0,0.45);
+  --kc-scanner-text: #FFFFFF;
+  --kc-scanner-hint: rgba(255,255,255,0.85);
+  --kc-scanner-laser: #6E86FF;
 }
 
 @theme {
@@ -138,6 +152,12 @@
   --color-scrim: var(--kc-scrim);
   --color-switch-off: var(--kc-switch-off);
   --color-segment-active: var(--kc-segment-active);
+  --color-scanner-bg: var(--kc-scanner-bg);
+  --color-scanner-mask: var(--kc-scanner-mask);
+  --color-scanner-control: var(--kc-scanner-control);
+  --color-scanner-text: var(--kc-scanner-text);
+  --color-scanner-hint: var(--kc-scanner-hint);
+  --color-scanner-laser: var(--kc-scanner-laser);
   --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, monospace;
   --text-*: initial;
@@ -183,6 +203,7 @@
   --radius-*: initial;
   --radius-summary-card: 24px;
   --radius-calendar: 22px;
+  --radius-scan-frame: 20px;
   --radius-card: 18px;
   --radius-button: 16px;
   --radius-tile: 12px;
@@ -209,4 +230,5 @@
   --shadow-nav: 0 6px 24px rgba(0,0,0,0.14);
   --shadow-knob: 0 1px 3px rgba(0,0,0,0.2);
   --shadow-segment-active: 0 1px 2px rgba(0,0,0,0.08);
+  --shadow-laser: 0 0 12px #6E86FF;
 }

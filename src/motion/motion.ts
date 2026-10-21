@@ -14,6 +14,7 @@ export function parseEasing(easing: string): Bezier | 'linear' | 'easeIn' | 'eas
   }
   if (easing === 'easeOutCubic') return [0.33, 1, 0.68, 1]
   if (easing === 'ease') return [0.25, 0.1, 0.25, 1]
+  if (easing === 'ease-in-out') return [0.42, 0, 0.58, 1]
   throw new Error(`Unbekannte Kurve: ${easing}`)
 }
 
