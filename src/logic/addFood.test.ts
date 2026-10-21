@@ -11,6 +11,7 @@ import {
   choiceFromProduct,
   foodEntry,
   initialAmount,
+  needsCheck,
   per100Label,
   portionChipLabel,
   portionLabelFor,
@@ -219,5 +220,21 @@ describe('Bearbeiten', () => {
 
   it('Schnelleinträge gehen hier nicht', () => {
     expect(() => choiceFromEntry({ ...stored, kind: 'quick', amount: null, unit: null, ref: null })).toThrow(RangeError)
+  })
+})
+
+describe('needsCheck', () => {
+  const verified = override({ verifiedAt: '2026-10-20T08:00:00.000Z' })
+
+  it('ungeprüftes OFF-Produkt fragt, auch mit Korrektur ohne Prüfung', () => {
+    expect(needsCheck(choiceFromProduct(skyr))).toBe(true)
+    expect(needsCheck(choiceFromProduct(skyr, override({ per100: { kcal: 65 } })))).toBe(true)
+  })
+
+  it('geprüftes OFF-Produkt, eigenes Produkt und BLS fragen nicht', () => {
+    expect(needsCheck(choiceFromProduct(skyr, verified))).toBe(false)
+    expect(needsCheck(choiceFromProduct({ ...skyr, source: 'own' }))).toBe(false)
+    const food = { code: 'F110100', name: 'Apfel roh', per100: { ...unknownNutrients(), kcal: 54 } }
+    expect(needsCheck(choiceFromBls(food))).toBe(false)
   })
 })

@@ -165,3 +165,11 @@ export function editedEntry(food: FoodChoice, amount: number, date: LocalDate, s
   const { nutrients, portionLabel } = foodEntry(food, amount, date, slotId)
   return { date, slotId, amount, portionLabel, nutrients }
 }
+
+/**
+ * Prüf-Dialog vor dem Mengen-Schritt (Scan und Auswahl aus der Suche): nur ungeprüfte OFF-Produkte.
+ * Eigene Produkte gelten als geprüft, BLS und Rezepte fragen nicht (Jan, 21.10.2026).
+ */
+export function needsCheck(food: FoodChoice): boolean {
+  return food.ref.startsWith('product:') && food.source === SOURCE_LABEL.off && !food.verified
+}

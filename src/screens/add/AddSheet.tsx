@@ -36,6 +36,7 @@ import {
   editedEntry,
   foodEntry,
   initialAmount,
+  needsCheck,
   type FoodChoice,
 } from '../../logic/addFood.ts'
 import { dayLabel } from '../../logic/diary.ts'
@@ -59,6 +60,7 @@ import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
 import { ProductForm } from '../lebensmittel/ProductForm.tsx'
 import { MonthCalendar } from '../tagebuch/MonthCalendar.tsx'
 import { AmountStep } from './AmountStep.tsx'
+import { CheckStep } from './CheckStep.tsx'
 import { GroupListStep } from './GroupListStep.tsx'
 import { MealStep } from './MealStep.tsx'
 import { QuickStep } from './QuickStep.tsx'
@@ -113,6 +115,8 @@ type Header = { title: string; onBack?: () => void }
 type Step =
   | { kind: 'search' }
   | { kind: 'amount'; food: FoodChoice }
+  /** Prüf-Dialog vor der Menge (ungeprüftes OFF-Produkt) */
+  | { kind: 'check'; food: FoodChoice }
   | { kind: 'quick' }
   | { kind: 'meals' }
   | { kind: 'recipes' }
@@ -147,7 +151,8 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
   const [date, setDate] = useState<LocalDate>(editing?.date ?? viewed)
   const [step, setStep] = useState<Step>(() => {
     if (editing) return { kind: 'edit', entry: editing }
-    return scan?.food ? { kind: 'amount', food: scan.food } : { kind: 'search' }
+    if (!scan?.food) return { kind: 'search' }
+    return needsCheck(scan.food) ? { kind: 'check', food: scan.food } : { kind: 'amount', food: scan.food }
   })
   const [query, setQuery] = useState('')
   const [amount, setAmount] = useState(() => {
@@ -182,10 +187,14 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
   // Beim Bearbeiten eines Eintrags in einem archivierten Slot ist kein Chip aktiv; Speichern behält den Slot
   const slot = slots.find((s) => s.id === slotId) ?? (editing ? undefined : slots[0])
 
+  // Scan und Auswahl aus der Suche: ungeprüfte OFF-Produkte erst prüfen, dann Menge
   const pick = (food: FoodChoice) => {
     setAmount(amountToKeypad(initialAmount(food)))
-    setStep({ kind: 'amount', food })
+    setStep(needsCheck(food) ? { kind: 'check', food } : { kind: 'amount', food })
   }
+  // Aktuelle Werte (z. B. nach einer Korrektur im Prüf-Dialog); frisch gespeicherte OFF-Treffer
+  // sind evtl. noch nicht in den Quellen
+  const live = (food: FoodChoice) => resolver.resolve(food.ref) ?? food
 
   // OFF-Suchtreffer: lokal speichern, dann Menge; ohne kcal erst das Formular (wie beim Scan)
   const pickOff = (product: OffProduct) => {
@@ -307,7 +316,13 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
         </button>
       )}
       <motion.div
-        key={step.kind === 'amount' ? step.food.ref : step.kind === 'meal' ? `meal:${step.meal.id}` : step.kind}
+        key={
+          step.kind === 'amount' || step.kind === 'check'
+            ? `${step.kind}:${step.food.ref}`
+            : step.kind === 'meal'
+              ? `meal:${step.meal.id}`
+              : step.kind
+        }
         className="flex min-h-0 flex-1 flex-col"
         initial={reduced ? false : { opacity: 0, x: motionTokens.sheetStepOffsetX }}
         animate={{ opacity: 1, x: 0 }}
@@ -381,14 +396,22 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
           />
         )}
 
+        {step.kind === 'check' && (
+          <CheckStep
+            food={step.food}
+            onBack={() => setStep({ kind: 'search' })}
+            onDone={() => setStep({ kind: 'amount', food: step.food })}
+          />
+        )}
+
         {step.kind === 'amount' && (
           <AmountStep
-            food={step.food}
+            food={live(step.food)}
             amount={amount}
             onAmount={setAmount}
             onBack={() => setStep({ kind: 'search' })}
             confirmLabel={`Zu ${slot?.name ?? ''} hinzufügen`}
-            onConfirm={() => void add(step.food)}
+            onConfirm={() => void add(live(step.food))}
             busy={busy}
           />
         )}

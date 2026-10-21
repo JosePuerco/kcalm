@@ -11,10 +11,10 @@ import { useBls } from '../../data/bls.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { NUTRIENT_KEYS } from '../../db/records.ts'
 import type { FoodRef, Nutrients, Product, ProductOverride, Unit } from '../../db/types.ts'
-import { getOverride, saveCorrection } from '../../db/verify.ts'
+import { getOverride, saveCorrection, setVerified } from '../../db/verify.ts'
 import { formatNutrient } from '../../logic/nutrientInfo.ts'
 import { fieldId, nutrientsToForm, parseDecimal, validateCorrectionForm, type FormErrors } from '../../logic/productForm.ts'
-import { mergeNutrients } from '../../logic/verify.ts'
+import { canVerify, mergeNutrients } from '../../logic/verify.ts'
 import { NutrientInput } from './NutrientInput.tsx'
 
 /** null = keine Korrektur, undefined = lädt */
@@ -65,9 +65,11 @@ type Props = {
   back: string | (() => void)
   /** Statt zurückzuspringen (Prüf-Dialog) */
   onSaved?: () => void
+  /** Prüf-Dialog: Werte kommen vom Etikett, also gleich als geprüft markieren (wenn alle Pflichtangaben da sind) */
+  verifyOnSave?: boolean
 }
 
-export function CorrectionForm({ foodRef, name, unit, original, override, back, onSaved }: Props) {
+export function CorrectionForm({ foodRef, name, unit, original, override, back, onSaved, verifyOnSave = false }: Props) {
   const toast = useToast()
   // Startwerte nur einmal übernehmen; spätere Datenbank-Änderungen überschreiben die Eingaben nicht
   const [values, setValues] = useState(() => nutrientsToForm(mergeNutrients(original, override)))
@@ -84,6 +86,7 @@ export function CorrectionForm({ foodRef, name, unit, original, override, back, 
     setSaving(true)
     try {
       await saveCorrection(foodRef, original, result.per100)
+      if (verifyOnSave && canVerify(result.per100)) await setVerified(foodRef, original, true)
       toast('Gespeichert')
       if (onSaved) onSaved()
       else if (typeof back === 'string') navigate(back, { replace: true })
