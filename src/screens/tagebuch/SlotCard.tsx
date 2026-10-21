@@ -1,21 +1,26 @@
 // Slot-Karte nach Kern.dc.html: Chevron, Name, eingeklappt „2 Einträge“ bzw. „leer“, kcal rechts, „+“;
-// aufgeklappt die Einträge mit Trennlinien. Bearbeiten und Wischen zum Löschen folgen in 3d.
+// aufgeklappt die Einträge mit Trennlinien (EntryRow: Tipp bearbeitet, Wischen löscht).
 import { IconChevronRight, IconPlus } from '../../components/icons/icons.tsx'
 import { Reveal } from '../../components/ui/Reveal.tsx'
 import type { Entry } from '../../db/types.ts'
 import { entryCount, formatSum, type DaySlot } from '../../logic/diary.ts'
-import { formatAmount, formatNumber } from '../../logic/format.ts'
+import { EntryRow } from './EntryRow.tsx'
 
 type Props = {
   day: DaySlot
   open: boolean
   /** Eintrag, der nach dem Hinzufügen kurz aufblinkt */
   flashId: string | null
+  /** aufgewischte Zeile (höchstens eine im ganzen Tag) */
+  swipedId: string | null
+  onSwipe: (entryId: string | null) => void
+  onEdit: (entry: Entry) => void
+  onDelete: (entry: Entry) => void
   onToggle: () => void
   onAdd: () => void
 }
 
-export function SlotCard({ day, open, flashId, onToggle, onAdd }: Props) {
+export function SlotCard({ day, open, flashId, swipedId, onSwipe, onEdit, onDelete, onToggle, onAdd }: Props) {
   const { slot, entries, kcal } = day
   const count = entries.length === 0 ? 'leer' : open ? '' : entryCount(entries.length)
   return (
@@ -51,25 +56,19 @@ export function SlotCard({ day, open, flashId, onToggle, onAdd }: Props) {
       {open && entries.length > 0 && (
         <Reveal className="pb-1.5 pl-3">
           {entries.map((e) => (
-            <EntryRow key={e.id} entry={e} flash={e.id === flashId} />
+            <EntryRow
+              key={e.id}
+              entry={e}
+              flash={e.id === flashId}
+              swiped={e.id === swipedId}
+              anySwiped={swipedId !== null}
+              onSwipe={(isOpen) => onSwipe(isOpen ? e.id : null)}
+              onTap={() => onEdit(e)}
+              onDelete={() => onDelete(e)}
+            />
           ))}
         </Reveal>
       )}
-    </div>
-  )
-}
-
-function EntryRow({ entry, flash }: { entry: Entry; flash: boolean }) {
-  const amount = entry.amount === null || entry.unit === null ? null : `${formatAmount(entry.amount)} ${entry.unit}`
-  return (
-    <div className="border-line border-t">
-      <div className={`text-label flex min-h-10 items-center justify-between gap-3 rounded-[8px] pr-3 ${flash ? 'flash-new' : ''}`}>
-        <span className="min-w-0">
-          {entry.nameSnapshot}
-          {amount && <span className="text-muted"> {amount}</span>}
-        </span>
-        <span className="text-muted whitespace-nowrap">{formatNumber(entry.nutrients.kcal)}</span>
-      </div>
     </div>
   )
 }

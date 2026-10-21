@@ -5,7 +5,10 @@ import {
   addedMessage,
   amountToKeypad,
   applyOverride,
+  canEditAsFood,
   choiceFromBls,
+  choiceFromEntry,
+  editedEntry,
   choiceFromProduct,
   foodEntry,
   initialAmount,
@@ -172,5 +175,44 @@ describe('foodEntry', () => {
   it('Toast-Text wie im Prototyp', () => {
     expect(addedMessage('Skyr natur', 157.5, 'Snacks')).toBe('Skyr natur · 158 kcal zu Snacks')
     expect(addedMessage('Apfel', null, 'Snacks')).toBe('Apfel · – kcal zu Snacks')
+  })
+})
+
+describe('Bearbeiten', () => {
+  const c = choiceFromProduct(skyr)
+  const stored: Entry = { ...newRecord<Entry>(foodEntry(c, 250, '2026-10-21', 'snacks')) }
+
+  it('Werte pro 100 aus dem Snapshot, auch wenn sich das Produkt inzwischen geändert hat', () => {
+    const changed = { ...c, per100: { ...c.per100, kcal: 999 } }
+    const food = choiceFromEntry(stored, changed)
+    expect(food.per100.kcal).toBeCloseTo(63, 10)
+    expect(food.per100.salt).toBeNull()
+    expect(food.portions).toEqual(c.portions)
+    expect(food.name).toBe('Skyr natur')
+  })
+
+  it('Menge ändern skaliert den Snapshot', () => {
+    const food = choiceFromEntry(stored)
+    const e = editedEntry(food, 150, '2026-10-21', 'snacks')
+    expect(e.nutrients.kcal).toBeCloseTo(94.5, 10)
+    expect(e.nutrients.protein).toBeCloseTo(16.5, 10)
+    expect(e.portionLabel).toBeNull() // ohne aktuelles Produkt keine Portionen bekannt
+  })
+
+  it('Verschieben: anderer Tag und Slot, Werte bleiben', () => {
+    const e = editedEntry(choiceFromEntry(stored, c), 250, '2026-10-20', 'abend')
+    expect(e).toMatchObject({ date: '2026-10-20', slotId: 'abend', amount: 250, portionLabel: '1 Becher' })
+    expect(e.nutrients.kcal).toBeCloseTo(157.5, 10)
+  })
+
+  it('canEditAsFood: nur Lebensmittel mit Verweis und Menge', () => {
+    expect(canEditAsFood(stored)).toBe(true)
+    expect(canEditAsFood({ ...stored, ref: null })).toBe(false)
+    expect(canEditAsFood({ ...stored, amount: 0 })).toBe(false)
+    expect(canEditAsFood({ ...stored, kind: 'quick' })).toBe(false)
+  })
+
+  it('Schnelleinträge gehen hier nicht', () => {
+    expect(() => choiceFromEntry({ ...stored, kind: 'quick', amount: null, unit: null, ref: null })).toThrow(RangeError)
   })
 })

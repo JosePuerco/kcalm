@@ -67,9 +67,10 @@ export function useToday(): LocalDate {
   return today
 }
 
-// Hinzufügen-Sheet: „+“ in der Navigation (Slot nach Uhrzeit) oder „+“ am Slot (dieser Slot)
-type AddSheet = { open: boolean; slotId: string | null }
-let addSheet: AddSheet = { open: false, slotId: null }
+// Hinzufügen-Sheet: „+“ in der Navigation (Slot nach Uhrzeit), „+“ am Slot (dieser Slot)
+// oder Tipp auf einen Eintrag (bearbeiten)
+type AddSheet = { open: boolean; slotId: string | null; editId: string | null }
+let addSheet: AddSheet = { open: false, slotId: null, editId: null }
 const addListeners = new Set<() => void>()
 
 function setAddSheet(next: AddSheet) {
@@ -87,6 +88,7 @@ export function useAddSheet(): AddSheet {
 }
 
 /** slotId null = Slot zur Uhrzeit */
-export const openAddSheet = (slotId: string | null = null) => setAddSheet({ open: true, slotId })
+export const openAddSheet = (slotId: string | null = null) => setAddSheet({ open: true, slotId, editId: null })
+export const openEditSheet = (entryId: string) => setAddSheet({ open: true, slotId: null, editId: entryId })
 export const closeAddSheet = () => setAddSheet({ ...addSheet, open: false })
 

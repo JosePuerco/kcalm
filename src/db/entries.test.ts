@@ -1,8 +1,8 @@
 import 'fake-indexeddb/auto' // IndexedDB in Node nachbilden, vor dem Import von db
 import { beforeEach, describe, expect, it } from 'vitest'
-import { choiceFromProduct, foodEntry } from '../logic/addFood.ts'
+import { choiceFromEntry, choiceFromProduct, editedEntry, foodEntry } from '../logic/addFood.ts'
 import { db } from './db.ts'
-import { addEntry, loadFoodSources } from './entries.ts'
+import { addEntry, deleteEntry, getEntry, loadFoodSources, updateEntry } from './entries.ts'
 import { createProduct, updateProduct } from './products.ts'
 import { unknownNutrients } from './records.ts'
 
@@ -52,5 +52,25 @@ describe('loadFoodSources', () => {
     const s = await loadFoodSources()
     expect(s.products.map((p) => p.name)).toEqual(['Quark'])
     expect(s.recent).toHaveLength(1)
+  })
+})
+
+describe('updateEntry / deleteEntry', () => {
+  it('ändert Menge, Slot und Tag; id und createdAt bleiben', async () => {
+    const product = await createProduct(skyr, t0)
+    const e = await addEntry(foodEntry(choiceFromProduct(product), 250, '2026-10-21', 'snacks'), t0)
+    const changes = editedEntry(choiceFromEntry(e), 100, '2026-10-20', 'abend')
+    const u = await updateEntry(e.id, changes, t1)
+    expect(u).toMatchObject({ id: e.id, createdAt: t0.toISOString(), updatedAt: t1.toISOString(), date: '2026-10-20', slotId: 'abend', amount: 100 })
+    expect((await db.entries.get(e.id))?.nutrients.kcal).toBeCloseTo(63, 10)
+  })
+
+  it('Löschen setzt den Löschmarker, der Datensatz bleibt (Sync)', async () => {
+    const product = await createProduct(skyr, t0)
+    const e = await addEntry(foodEntry(choiceFromProduct(product), 250, '2026-10-21', 's'), t0)
+    await deleteEntry(e.id, t1)
+    expect(await db.entries.get(e.id)).toMatchObject({ deletedAt: t1.toISOString(), updatedAt: t1.toISOString() })
+    await expect(getEntry(e.id)).rejects.toThrow()
+    await expect(deleteEntry(e.id, t1)).rejects.toThrow()
   })
 })

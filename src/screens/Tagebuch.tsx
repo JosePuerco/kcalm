@@ -1,10 +1,14 @@
 // Tagebuch nach Kern.dc.html und Leer.dc.html. Aufbau von oben: Tagesleiste · (Monatskalender) ·
 // Übersichtskarte · (leerer Tag) · Slot-Karten. Die Wasser-Kachel kommt in Phase 7.
 import { useState } from 'react'
-import { openAddSheet, setDiaryDate, setSlotOpen, useDiaryState, useToday } from '../app/diaryState.ts'
+import { openAddSheet, openEditSheet, setDiaryDate, setSlotOpen, useDiaryState, useToday } from '../app/diaryState.ts'
+import { useToast } from '../components/ui/toastContext.ts'
+import { deleteEntry } from '../db/entries.ts'
+import type { Entry } from '../db/types.ts'
 import { loadDiary } from '../db/diary.ts'
 import { useLiveQuery } from '../db/live.ts'
 import { addDays } from '../logic/dates.ts'
+import { canEditAsFood } from '../logic/addFood.ts'
 import { dayOverview, slotsForDay } from '../logic/diary.ts'
 import { DayBar } from './tagebuch/DayBar.tsx'
 import { EmptyDayCard } from './tagebuch/EmptyDayCard.tsx'
@@ -20,12 +24,28 @@ export function Tagebuch() {
   // Der Kalender zeigt zunächst den Monat des angezeigten Tags; die Monatspfeile blättern unabhängig
   const [calendarMonth, setCalendarMonth] = useState(date.slice(0, 7))
   const [weekOpen, setWeekOpen] = useState(false)
+  const [swipedId, setSwipedId] = useState<string | null>(null)
+  const toast = useToast()
   const data = useLiveQuery(() => loadDiary(date, calendarMonth), [date, calendarMonth])
 
   const goTo = (next: string) => {
     setDiaryDate(next, today)
     setCalendarMonth(next.slice(0, 7))
   }
+
+  const remove = async (entry: Entry) => {
+    setSwipedId(null)
+    try {
+      await deleteEntry(entry.id)
+      toast(`${entry.nameSnapshot} gelöscht`)
+    } catch (error) {
+      console.error(error)
+      toast('Löschen fehlgeschlagen')
+    }
+  }
+
+  // Schnelleinträge bekommen ihr eigenes Bearbeiten mit Teilschritt 3e
+  const edit = (entry: Entry) => canEditAsFood(entry) && openEditSheet(entry.id)
 
   const toggleCalendar = () => {
     if (!calendarOpen) setCalendarMonth(date.slice(0, 7))
@@ -75,6 +95,10 @@ export function Tagebuch() {
                   day={day}
                   open={open}
                   flashId={state.flashId}
+                  swipedId={swipedId}
+                  onSwipe={setSwipedId}
+                  onEdit={edit}
+                  onDelete={(entry) => void remove(entry)}
                   onToggle={() => setSlotOpen(day.slot.id, !open)}
                   onAdd={() => openAddSheet(day.slot.id)}
                 />

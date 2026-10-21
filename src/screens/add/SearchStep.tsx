@@ -5,9 +5,9 @@ import { useMemo } from 'react'
 import { IconCheck, IconChevronRight, IconSearch } from '../../components/icons/icons.tsx'
 import type { BlsData } from '../../data/bls.ts'
 import type { FoodSources } from '../../db/entries.ts'
-import type { FoodRef } from '../../db/types.ts'
-import { choiceFromBls, choiceFromProduct, per100Label, recentRefs, type FoodChoice } from '../../logic/addFood.ts'
-import { createSearchIndex, search } from '../../logic/search.ts'
+import { per100Label, recentRefs, type FoodChoice } from '../../logic/addFood.ts'
+import { search } from '../../logic/search.ts'
+import type { FoodResolver } from './useFoodResolver.ts'
 
 const BLS_LIMIT = 30
 
@@ -16,43 +16,25 @@ type Props = {
   onQuery: (query: string) => void
   sources: FoodSources
   bls: BlsData | null
+  resolver: FoodResolver
   onPick: (food: FoodChoice) => void
 }
 
-export function SearchStep({ query, onQuery, sources, bls, onPick }: Props) {
-  const { byRef, productIndex } = useMemo(() => {
-    const overrides = new Map(sources.overrides.map((o) => [o.productRef, o]))
-    const prefs = new Map(sources.blsPrefs.map((p) => [p.blsCode, p]))
-    const products = sources.products.map((p) => choiceFromProduct(p, overrides.get(`product:${p.id}`)))
-    const map = new Map<FoodRef, FoodChoice>(products.map((c) => [c.ref, c]))
-    const resolveBls = (code: string) => {
-      const food = bls?.byCode.get(code)
-      return food ? choiceFromBls(food, prefs.get(code), overrides.get(`bls:${code}`)) : undefined
-    }
-    const brands = new Map(sources.products.map((p) => [`product:${p.id}`, p.brand ?? '']))
-    return {
-      byRef: (ref: FoodRef) => map.get(ref) ?? (ref.startsWith('bls:') ? resolveBls(ref.slice(4)) : undefined),
-      productIndex: createSearchIndex(
-        products.filter((c) => !c.archived),
-        (c) => c.name,
-        (c) => brands.get(c.ref) ?? '',
-      ),
-    }
-  }, [sources, bls])
-
+export function SearchStep({ query, onQuery, sources, bls, resolver, onPick }: Props) {
+  const { resolve, productIndex } = resolver
   const searching = query.trim() !== ''
   const results = useMemo(() => {
     if (!searching) {
       return recentRefs(sources.recent)
-        .map(byRef)
+        .map(resolve)
         .filter((c): c is FoodChoice => !!c)
     }
     const own = search(productIndex, query)
     const blsHits = bls
-      ? search(bls.index, query, BLS_LIMIT).map((f) => byRef(`bls:${f.code}`)).filter((c): c is FoodChoice => !!c)
+      ? search(bls.index, query, BLS_LIMIT).map((f) => resolve(`bls:${f.code}`)).filter((c): c is FoodChoice => !!c)
       : []
     return [...own, ...blsHits]
-  }, [searching, query, sources.recent, byRef, productIndex, bls])
+  }, [searching, query, sources.recent, resolve, productIndex, bls])
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">

@@ -134,3 +134,42 @@ export function foodEntry(food: FoodChoice, amount: number, date: LocalDate, slo
 export function addedMessage(name: string, kcal: number | null, slotName: string): string {
   return `${name} · ${formatNumber(kcal)} kcal zu ${slotName}`
 }
+
+/** Lässt sich der Eintrag über den Mengen-Schritt bearbeiten? (Lebensmittel mit Verweis und Menge) */
+export function canEditAsFood(entry: Entry): boolean {
+  return entry.kind === 'food' && entry.ref !== null && entry.unit !== null && entry.amount !== null && entry.amount > 0
+}
+
+/**
+ * Lebensmittel zum Bearbeiten eines Eintrags. Die Werte pro 100 kommen aus dem Snapshot des Eintrags
+ * (Snapshot ÷ Menge × 100), nicht aus dem aktuellen Produkt: Eine spätere Produktänderung darf alte Tage
+ * auch beim Ändern der Menge nicht verändern. Portionen und Quelle vom aktuellen Lebensmittel, falls vorhanden.
+ */
+export function choiceFromEntry(entry: Entry, current?: FoodChoice): FoodChoice {
+  if (!canEditAsFood(entry) || entry.ref === null || entry.amount === null || entry.unit === null) {
+    throw new RangeError('Nur Lebensmittel-Einträge mit Menge lassen sich so bearbeiten')
+  }
+  const per100 = {} as Nutrients
+  for (const key of NUTRIENT_KEYS) {
+    const v = entry.nutrients[key]
+    per100[key] = v === null ? null : (v / entry.amount) * 100
+  }
+  return {
+    ref: entry.ref,
+    name: entry.nameSnapshot,
+    source: current?.source ?? '',
+    verified: current?.verified ?? false,
+    unit: entry.unit,
+    per100,
+    portions: current?.portions ?? [],
+    archived: current?.archived ?? false,
+  }
+}
+
+export type EntryChanges = Pick<Entry, 'date' | 'slotId' | 'amount' | 'portionLabel' | 'nutrients'>
+
+/** Änderungen beim Speichern: Menge (Werte skaliert), Slot und Tag (Verschieben) */
+export function editedEntry(food: FoodChoice, amount: number, date: LocalDate, slotId: string): EntryChanges {
+  const { nutrients, portionLabel } = foodEntry(food, amount, date, slotId)
+  return { date, slotId, amount, portionLabel, nutrients }
+}
