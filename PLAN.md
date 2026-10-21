@@ -377,7 +377,7 @@ Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt i
 
 **17.10.2026 · Phase 0 abgeschlossen** – nächster Schritt: Phase 1 (Produkte und BLS). Vorher BLS-Excel nach `data/bls/` legen.
 
-- iOS 26 legt bei installierten Web-Apps einen Unschärfe-Streifen (~40 pt) unter die Statusleiste. Kopf in `display-mode: standalone` daher bei Safe Area + 44 px (Abweichung vom Prototyp, `src/styles/index.css`). Auf dem iPhone 16e geprüft.
+- iOS 26 legt bei installierten Web-Apps einen Unschärfe-Streifen (~40 pt) unter die Statusleiste. Kopf in `display-mode: standalone` daher bei Safe Area + 44 px (Abweichung vom Prototyp, `src/styles/index.css`). Auf dem iPhone 16e geprüft. Symptom vorher: Screen-Titel lag verschwommen im Streifen (Debug-Screenshot `shadow_issue.jpeg`, nach der Lösung gelöscht); behoben in `82dba0d`.
 
 Verlauf:
 
