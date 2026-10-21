@@ -123,7 +123,6 @@ describe('findColumns', () => {
       'PROT625 Protein (Nx6,25) [g/100g]',
       'NACL Salz (Natriumchlorid) [g/100g]',
       'WATER Wasser [g/100g]',
-      'ALC Alkohol (Ethanol) [g/100g]',
     ])
   })
 
@@ -143,22 +142,28 @@ describe('buildBlsFile', () => {
     expect(file.version).toBe('4.0')
     expect(file.source).toContain('Max Rubner-Institut')
     expect(file.fields).toEqual(['code', 'name', ...NUTRIENT_KEYS])
-    expect(file.rows).toEqual([['C133000', 'Hafer Flocken', 348, 6.65, 1.34, 53.3, 0.74, 10.983, 13.22, 0.005, 10.07, 0]])
+    expect(file.rows).toEqual([['C133000', 'Hafer Flocken', 348, 6.65, 1.34, 53.3, 0.74, 10.983, 13.22, 0.005, 10.07]])
   })
 
   it('übernimmt fehlende und Spuren-Werte richtig in die Zeile', () => {
     const file = buildBlsFile([
       header,
-      row('N100000', 'Testgetränk', { ENERCC: 0, FAT: '-', FASAT: '-', ALC: '<LOD', PROT625: 'TR', CHO: 0, NACL: 0, SUGAR: 0 }),
+      row('N100000', 'Testgetränk', { ENERCC: 0, FAT: '-', FASAT: '-', ALC: 4.2, PROT625: 'TR', CHO: 0, NACL: 0, SUGAR: '<LOD' }),
     ])
-    const [, , kcal, fat, satFat, , , fiber, protein, , water, alcohol] = file.rows[0]!
+    const [, , kcal, fat, satFat, , sugar, fiber, protein, , water] = file.rows[0]!
     expect(kcal).toBe(0)
     expect(fat).toBeNull()
     expect(satFat).toBeNull()
+    expect(sugar).toBe(0)
     expect(fiber).toBeNull() // Zelle gar nicht befüllt
     expect(water).toBeNull()
     expect(protein).toBe(0)
-    expect(alcohol).toBe(0)
+  })
+
+  it('übernimmt Alkohol nicht, obwohl die Spalte in der Datei steht', () => {
+    const file = buildBlsFile([header, row('N100000', 'Bier', { ENERCC: 42, ALC: 3.9 })])
+    expect(file.rows[0]).toHaveLength(2 + NUTRIENT_KEYS.length)
+    expect(file.rows[0]).not.toContain(3.9)
   })
 
   it('akzeptiert Codes mit Buchstaben im Inneren (z. B. M5B1600)', () => {

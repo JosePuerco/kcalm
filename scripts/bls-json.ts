@@ -14,7 +14,6 @@ export const BLS_NUTRIENTS = [
   'protein',
   'salt',
   'water',
-  'alcohol',
 ] as const
 
 /** Kürzel der Gehalt-Spalte in der Kopfzeile, z. B. „ENERCC Energie (Kilokalorien) [kcal/100g]“ */
@@ -28,10 +27,9 @@ const COLUMN_CODES: Record<(typeof BLS_NUTRIENTS)[number], string> = {
   protein: 'PROT625',
   salt: 'NACL',
   water: 'WATER',
-  alcohol: 'ALC',
 }
 
-/** [Code, Name, kcal, fat, satFat, carbs, sugar, fiber, protein, salt, water, alcohol] */
+/** [Code, Name, kcal, fat, satFat, carbs, sugar, fiber, protein, salt, water] */
 export type BlsRow = [string, string, ...(number | null)[]]
 
 export interface BlsFile {

@@ -4,7 +4,7 @@ import type { Nutrients } from '../db/types.ts'
 import { formatNumber } from './format.ts'
 import { nutrientsForAmount, sumNutrients, valueForAmount } from './nutrients.ts'
 
-// Haferflocken pro 100 g, Ballaststoffe und Alkohol hier bewusst unbekannt
+// Haferflocken pro 100 g, Ballaststoffe hier bewusst unbekannt
 const oats: Nutrients = {
   kcal: 372,
   fat: 7,
@@ -15,7 +15,6 @@ const oats: Nutrients = {
   protein: 13.5,
   salt: 0.02,
   water: 10,
-  alcohol: null,
 }
 
 describe('valueForAmount', () => {
@@ -55,7 +54,6 @@ describe('nutrientsForAmount', () => {
   it('unbekannte Werte bleiben null, nie 0', () => {
     const n = nutrientsForAmount(oats, 60)
     expect(n.fiber).toBeNull()
-    expect(n.alcohol).toBeNull()
   })
 
   it('alles unbekannt bleibt alles unbekannt', () => {

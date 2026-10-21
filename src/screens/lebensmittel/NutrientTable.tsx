@@ -7,7 +7,7 @@ import { formatNutrient, MAIN_NUTRIENTS, MORE_NUTRIENTS, NUTRIENT_INFO } from '.
 type Props = { per100: Nutrients; unit: Unit; note?: string }
 
 export function NutrientTable({ per100, unit, note }: Props) {
-  // Wasser und Alkohol nur zeigen, wenn bekannt
+  // Wasser nur zeigen, wenn bekannt
   const keys: NutrientKey[] = [...MAIN_NUTRIENTS, ...MORE_NUTRIENTS.filter((k) => per100[k] !== null)]
   return (
     <Card className="pt-3.5 pb-1.5">

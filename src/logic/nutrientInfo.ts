@@ -22,12 +22,11 @@ export const NUTRIENT_INFO: Record<NutrientKey, NutrientInfo> = {
   protein: { label: 'Eiweiß', unit: 'g', decimals: 1 },
   salt: { label: 'Salz', unit: 'g', decimals: 2 },
   water: { label: 'Wasser', unit: 'g', decimals: 1 },
-  alcohol: { label: 'Alkohol', unit: 'g', decimals: 1 },
 }
 
-/** Die sieben Werte der EU-Nährwerttabelle + Ballaststoffe; Wasser und Alkohol unter „Weitere“ */
+/** Die sieben Werte der EU-Nährwerttabelle + Ballaststoffe; Wasser unter „Weitere“ */
 export const MAIN_NUTRIENTS: readonly NutrientKey[] = ['kcal', 'fat', 'satFat', 'carbs', 'sugar', 'fiber', 'protein', 'salt']
-export const MORE_NUTRIENTS: readonly NutrientKey[] = ['water', 'alcohol']
+export const MORE_NUTRIENTS: readonly NutrientKey[] = ['water']
 
 /**
  * Pflichtangaben der EU-Nährwerttabelle (LMIV, Art. 30). Müssen beim Anlegen eigener

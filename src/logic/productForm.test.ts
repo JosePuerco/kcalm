@@ -79,7 +79,6 @@ describe('validateProductForm', () => {
       protein: 11,
       salt: 0.13,
       water: null,
-      alcohol: null,
     })
     expect(r.data.brand).toBeNull()
     expect(r.data.barcode).toBeNull()
@@ -118,9 +117,9 @@ describe('validateProductForm', () => {
     }
   })
 
-  it('Ballaststoffe, Wasser und Alkohol bleiben optional', () => {
-    const r = validateProductForm(form({ nutrients: { fiber: '', water: '', alcohol: '' } }))
-    expect(r.ok && [r.data.per100.fiber, r.data.per100.water, r.data.per100.alcohol]).toEqual([null, null, null])
+  it('Ballaststoffe und Wasser bleiben optional', () => {
+    const r = validateProductForm(form({ nutrients: { fiber: '', water: '' } }))
+    expect(r.ok && [r.data.per100.fiber, r.data.per100.water]).toEqual([null, null])
   })
 
   it('0 ist eine gültige Pflichtangabe', () => {

@@ -77,7 +77,7 @@ const portionSchema = z.object({
   amount: z.number({ error: 'Bitte Menge eingeben' }).positive('Mehr als 0').max(10000, 'Höchstens 10.000'),
 })
 
-// Pflicht sind die Werte der EU-Nährwerttabelle (REQUIRED_NUTRIENTS); Ballaststoffe, Wasser, Alkohol optional
+// Pflicht sind die Werte der EU-Nährwerttabelle (REQUIRED_NUTRIENTS); Ballaststoffe und Wasser optional
 const schema = z.object({
   name: z.string().trim().min(1, 'Bitte einen Namen eingeben').max(120, 'Höchstens 120 Zeichen'),
   brand: z.string().trim().max(80, 'Höchstens 80 Zeichen'),
@@ -96,7 +96,6 @@ const schema = z.object({
     protein: requiredGrams,
     salt: requiredGrams,
     water: optionalGrams,
-    alcohol: optionalGrams,
   }),
   isDrink: z.boolean(),
   portions: z.array(portionSchema),

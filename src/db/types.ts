@@ -13,7 +13,6 @@ export interface Nutrients {
   protein: NutrientValue
   salt: NutrientValue
   water: NutrientValue
-  alcohol: NutrientValue
 }
 export type NutrientKey = keyof Nutrients
 

@@ -26,7 +26,7 @@ import type {
 import { formatTime } from './format.ts'
 
 export const BACKUP_APP = 'kcalm'
-export const BACKUP_FORMAT_VERSION = 1
+export const BACKUP_FORMAT_VERSION = 2
 /** Ab so vielen Tagen ohne Backup warnt die Einstellungsseite */
 export const BACKUP_REMINDER_DAYS = 14
 
@@ -81,7 +81,6 @@ const nutrients = z.object({
   protein: nutrientValue,
   salt: nutrientValue,
   water: nutrientValue,
-  alcohol: nutrientValue,
 })
 
 const sync = {
@@ -231,9 +230,9 @@ const tableSchemas: { [K in TableName]: z.ZodType<BackupTables[K][number]> } = {
   settings: setting,
 }
 
-export const backupSchemaV1 = z.object({
+export const backupSchema = z.object({
   app: z.literal(BACKUP_APP),
-  formatVersion: z.literal(1),
+  formatVersion: z.literal(BACKUP_FORMAT_VERSION),
   exportedAt: timestamp,
   tables: z.object({
     products: z.array(tableSchemas.products),
@@ -275,7 +274,27 @@ export function backupFileName(now = new Date()): string {
  * Migrationen: Eintrag n wandelt Format n in Format n + 1 um.
  * Bei einer Formatänderung hier ergänzen und BACKUP_FORMAT_VERSION erhöhen.
  */
-export const MIGRATIONS: Record<number, (data: Record<string, unknown>) => Record<string, unknown>> = {}
+export const MIGRATIONS: Record<number, (data: Record<string, unknown>) => Record<string, unknown>> = {
+  1: (data) => {
+    // Format 2: Nährwert „alcohol“ entfällt (Jan, 21.10.2026)
+    const tables = isObject(data.tables) ? data.tables : {}
+    for (const [table, field] of Object.entries(NUTRIENT_FIELDS)) {
+      const records = tables[table]
+      if (Array.isArray(records)) records.forEach((record) => removeAlcohol(record, field))
+    }
+    return { ...data, formatVersion: 2 }
+  },
+}
+
+/** Tabellen mit Nährwert-Objekt und dessen Feldname */
+export const NUTRIENT_FIELDS = { products: 'per100', productOverrides: 'per100', entries: 'nutrients' } as const
+
+/** Entfernt den früheren Nährwert „alcohol“ aus record[field] (verändert record). Auch für das Datenbank-Update. */
+export function removeAlcohol(record: unknown, field: string): void {
+  if (!isObject(record)) return
+  const nutrients = record[field]
+  if (isObject(nutrients)) delete nutrients.alcohol
+}
 
 export type ParseResult = { ok: true; backup: Backup } | { ok: false; error: string }
 
@@ -305,7 +324,7 @@ export function parseBackup(text: string, migrations = MIGRATIONS): ParseResult 
     version += 1
   }
 
-  const result = backupSchemaV1.safeParse(current)
+  const result = backupSchema.safeParse(current)
   if (!result.success) return { ok: false, error: damaged(issuePath(result.error.issues[0]?.path ?? [])) }
 
   const duplicate = findDuplicate(result.data.tables)

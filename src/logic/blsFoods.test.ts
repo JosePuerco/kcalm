@@ -7,7 +7,7 @@ const file = (rows: unknown[]) => ({ source: 'MRI', version: '4.0', fields, rows
 
 describe('parseBlsFile', () => {
   it('wandelt Zeilen in Lebensmittel mit Nutrients um', () => {
-    const foods = parseBlsFile(file([['C133000', 'Hafer Flocken', 348, 6.65, 1.34, 53.3, 0.74, 10.983, 13.22, 0.005, 10.07, 0]]))
+    const foods = parseBlsFile(file([['C133000', 'Hafer Flocken', 348, 6.65, 1.34, 53.3, 0.74, 10.983, 13.22, 0.005, 10.07]]))
     expect(foods).toEqual([
       {
         code: 'C133000',
@@ -22,14 +22,13 @@ describe('parseBlsFile', () => {
           protein: 13.22,
           salt: 0.005,
           water: 10.07,
-          alcohol: 0,
         },
       },
     ])
   })
 
   it('null bleibt unbekannt', () => {
-    const [most] = parseBlsFile(file([['P355000', 'Most', 37, 0, 0, 1.6, 1.6, null, 0, 0.01, 91.4, 4.2]]))
+    const [most] = parseBlsFile(file([['P355000', 'Most', 37, 0, 0, 1.6, 1.6, null, 0, 0.01, 91.4]]))
     expect(most!.per100.fiber).toBeNull()
     expect(most!.per100.fat).toBe(0)
   })
@@ -41,8 +40,8 @@ describe('parseBlsFile', () => {
 
   it('lehnt unvollständige Zeilen, Text statt Zahl und negative Werte ab', () => {
     expect(() => parseBlsFile(file([['C1', 'A', 1, 2]]))).toThrow('unvollständig')
-    expect(() => parseBlsFile(file([['C1', 'A', '1', 0, 0, 0, 0, 0, 0, 0, 0, 0]]))).toThrow()
-    expect(() => parseBlsFile(file([['C1', 'A', -1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]))).toThrow()
+    expect(() => parseBlsFile(file([['C1', 'A', '1', 0, 0, 0, 0, 0, 0, 0, 0]]))).toThrow()
+    expect(() => parseBlsFile(file([['C1', 'A', -1, 0, 0, 0, 0, 0, 0, 0, 0]]))).toThrow()
   })
 
   it('lehnt Unsinn ab', () => {

@@ -19,7 +19,7 @@ import type {
   Slot,
   Weight,
 } from './types.ts'
-import { SCHEMA_V1 } from './schema.ts'
+import { defineVersions } from './versions.ts'
 
 export const db = new Dexie('kcalm') as Dexie & {
   products: EntityTable<Product, 'id'>
@@ -38,4 +38,4 @@ export const db = new Dexie('kcalm') as Dexie & {
   settings: EntityTable<Setting, 'id'>
 }
 
-db.version(1).stores(SCHEMA_V1)
+defineVersions(db)

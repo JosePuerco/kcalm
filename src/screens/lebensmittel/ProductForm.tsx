@@ -166,7 +166,7 @@ function FormBody({ id, back, initial }: { id?: string; back: string; initial: P
               className="transition-transform duration-200"
               style={{ transform: showMore ? 'rotate(180deg)' : undefined }}
             />
-            {showMore ? 'Weniger Nährwerte' : 'Weitere Nährwerte (Wasser, Alkohol)'}
+            {showMore ? 'Weniger Nährwerte' : 'Weitere Nährwerte (Wasser)'}
           </button>
         </Card>
         <p className="text-small text-muted px-1 leading-[1.45]">

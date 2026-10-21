@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { newRecord, softDelete, touch, unknownNutrients } from '../db/records.ts'
-import type { Day, Entry, Product, Setting } from '../db/types.ts'
+import type { Day, Entry, Product, ProductOverride, Setting } from '../db/types.ts'
 import {
   backupFileName,
   backupStatus,
@@ -11,6 +11,7 @@ import {
   lastBackupAfterImport,
   mergeTables,
   parseBackup,
+  removeAlcohol,
   serializeBackup,
   TABLE_NAMES,
   UNIQUE_KEYS,
@@ -93,7 +94,7 @@ describe('buildBackup / serializeBackup', () => {
   it('erzeugt app, formatVersion, exportedAt und alle Tabellen', () => {
     const backup = buildBackup(sampleTables(), T2)
     expect(backup.app).toBe('kcalm')
-    expect(backup.formatVersion).toBe(1)
+    expect(backup.formatVersion).toBe(2)
     expect(backup.exportedAt).toBe('2026-10-09T10:00:00.000Z')
     expect(Object.keys(backup.tables).sort()).toEqual([...TABLE_NAMES].sort())
   })
@@ -145,7 +146,7 @@ describe('parseBackup – Ablehnung', () => {
   })
 
   it('neuere formatVersion als die App', () => {
-    expect(parse({ ...valid(), formatVersion: 2 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
+    expect(parse({ ...valid(), formatVersion: 3 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
   })
 
   it('fehlende Tabelle', () => {
@@ -173,8 +174,8 @@ describe('parseBackup – Ablehnung', () => {
   it('fehlender Nährwert (statt null) wird abgelehnt', () => {
     const data = valid()
     const products = (data.tables as { products: { per100: Record<string, unknown> }[] }).products
-    delete products[0]!.per100.alcohol
-    expect(parse(data)).toEqual({ ok: false, error: 'Backup ist beschädigt (products[0].per100.alcohol)' })
+    delete products[0]!.per100.water
+    expect(parse(data)).toEqual({ ok: false, error: 'Backup ist beschädigt (products[0].per100.water)' })
   })
 
   it('ungültige Verweise und ids', () => {
@@ -221,6 +222,73 @@ describe('parseBackup – Toleranz', () => {
   it('Einstellungen behalten beliebige Werte', () => {
     const result = parseBackup(serializeBackup(buildBackup(sampleTables(), T2)))
     expect(result.ok && result.backup.tables.settings[1]?.value).toEqual([250, 500])
+  })
+})
+
+describe('parseBackup – Migration Format 1 → 2', () => {
+  type V1Record = Record<string, unknown> & { per100?: Record<string, unknown>; nutrients?: Record<string, unknown> }
+
+  // Backup aus der Zeit, als es den Nährwert „alcohol“ noch gab
+  function v1Backup() {
+    const data = JSON.parse(serializeBackup(buildBackup(sampleTables(), T2))) as {
+      formatVersion: number
+      tables: Record<string, V1Record[]>
+    }
+    data.formatVersion = 1
+    data.tables.products!.forEach((p) => (p.per100!.alcohol = 0))
+    data.tables.entries!.forEach((e) => (e.nutrients!.alcohol = null))
+    const override = newRecord<ProductOverride>(
+      { productRef: 'bls:P355000', per100: { kcal: 40 }, verifiedAt: null, note: null },
+      T0,
+    )
+    data.tables.productOverrides = [{ ...override, per100: { kcal: 40, alcohol: 4.2 } }]
+    return data
+  }
+
+  it('entfernt alcohol aus Produkten, Korrekturen und Einträgen', () => {
+    const result = parseBackup(JSON.stringify(v1Backup()))
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    const { tables } = result.backup
+    expect(result.backup.formatVersion).toBe(2)
+    expect(tables.products.every((p) => !('alcohol' in p.per100))).toBe(true)
+    expect(tables.entries.every((e) => !('alcohol' in e.nutrients))).toBe(true)
+    expect(tables.productOverrides[0]!.per100).toEqual({ kcal: 40 })
+  })
+
+  it('lässt alles andere unverändert', () => {
+    const result = parseBackup(JSON.stringify(v1Backup()))
+    const current = buildBackup(sampleTables(), T2)
+    expect(result.ok && result.backup.tables.products[0]!.per100).toEqual({
+      ...unknownNutrients(),
+      kcal: 372,
+      protein: 13.5,
+    })
+    expect(result.ok && result.backup.tables.entries[0]!.nutrients.kcal).toBe(current.tables.entries[0]!.nutrients.kcal)
+  })
+
+  it('beschädigtes Format 1 bleibt abgelehnt', () => {
+    const data = v1Backup()
+    data.tables.products![0]!.name = 42
+    expect(parseBackup(JSON.stringify(data))).toEqual({ ok: false, error: 'Backup ist beschädigt (products[0].name)' })
+    expect(parseBackup(JSON.stringify({ app: 'kcalm', formatVersion: 1, tables: 'kaputt' }))).toEqual({
+      ok: false,
+      error: 'Backup ist beschädigt (exportedAt)',
+    })
+  })
+})
+
+describe('removeAlcohol', () => {
+  it('entfernt nur das Feld alcohol im genannten Nährwert-Objekt', () => {
+    const record = { name: 'Bier', alcohol: 'bleibt', per100: { kcal: 42, alcohol: 3.9 } }
+    removeAlcohol(record, 'per100')
+    expect(record).toEqual({ name: 'Bier', alcohol: 'bleibt', per100: { kcal: 42 } })
+  })
+
+  it('übersteht fehlende oder falsche Daten', () => {
+    expect(() => removeAlcohol(null, 'per100')).not.toThrow()
+    expect(() => removeAlcohol({ per100: null }, 'per100')).not.toThrow()
+    expect(() => removeAlcohol([1, 2], 'per100')).not.toThrow()
   })
 })
 

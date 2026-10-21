@@ -60,7 +60,7 @@ Der wichtigste Ablauf ist: beim Essen App öffnen, Slot wählen, Produkt scannen
 - Herkunft: OFF, BLS oder eigenes Produkt
 - **Verifizieren (optional):** eigene Werte als Korrekturschicht über dem Original, Status „geprüft“ mit Datum; Tabelle Original gegen Meine Werte mit markierten Abweichungen; pro Produkt umschaltbar, welche Werte genutzt werden (gilt für künftige Einträge); ein späteres OFF-Update ändert nur das Original
 - Fehlende Werte werden als „unbekannt“ geführt, nie als 0; Summen zeigen dann „mind. …“
-- Pflichtangaben beim Anlegen eigener Produkte und beim Prüfen: Name und alle Werte der EU-Nährwerttabelle (Energie, Fett, davon gesättigte Fettsäuren, Kohlenhydrate, davon Zucker, Eiweiß, Salz); Ballaststoffe, Wasser und Alkohol optional
+- Pflichtangaben beim Anlegen eigener Produkte und beim Prüfen: Name und alle Werte der EU-Nährwerttabelle (Energie, Fett, davon gesättigte Fettsäuren, Kohlenhydrate, davon Zucker, Eiweiß, Salz); Ballaststoffe und Wasser optional
 - Archivieren statt löschen, wenn das Produkt im Tagebuch verwendet wurde
 - Lebensmittel-Liste mit Reitern Produkte / Mahlzeiten / Rezepte und Filtern Alle / Geprüft / Eigene / BLS; BLS-Lebensmittel erscheinen dort erst mit eigener Portion oder Prüfung
 - Quellenhinweis auf OFF (ODbL) und BLS im Bereich „Über“
@@ -171,13 +171,13 @@ Der Stack entspricht Mixli, ergänzt um Scanner, Diagramme und ein Build-Skript 
 - Nur benötigte Felder abfragen (Name, Marke, Menge, Nährwerte pro 100 g/ml, Kategorien)
 - Geladene Produkte lokal speichern; keine erneute Abfrage, solange nicht manuell aktualisiert
 - Lizenz ODbL: Quellenhinweis in der App; Produktdaten werden nicht veröffentlicht
-- Vor Phase 4: Erreichbarkeit aus dem Browser (CORS) und Limits mit einem kurzen Test prüfen
+- Kurztest (21.10.2026): Produktabfrage `/api/v2/product/{code}.json` mit CORS (`*`), unbekannter Code = HTTP 404 mit `status: 0`; Textsuche `/cgi/search.pl` mit CORS, aber oft 503; `search.openfoodfacts.org` ohne CORS (im Browser gesperrt). Limits: 100 Produktabfragen und 10 Suchen pro Minute
 
 ### Bundeslebensmittelschlüssel (BLS 4.0)
 
 - Kostenfrei nutzbar, ausdrücklich auch für App-Entwicklung ([BLS-FAQ](https://blsdb.de/faq)); Quellenhinweis: Max Rubner-Institut (2025), BLS 4.0
 - Quelle: Excel-Hauptdatei `BLS_4_0_Daten_2025_DE.xlsx` in `data/bls/`, Werte pro 100 g essbaren Anteil; je Nährstoff drei Spalten (Gehalt, Herkunft, Referenz)
-- Skript übernimmt nur: Code, Name, Energie kcal, Fett, gesättigte Fettsäuren, Kohlenhydrate, Zucker, Ballaststoffe, Eiweiß, Salz, Wasser, Alkohol
+- Skript übernimmt nur: Code, Name, Energie kcal, Fett, gesättigte Fettsäuren, Kohlenhydrate, Zucker, Ballaststoffe, Eiweiß, Salz, Wasser
 - Fehlende Werte bleiben leer (nicht 0)
 - Ergebnis-JSON liegt im Repo und im Offline-Cache
 
@@ -209,7 +209,7 @@ Alle Tabellen sind sync-fähig angelegt, und jeder Tagebucheintrag speichert sei
 ### Gemeinsame Regeln
 
 - Jeder Datensatz hat: `id` (UUID), `createdAt`, `updatedAt`, `deletedAt` (Löschmarker statt echtem Löschen)
-- **Nährwert-Objekt** `Nutrients`: kcal, fat, satFat, carbs, sugar, fiber, protein, salt, water, alcohol; jeder Wert Zahl oder `null` (= unbekannt, nie 0)
+- **Nährwert-Objekt** `Nutrients`: kcal, fat, satFat, carbs, sugar, fiber, protein, salt, water; jeder Wert Zahl oder `null` (= unbekannt, nie 0)
 - Datum als lokales Kalenderdatum `YYYY-MM-DD` (Tag beginnt um Mitternacht)
 - Abgeleitete Werte (Summen, Tagesziele, Trend, Schätzung) werden berechnet, nicht gespeichert
 - BLS-Daten liegen statisch in der App und werden über ihren BLS-Code referenziert, nicht in die Datenbank kopiert
@@ -294,7 +294,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 
 ### Phase 4 – Open Food Facts und Barcode
 
-- [ ] Kurztest: OFF aus dem Browser erreichbar (CORS), Antwortformat
+- [x] Kurztest: OFF aus dem Browser erreichbar (CORS), Antwortformat
 - [ ] Barcode-Scanner mit selbst gehostetem Decoder, Start per Tipp, Taschenlampe, manuelle Eingabe
 - [ ] OFF-Abfrage mit App-Kennung, Zod-Prüfung, lokales Speichern
 - [ ] OFF-Textsuche auf Knopfdruck
@@ -353,6 +353,8 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 | Energiedichte Verbrauchsschätzung | Fest 7.700 kcal/kg |
 | Pflichtfelder eigener Produkte | Name + alle Werte der EU-Nährwerttabelle (LMIV Art. 30); gilt auch beim Prüfen (Jan, 17.10.2026) |
 | BLS-Kürzel „TR“, „<LOD“, „<LOQ“ | Als 0 übernehmen; nur „-“ (fehlender Wert) wird `null` |
+| Nährwert Alkohol | Entfällt: wird nicht getrackt, auch nicht aus BLS oder OFF übernommen (Backup-Format 2, Datenbank-Version 2). Ob ein Getränk alkoholisch ist (Phase 7, Wasser), kommt aus der OFF-Kategorie bzw. der BLS-Code-Gruppe (Jan, 21.10.2026) |
+| OFF-Produkte nur mit kJ | kcal = kJ ÷ 4,184 beim Laden; kJ wird nie angezeigt oder gespeichert (Jan, 21.10.2026) |
 | Spalten „Monatsauswertung Claude“ | Ebene Tage, JSON: Datum, Vollständig, kcal, Eiweiß, Kohlenhydrate, Fett, Ballaststoffe, Budget, Gewicht |
 
 Offen nur noch:
