@@ -1,5 +1,5 @@
-// Produktdetail nach Produkt.dc.html, Phase-1-Fassung: ohne Verifizieren (Phase 6)
-// und ohne OFF-Aktualisierung (Phase 4).
+// Produktdetail nach Produkt.dc.html. OFF-Produkte: Original gegen Meine Werte (Verifizieren)
+// und „Original jetzt aktualisieren“; eigene Produkte: eine Spalte, Werte direkt bearbeiten.
 import { useState } from 'react'
 import { href, navigate } from '../../app/router.ts'
 import { Button } from '../../components/ui/Button.tsx'
@@ -8,6 +8,7 @@ import { Badge, SubScreen, SubScreenTitle } from '../../components/ui/SubScreen.
 import { useToast } from '../../components/ui/toastContext.ts'
 import { db } from '../../db/db.ts'
 import { useLiveQuery } from '../../db/live.ts'
+import { refreshOffProduct, type OffRefresh } from '../../db/off.ts'
 import {
   archiveProduct,
   deleteProduct,
@@ -15,9 +16,20 @@ import {
   restoreProduct,
   saveProductPortions,
 } from '../../db/products.ts'
+import { getOverride } from '../../db/verify.ts'
 import { SOURCE_LABEL } from '../../logic/foodList.ts'
+import { formatDate } from '../../logic/format.ts'
 import { NutrientTable } from './NutrientTable.tsx'
 import { PortionsCard } from './PortionsCard.tsx'
+import { VerifiedBadge, VerifySection } from './VerifySection.tsx'
+
+const REFRESH_MESSAGE: Record<OffRefresh['kind'], string> = {
+  updated: 'Original aktualisiert',
+  notFound: 'Nicht mehr bei Open Food Facts',
+  noNutrients: 'Open Food Facts hat keine Nährwerte mehr, Original bleibt',
+  offline: 'Kein Internet',
+  unreachable: 'Open Food Facts nicht erreichbar',
+}
 
 const LIST = href('lebensmittel')
 
@@ -29,9 +41,12 @@ export function ProductDetail({ id }: { id: string }) {
     return p && p.deletedAt === null ? p : null
   }, [id])
   const used = useLiveQuery(() => isFoodUsed(`product:${id}`), [id])
+  // null = keine Korrektur
+  const override = useLiveQuery(async () => (await getOverride(`product:${id}`)) ?? null, [id])
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
-  if (product === undefined) return <SubScreen back={LIST} />
+  if (product === undefined || override === undefined) return <SubScreen back={LIST} />
   if (product === null) {
     return (
       <SubScreen back={LIST}>
@@ -51,18 +66,43 @@ export function ProductDetail({ id }: { id: string }) {
   }
 
   const meta = [product.brand, product.barcode && `EAN ${product.barcode}`].filter(Boolean).join(' · ')
+  const isOff = product.source === 'off'
+
+  const refresh = async () => {
+    setRefreshing(true)
+    try {
+      toast(REFRESH_MESSAGE[(await refreshOffProduct(id)).kind])
+    } catch (error) {
+      console.error(error)
+      toast('Das hat nicht geklappt')
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   return (
     <SubScreen back={LIST}>
       <SubScreenTitle title={product.name} meta={meta || undefined}>
         <Badge>{SOURCE_LABEL[product.source]}</Badge>
+        {isOff && <VerifiedBadge override={override ?? undefined} />}
         {product.archived && <Badge>Archiviert</Badge>}
       </SubScreenTitle>
 
-      <NutrientTable per100={product.per100} unit={product.unit} />
+      {isOff ? (
+        <VerifySection
+          foodRef={`product:${id}`}
+          original={product.per100}
+          override={override ?? undefined}
+          useOverride={product.useOverride}
+          unit={product.unit}
+          editHref={href('lebensmittel', 'produkt', id, 'bearbeiten')}
+          note="Ein Update aus Open Food Facts ändert nur die Original-Spalte."
+        />
+      ) : (
+        <NutrientTable per100={product.per100} unit={product.unit} />
+      )}
 
-      {/* OFF-Original wird nie überschrieben; eigene Werte kommen mit der Korrekturschicht (Phase 6) */}
-      {product.source !== 'off' && (
+      {!isOff && (
         <a
           href={href('lebensmittel', 'produkt', id, 'bearbeiten')}
           className="press bg-card rounded-field text-label flex min-h-12 items-center justify-center font-semibold"
@@ -82,6 +122,22 @@ export function ProductDetail({ id }: { id: string }) {
           <span>Ist ein Getränk</span>
           <span className="text-muted">{product.isDrink ? 'Ja' : 'Nein'}</span>
         </div>
+        {isOff && (
+          <>
+            <div className="border-line text-label flex min-h-12 items-center justify-between gap-3 border-t">
+              <span>Zuletzt aus Open Food Facts geladen</span>
+              <span className="text-muted">{product.offFetchedAt ? formatDate(new Date(product.offFetchedAt)) : '–'}</span>
+            </div>
+            <button
+              type="button"
+              disabled={refreshing}
+              onClick={() => void refresh()}
+              className="border-line text-label text-accent-text min-h-12 w-full border-t font-medium disabled:opacity-40"
+            >
+              {refreshing ? 'Wird aktualisiert …' : 'Original jetzt aktualisieren'}
+            </button>
+          </>
+        )}
       </Card>
 
       {product.archived ? (

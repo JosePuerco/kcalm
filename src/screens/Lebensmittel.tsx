@@ -2,8 +2,9 @@
 //  #/lebensmittel                              Liste
 //  #/lebensmittel/neu                          neues Produkt
 //  #/lebensmittel/produkt/<id>                 Produktdetail
-//  #/lebensmittel/produkt/<id>/bearbeiten      Produkt bearbeiten
+//  #/lebensmittel/produkt/<id>/bearbeiten      Produkt bearbeiten (OFF: korrigieren)
 //  #/lebensmittel/bls/<code>                   BLS-Lebensmittel
+//  #/lebensmittel/bls/<code>/bearbeiten        BLS-Werte korrigieren
 //  #/lebensmittel/mahlzeit/neu                 neue Mahlzeit
 //  #/lebensmittel/mahlzeit/<id>                Mahlzeit bearbeiten
 //  #/lebensmittel/rezept/neu                   neues Rezept
@@ -11,6 +12,7 @@
 import { useState } from 'react'
 import { useSubPath } from '../app/router.ts'
 import { BlsDetail } from './lebensmittel/BlsDetail.tsx'
+import { BlsCorrection } from './lebensmittel/CorrectionForm.tsx'
 import { FoodList } from './lebensmittel/FoodList.tsx'
 import { initialFoodListState } from './lebensmittel/foodListState.ts'
 import { MealForm } from './lebensmittel/MealForm.tsx'
@@ -26,6 +28,7 @@ export function Lebensmittel() {
   if (view === 'neu') return <ProductForm />
   if (view === 'produkt' && id && action === 'bearbeiten') return <ProductForm id={id} />
   if (view === 'produkt' && id) return <ProductDetail key={id} id={id} />
+  if (view === 'bls' && id && action === 'bearbeiten') return <BlsCorrection key={id} code={id} />
   if (view === 'bls' && id) return <BlsDetail key={id} code={id} />
   if (view === 'mahlzeit' && id === 'neu') return <MealForm />
   if (view === 'mahlzeit' && id) return <MealForm key={id} id={id} />

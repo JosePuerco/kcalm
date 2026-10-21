@@ -40,14 +40,12 @@ export function toInput(value: number | null): string {
 }
 
 export function productToForm(p: ProductFormData): ProductFormValues {
-  const nutrients = {} as Record<NutrientKey, string>
-  for (const key of NUTRIENT_KEYS) nutrients[key] = toInput(p.per100[key])
   return {
     name: p.name,
     brand: p.brand ?? '',
     barcode: p.barcode ?? '',
     unit: p.unit,
-    nutrients,
+    nutrients: nutrientsToForm(p.per100),
     isDrink: p.isDrink,
     portions: p.portions.map((x) => ({ label: x.label, amount: toInput(x.amount) })),
   }
@@ -167,6 +165,47 @@ export function validateProductForm(values: ProductFormValues): FormResult {
   }
 }
 
+/** Nährwerte als Text fürs Formular (exakt, mit Komma) */
+export function nutrientsToForm(per100: Nutrients): Record<NutrientKey, string> {
+  const result = {} as Record<NutrientKey, string>
+  for (const key of NUTRIENT_KEYS) result[key] = toInput(per100[key])
+  return result
+}
+
+export type NutrientFormResult = { ok: true; per100: Nutrients } | { ok: false; errors: FormErrors }
+
+const correctionSchema = z.object({
+  kcal: z.number().max(MAX_KCAL, `Höchstens ${MAX_KCAL} kcal pro 100`).nullable(),
+  fat: optionalGrams,
+  satFat: optionalGrams,
+  carbs: optionalGrams,
+  sugar: optionalGrams,
+  fiber: optionalGrams,
+  protein: optionalGrams,
+  salt: optionalGrams,
+  water: optionalGrams,
+})
+
+/**
+ * „Werte bearbeiten“ bei OFF und BLS (Korrekturschicht): jedes Feld darf leer sein (= unbekannt);
+ * ob alle Pflichtangaben da sind, zählt erst beim Prüfen (logic/verify.ts).
+ */
+export function validateCorrectionForm(nutrients: Record<NutrientKey, string>): NutrientFormResult {
+  const errors: FormErrors = {}
+  const per100 = {} as Nutrients
+  for (const key of NUTRIENT_KEYS) {
+    const n = parseDecimal(nutrients[key])
+    if (n === 'invalid') errors[key] = 'Keine gültige Zahl'
+    per100[key] = n === 'invalid' ? null : n
+  }
+  const result = correctionSchema.safeParse(per100)
+  if (!result.success) for (const issue of result.error.issues) errors[fieldKey(issue.path)] ??= issue.message
+  const { fat, satFat, carbs, sugar } = per100
+  if (fat !== null && satFat !== null && satFat > fat) errors.satFat ??= 'Mehr als Fett gesamt'
+  if (carbs !== null && sugar !== null && sugar > carbs) errors.sugar ??= 'Mehr als Kohlenhydrate gesamt'
+  return Object.keys(errors).length > 0 || !result.success ? { ok: false, errors } : { ok: true, per100: result.data }
+}
+
 export type PortionResult = { ok: true; portion: Portion } | { ok: false; errors: { label?: string; amount?: string } }
 
 /** Eine Portion aus dem Portionen-Sheet prüfen; otherLabels = die übrigen Portionen */
@@ -188,3 +227,6 @@ export function validatePortion(input: PortionInput, otherLabels: readonly strin
   if (errors.label || errors.amount || !result.success) return { ok: false, errors }
   return { ok: true, portion: result.data }
 }
+
+/** id des Eingabefelds, damit Fehler es fokussieren können */
+export const fieldId = (key: string) => `f-${key}`

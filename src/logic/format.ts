@@ -38,7 +38,12 @@ export function formatTime(date: Date): string {
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
+/** Datum in lokaler Zeit: „02.10.2026“ */
+export function formatDate(date: Date): string {
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`
+}
+
 /** Datum und Uhrzeit in lokaler Zeit: „21.10.2026, 18:04“ */
 export function formatDateTime(date: Date): string {
-  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}, ${formatTime(date)}`
+  return `${formatDate(date)}, ${formatTime(date)}`
 }

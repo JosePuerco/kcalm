@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { unknownNutrients } from '../db/records.ts'
 import { formatNutrient, REQUIRED_NUTRIENTS } from './nutrientInfo.ts'
 import {
+  nutrientsToForm,
+  validateCorrectionForm,
   emptyProductForm,
   parseDecimal,
   productToForm,
@@ -224,6 +226,32 @@ describe('productToForm', () => {
   it('hin und zurück ergibt dasselbe Produkt', () => {
     const r = validateProductForm(productToForm(product))
     expect(r.ok && r.data).toEqual(product)
+  })
+})
+
+describe('validateCorrectionForm', () => {
+  const skyr = { ...unknownNutrients(), kcal: 63, fat: 0.2, satFat: 0.1, carbs: 4, sugar: 4, protein: 11, salt: 0.1 }
+
+  it('Komma-Zahlen exakt, leeres Feld = unbekannt (auch Pflichtangaben)', () => {
+    const form = { ...nutrientsToForm(skyr), carbs: '4,5', salt: '' }
+    expect(validateCorrectionForm(form)).toEqual({ ok: true, per100: { ...skyr, carbs: 4.5, salt: null } })
+  })
+
+  it('nutrientsToForm zeigt exakte Werte mit Komma', () => {
+    expect(nutrientsToForm(skyr)).toMatchObject({ kcal: '63', fat: '0,2', fiber: '' })
+  })
+
+  it('Tippfehler, Höchstwerte und Querprüfungen', () => {
+    const form = { ...nutrientsToForm(skyr), kcal: '1000', protein: '12,3,4', sugar: '5', fat: '101' }
+    const result = validateCorrectionForm(form)
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.errors).toEqual({
+      kcal: 'Höchstens 900 kcal pro 100',
+      protein: 'Keine gültige Zahl',
+      fat: 'Höchstens 100 g pro 100',
+      sugar: 'Mehr als Kohlenhydrate gesamt',
+    })
   })
 })
 

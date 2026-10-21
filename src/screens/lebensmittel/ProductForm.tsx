@@ -14,14 +14,17 @@ import { db } from '../../db/db.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { createProduct, updateProduct } from '../../db/products.ts'
 import type { NutrientKey, Product, Unit } from '../../db/types.ts'
-import { MAIN_NUTRIENTS, MORE_NUTRIENTS, NUTRIENT_INFO, REQUIRED_NUTRIENTS } from '../../logic/nutrientInfo.ts'
+import { MAIN_NUTRIENTS, MORE_NUTRIENTS } from '../../logic/nutrientInfo.ts'
 import {
   emptyProductForm,
+  fieldId,
   productToForm,
   validateProductForm,
   type FormErrors,
   type ProductFormValues,
 } from '../../logic/productForm.ts'
+import { ProductCorrection } from './CorrectionForm.tsx'
+import { NutrientInput } from './NutrientInput.tsx'
 
 const UNITS = [
   { value: 'g', label: 'g' },
@@ -54,14 +57,8 @@ export function ProductForm({ id, initial, onSaved, onBack }: Props) {
       </SubScreen>
     )
   }
-  // OFF-Original nie überschreiben (CLAUDE.md); eigene Werte kommen mit der Korrekturschicht
-  if (existing?.source === 'off') {
-    return (
-      <SubScreen back={back}>
-        <SubScreenTitle title={existing.name} meta="Werte aus Open Food Facts lassen sich hier nicht ändern." />
-      </SubScreen>
-    )
-  }
+  // OFF-Original nie überschreiben (CLAUDE.md): eigene Werte gehen in die Korrekturschicht
+  if (existing?.source === 'off') return <ProductCorrection product={existing} />
   // Startwerte nur einmal übernehmen; spätere Datenbank-Änderungen überschreiben die Eingaben nicht
   return (
     <FormBody
@@ -73,8 +70,6 @@ export function ProductForm({ id, initial, onSaved, onBack }: Props) {
     />
   )
 }
-
-const fieldId = (key: string) => `f-${key}`
 
 type BodyProps = {
   id?: string
@@ -280,36 +275,5 @@ function FormBody({ id, back, initial, onSaved }: BodyProps) {
         </Button>
       </form>
     </SubScreen>
-  )
-}
-
-type NutrientInputProps = { nutrient: NutrientKey; value: string; error?: string; onChange: (value: string) => void }
-
-function NutrientInput({ nutrient, value, error, onChange }: NutrientInputProps) {
-  const info = NUTRIENT_INFO[nutrient]
-  // Pflicht ist fast alles; markiert werden daher die optionalen Felder
-  const required = REQUIRED_NUTRIENTS.includes(nutrient)
-  return (
-    <div className="border-line border-t">
-      <label className="text-label flex min-h-touch-min items-center gap-2">
-        <span className={`flex-1 ${info.sub ? 'text-muted pl-3' : ''}`}>
-          {info.label}
-          {!required && <span className="text-muted"> (optional)</span>}
-        </span>
-        <input
-          id={fieldId(nutrient)}
-          inputMode="decimal"
-          required={required}
-          placeholder={required ? '' : '–'}
-          value={value}
-          aria-invalid={error ? true : undefined}
-          onChange={(e) => onChange(e.target.value)}
-          autoComplete="off"
-          className="text-body-large placeholder:text-muted min-h-touch-min w-20 bg-transparent text-right outline-none"
-        />
-        <span className="text-muted w-8">{info.unit}</span>
-      </label>
-      {error && <span className="text-small text-danger block pb-1.5 text-right">{error}</span>}
-    </div>
   )
 }
