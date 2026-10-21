@@ -43,6 +43,8 @@ export default function Scanner({ onDetected, onClose, paused = false, children,
   const [detector, setDetector] = useState<Detector | null>(null)
   const [detectorFailed, setDetectorFailed] = useState(false)
   const [typing, setTyping] = useState(false)
+  // Safari zeigt das Video kurz in Standardgröße, bevor es die Bildmaße kennt; erst danach einblenden
+  const [videoReady, setVideoReady] = useState(false)
 
   // Decoder parallel zur Kamera laden
   useEffect(() => {
@@ -121,7 +123,17 @@ export default function Scanner({ onDetected, onClose, paused = false, children,
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: reduced ? instant : motionTokens.scrimIn }}
     >
-      <video ref={video} className="absolute inset-0 size-full object-cover" autoPlay muted playsInline />
+      <video
+        ref={video}
+        className={`absolute inset-0 size-full object-cover ${videoReady ? '' : 'invisible'}`}
+        autoPlay
+        muted
+        playsInline
+        onPlaying={(e) => e.currentTarget.videoWidth > 0 && setVideoReady(true)}
+        onResize={(e) => e.currentTarget.videoWidth > 0 && setVideoReady(true)}
+        // Neuer Kamerastart (z. B. nach dem Hintergrund): wieder verbergen bis zum ersten Bild
+        onEmptied={() => setVideoReady(false)}
+      />
 
       {!typing && (
         <>
