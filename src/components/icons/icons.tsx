@@ -42,6 +42,12 @@ export const IconPlus = (p: IconProps) => (
   </Svg>
 )
 
+export const IconMinus = (p: IconProps) => (
+  <Svg strokeWidth={2} size={20} {...p}>
+    <path d="M5 12h14" />
+  </Svg>
+)
+
 export const IconSearch = (p: IconProps) => (
   <Svg {...p}>
     <circle cx="11" cy="11" r="7" />

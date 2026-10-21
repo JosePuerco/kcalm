@@ -1,6 +1,6 @@
 // Such-Schritt im Hinzufügen-Sheet nach Kern.dc.html: Suchfeld, Liste „Zuletzt gegessen“ bzw. „Treffer lokal“
 // (Name, Quelle, geprüft-Häkchen, kcal/100), darüber „Schnelleintrag“, neben dem Suchfeld der Scan-Knopf,
-// beim Suchen darunter „In Open Food Facts suchen“. Mahlzeiten und Rezepte kommen in Phase 5.
+// beim Suchen darunter „In Open Food Facts suchen“. Auch als Zutaten-Auswahl im Rezept (ohne Schnelleintrag und Scan).
 import { useMemo } from 'react'
 import { IconBarcode, IconCheck, IconChevronRight, IconSearch } from '../../components/icons/icons.tsx'
 import type { BlsData } from '../../data/bls.ts'
@@ -20,26 +20,25 @@ type Props = {
   bls: BlsData | null
   resolver: FoodResolver
   onPick: (food: FoodChoice) => void
-  onQuick: () => void
-  onScan: () => void
+  /** fehlt = kein Knopf „Schnelleintrag“ */
+  onQuick?: () => void
+  /** fehlt = kein Scan-Knopf */
+  onScan?: () => void
   onPickOff: (product: OffProduct) => void
+  /** z. B. Rezepte als Zutat eines Rezepts ausblenden */
+  exclude?: (food: FoodChoice) => boolean
 }
 
-export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQuick, onScan, onPickOff }: Props) {
+export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQuick, onScan, onPickOff, exclude }: Props) {
   const { resolve, productIndex } = resolver
   const searching = query.trim() !== ''
   const results = useMemo(() => {
-    if (!searching) {
-      return recentRefs(sources.recent)
-        .map(resolve)
-        .filter((c): c is FoodChoice => !!c)
-    }
-    const own = search(productIndex, query)
-    const blsHits = bls
-      ? search(bls.index, query, BLS_LIMIT).map((f) => resolve(`bls:${f.code}`)).filter((c): c is FoodChoice => !!c)
-      : []
+    const keep = (c: FoodChoice | undefined): c is FoodChoice => !!c && !exclude?.(c)
+    if (!searching) return recentRefs(sources.recent).map(resolve).filter(keep)
+    const own = search(productIndex, query).filter(keep)
+    const blsHits = bls ? search(bls.index, query, BLS_LIMIT).map((f) => resolve(`bls:${f.code}`)).filter(keep) : []
     return [...own, ...blsHits]
-  }, [searching, query, sources.recent, resolve, productIndex, bls])
+  }, [searching, query, sources.recent, resolve, productIndex, bls, exclude])
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -57,25 +56,31 @@ export function SearchStep({ query, onQuery, sources, bls, resolver, onPick, onQ
             className="text-body-large text-text placeholder:text-muted min-w-0 flex-1 bg-transparent outline-none"
           />
         </label>
-        <button
-          type="button"
-          aria-label="Barcode scannen"
-          onClick={onScan}
-          className="press rounded-field bg-card text-text flex size-[46px] shrink-0 items-center justify-center"
-        >
-          <IconBarcode />
-        </button>
+        {onScan && (
+          <button
+            type="button"
+            aria-label="Barcode scannen"
+            onClick={onScan}
+            className="press rounded-field bg-card text-text flex size-[46px] shrink-0 items-center justify-center"
+          >
+            <IconBarcode />
+          </button>
+        )}
       </div>
 
-      <div className="flex gap-2 px-4 pt-2.5 pb-1.5">
-        <button
-          type="button"
-          onClick={onQuick}
-          className="press bg-card text-text rounded-small-button text-secondary flex min-h-9 items-center px-3 font-medium"
-        >
-          Schnelleintrag
-        </button>
-      </div>
+      {onQuick ? (
+        <div className="flex gap-2 px-4 pt-2.5 pb-1.5">
+          <button
+            type="button"
+            onClick={onQuick}
+            className="press bg-card text-text rounded-small-button text-secondary flex min-h-9 items-center px-3 font-medium"
+          >
+            Schnelleintrag
+          </button>
+        </div>
+      ) : (
+        <div className="pt-1" />
+      )}
       <span className="text-small text-muted px-4 pt-2 pb-1 tracking-[0.6px] uppercase">
         {searching ? 'Treffer lokal' : 'Zuletzt gegessen'}
       </span>

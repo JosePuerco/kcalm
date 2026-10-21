@@ -15,7 +15,7 @@ export interface RecipeLine {
 }
 
 /** Summe der Rohmengen; ml zählt wie g (1 ml ≈ 1 g) */
-export function rawWeight(lines: readonly RecipeLine[]): number {
+export function rawWeight(lines: readonly Pick<RecipeLine, 'ingredient'>[]): number {
   return lines.reduce((sum, l) => sum + l.ingredient.amount, 0)
 }
 
@@ -81,6 +81,16 @@ export function stepFinalWeight(weight: number, direction: 1 | -1): number {
   if (direction === 1) return (Math.floor(weight / s + 1e-9) + 1) * s
   if (weight <= s) return weight
   return Math.max(s, (Math.ceil(weight / s - 1e-9) - 1) * s)
+}
+
+/**
+ * −/+ am Endgewicht. Ist es noch leer, geht es vom Rohgewicht aus los (1.615 g → „−“ → 1.600 g);
+ * ohne Zutaten startet „+“ bei 50 g, „−“ lässt es leer.
+ */
+export function nextFinalWeight(current: number | null, rawG: number, direction: 1 | -1): number | null {
+  if (current !== null) return stepFinalWeight(current, direction)
+  if (rawG > 0) return stepFinalWeight(rawG, direction)
+  return direction === 1 ? FINAL_WEIGHT_STEP : null
 }
 
 /**

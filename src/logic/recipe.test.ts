@@ -8,6 +8,7 @@ import {
   choiceFromRecipe,
   cookingLoss,
   cookingLossText,
+  nextFinalWeight,
   rawWeight,
   recipeMeta,
   recipePer100,
@@ -291,5 +292,23 @@ describe('recipeMeta', () => {
 
   it('Etikett ist schon die Menge → nicht doppelt', () => {
     expect(recipeMeta({ finalWeightG: 620, portions: [{ label: '200 g', amount: 200 }] })).toBe('620 g fertig · 200 g')
+  })
+})
+
+describe('nextFinalWeight', () => {
+  it('mit Endgewicht: normal ±50', () => {
+    expect(nextFinalWeight(1400, 1615, 1)).toBe(1450)
+    expect(nextFinalWeight(1400, 1615, -1)).toBe(1350)
+  })
+
+  it('leer: vom Rohgewicht aus', () => {
+    expect(nextFinalWeight(null, 1615, -1)).toBe(1600)
+    expect(nextFinalWeight(null, 1615, 1)).toBe(1650)
+    expect(nextFinalWeight(null, 1600, -1)).toBe(1550)
+  })
+
+  it('leer und ohne Zutaten: + → 50, − bleibt leer', () => {
+    expect(nextFinalWeight(null, 0, 1)).toBe(50)
+    expect(nextFinalWeight(null, 0, -1)).toBeNull()
   })
 })

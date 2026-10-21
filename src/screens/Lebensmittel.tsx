@@ -4,6 +4,8 @@
 //  #/lebensmittel/produkt/<id>                 Produktdetail
 //  #/lebensmittel/produkt/<id>/bearbeiten      Produkt bearbeiten
 //  #/lebensmittel/bls/<code>                   BLS-Lebensmittel
+//  #/lebensmittel/rezept/neu                   neues Rezept
+//  #/lebensmittel/rezept/<id>                  Rezept bearbeiten
 import { useState } from 'react'
 import { useSubPath } from '../app/router.ts'
 import { BlsDetail } from './lebensmittel/BlsDetail.tsx'
@@ -11,6 +13,7 @@ import { FoodList } from './lebensmittel/FoodList.tsx'
 import { initialFoodListState } from './lebensmittel/foodListState.ts'
 import { ProductDetail } from './lebensmittel/ProductDetail.tsx'
 import { ProductForm } from './lebensmittel/ProductForm.tsx'
+import { RecipeForm } from './lebensmittel/RecipeForm.tsx'
 
 export function Lebensmittel() {
   const [view, id, action] = useSubPath()
@@ -21,5 +24,7 @@ export function Lebensmittel() {
   if (view === 'produkt' && id && action === 'bearbeiten') return <ProductForm id={id} />
   if (view === 'produkt' && id) return <ProductDetail key={id} id={id} />
   if (view === 'bls' && id) return <BlsDetail key={id} code={id} />
+  if (view === 'rezept' && id === 'neu') return <RecipeForm />
+  if (view === 'rezept' && id) return <RecipeForm key={id} id={id} />
   return <FoodList state={listState} onChange={setListState} />
 }

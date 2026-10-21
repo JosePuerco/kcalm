@@ -1,4 +1,5 @@
 // Karte „Portionen“ nach Produkt.dc.html mit Sheet zum Anlegen, Ändern und Löschen.
+// Im Rezept mit kcal je Portion („450 g = 608 kcal“, Rezept.dc.html).
 import { useState } from 'react'
 import { Button } from '../../components/ui/Button.tsx'
 import { Card } from '../../components/ui/Card.tsx'
@@ -6,19 +7,21 @@ import { Sheet } from '../../components/ui/Sheet.tsx'
 import { TextField } from '../../components/ui/TextField.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import type { Portion, Unit } from '../../db/types.ts'
-import { formatAmount } from '../../logic/format.ts'
+import { formatAmount, formatNumber } from '../../logic/format.ts'
 import { toInput, validatePortion } from '../../logic/productForm.ts'
 
 type Props = {
   portions: readonly Portion[]
   unit: Unit
   onSave: (portions: Portion[]) => Promise<void>
+  /** kcal pro 100 für „= 608 kcal“ hinter der Menge; undefined = ohne */
+  kcalPer100?: number | null
 }
 
 /** null = Sheet zu, 'new' = neue Portion, Zahl = Index der bearbeiteten Portion */
 type Editing = null | 'new' | number
 
-export function PortionsCard({ portions, unit, onSave }: Props) {
+export function PortionsCard({ portions, unit, onSave, kcalPer100 }: Props) {
   const [editing, setEditing] = useState<Editing>(null)
   const close = () => setEditing(null)
 
@@ -45,6 +48,14 @@ export function PortionsCard({ portions, unit, onSave }: Props) {
           <span className="min-w-0 truncate">{p.label}</span>
           <span className="text-muted pl-3 whitespace-nowrap">
             {formatAmount(p.amount)} {unit}
+            {kcalPer100 !== undefined && (
+              <>
+                {' = '}
+                <span className="text-text font-semibold">
+                  {formatNumber(kcalPer100 === null ? null : (kcalPer100 * p.amount) / 100)} kcal
+                </span>
+              </>
+            )}
           </span>
         </button>
       ))}
