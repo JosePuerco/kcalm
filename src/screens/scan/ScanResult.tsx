@@ -1,38 +1,13 @@
 // Was nach einem Scan über dem Kamerabild erscheint:
-//  HitCard        Treffer (Scanner.dc.html): Name, Quelle · kcal/100 · EAN, „Weiter“
 //  LoadingCard    während der Abfrage bei Open Food Facts
 //  MissingSheet   nicht in OFF bzw. in OFF ohne kcal (NichtGefunden.dc.html, Zustand 1)
 //  OfflineSheet   kein Internet / OFF nicht erreichbar, Code gemerkt (NichtGefunden.dc.html, Zustand 2)
 import { motion } from 'motion/react'
 import type { ReactNode } from 'react'
-import { IconCheck, IconOffline, IconSearchOff } from '../../components/icons/icons.tsx'
+import { IconOffline, IconSearchOff } from '../../components/icons/icons.tsx'
 import { Button } from '../../components/ui/Button.tsx'
-import { per100Label, type FoodChoice } from '../../logic/addFood.ts'
 import { formatEan } from '../../logic/barcode.ts'
 import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
-
-export function HitCard({ food, code, onNext }: { food: FoodChoice; code: string; onNext: () => void }) {
-  return (
-    <div className="bg-card text-text rounded-calendar flex items-center gap-3 py-3.5 pr-3.5 pl-4">
-      <span className="bg-accent-soft text-accent-text rounded-tile flex size-10 flex-none items-center justify-center">
-        <IconCheck size={20} strokeWidth={2.2} />
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-body font-semibold break-words">{food.name}</span>
-        <span className="text-small text-muted">
-          {food.source} · {per100Label(food)} · EAN {code}
-        </span>
-      </span>
-      <button
-        type="button"
-        onClick={onNext}
-        className="press bg-accent text-on-accent rounded-field text-body min-h-touch-min flex-none px-4 font-semibold"
-      >
-        Weiter
-      </button>
-    </div>
-  )
-}
 
 export function LoadingCard({ code }: { code: string }) {
   return (

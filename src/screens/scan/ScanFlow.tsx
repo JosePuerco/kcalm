@@ -1,4 +1,4 @@
-// Ablauf nach dem Scan (PLAN.md 2, Barcode): lokal, sonst Open Food Facts; Treffer → Mengen-Schritt,
+// Ablauf nach dem Scan (PLAN.md 2, Barcode): lokal, sonst Open Food Facts; Treffer → direkt zum Mengen-Schritt,
 // nicht gefunden / ohne kcal → eigenes Produkt mit Barcode, offline → Code merken.
 // Wird mit dem Scanner nachgeladen (React.lazy in AddSheet).
 import { useRef, useState } from 'react'
@@ -13,12 +13,11 @@ import { emptyProductForm, productToForm, type ProductFormValues } from '../../l
 import { ProductForm } from '../lebensmittel/ProductForm.tsx'
 import type { FoodResolver } from '../add/useFoodResolver.ts'
 import Scanner from './Scanner.tsx'
-import { HitCard, LoadingCard, MissingSheet, OfflineSheet } from './ScanResult.tsx'
+import { LoadingCard, MissingSheet, OfflineSheet } from './ScanResult.tsx'
 
 type State =
   | { kind: 'camera' }
   | { kind: 'loading'; code: string }
-  | { kind: 'hit'; code: string; food: FoodChoice }
   /** off = bei OFF ohne kcal (Daten zum Vorbefüllen); null = gar nicht bei OFF */
   | { kind: 'missing'; code: string; off: OffProduct | null }
   | { kind: 'offline'; code: string; reason: 'offline' | 'unreachable'; scanId: string; openScans: number }
@@ -56,7 +55,8 @@ export default function ScanFlow({ slot, date, today, resolver, onPick, onQuick,
       switch (result.kind) {
         case 'local':
         case 'fetched':
-          return setState({ kind: 'hit', code, food: choice(result.product) })
+          // Direkt zur Menge, ohne Trefferkarte (Jan, 21.10.2026)
+          return onPick(choice(result.product))
         case 'notFound':
           return setState({ kind: 'missing', code, off: null })
         case 'noNutrients':
@@ -128,7 +128,6 @@ export default function ScanFlow({ slot, date, today, resolver, onPick, onQuick,
       }
     >
       {state.kind === 'loading' && <LoadingCard code={state.code} />}
-      {state.kind === 'hit' && <HitCard food={state.food} code={state.code} onNext={() => onPick(state.food)} />}
     </Scanner>
   )
 }

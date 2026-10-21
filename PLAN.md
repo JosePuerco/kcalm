@@ -312,6 +312,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 - [ ] Korrekturschicht für OFF- und BLS-Werte, Status „geprüft“, Tabelle mit Abweichungen, Umschalter Meine/Original
 - [ ] „Als geprüft markieren“ nur, wenn alle Pflichtangaben der Nährwerttabelle vorhanden sind (`REQUIRED_NUTRIENTS`)
 - [ ] OFF-Aktualisierung überschreibt Korrekturen nicht (Test)
+- [ ] Prüf-Dialog beim Scan und bei der Auswahl aus der Suche: ungeprüftes OFF-Produkt → einmalig Nährwerte vs. Etikett, „Stimmt so“ (geprüft) / Werte korrigieren (Korrekturschicht) / „Später prüfen“ (fragt beim nächsten Scan bzw. der nächsten Auswahl wieder), danach direkt zur Menge; eigene Produkte gelten automatisch als geprüft (Jan, 21.10.2026)
 
 ### Phase 7 – Wasser
 
@@ -360,6 +361,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 | „Werte bearbeiten“ bei OFF-Produkten | Bis zur Korrekturschicht (Phase 6) ausgeblendet; Portionen bleiben änderbar (Jan, 21.10.2026) |
 | Offline-Scan „Jetzt manuell eintragen“ | Öffnet den Schnelleintrag, der gemerkte Scan gilt als erledigt; OFF nicht erreichbar (Netz da) zeigt „Open Food Facts nicht erreichbar“ (Jan, 21.10.2026) |
 | Gemerkte Scans nachladen | Still beim Start, bei Netz zurück und beim Zurückkehren in die App; Zeile „2 gemerkte Scans“ über den Slots, Liste im Sheet, Tipp → Menge im gemerkten Slot und Tag (bzw. Produktformular), Wischen verwirft. „Nicht gefunden“ merkt sich nur die Sitzung, kein neues Feld (Jan, 21.10.2026) |
+| Treffer beim Scan | Direkt zum Mengen-Schritt, keine Trefferkarte mit „Weiter“ (Jan nach iPhone-Test, 21.10.2026) |
 | Spalten „Monatsauswertung Claude“ | Ebene Tage, JSON: Datum, Vollständig, kcal, Eiweiß, Kohlenhydrate, Fett, Ballaststoffe, Budget, Gewicht |
 
 Offen nur noch:

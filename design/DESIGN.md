@@ -99,7 +99,7 @@ Jeder Screen entspricht einem Prototyp. Beispieldaten im Prototyp sind nur Beisp
 ### Scanner – `Scanner.dc.html`, `NichtGefunden.dc.html`
 
 - Vollbild-Kamera, abgedunkelt außerhalb des Rahmens (290 × 170, Ecken weiß, Laser-Linie in Hellblau). Oben Schließen und Taschenlampe, unten „Code eintippen“.
-- Treffer: Karte unten mit Name, Quelle, kcal/100, EAN und „Weiter“ → Mengen-Schritt.
+- Treffer: Karte unten mit Name, Quelle, kcal/100, EAN und „Weiter“ → Mengen-Schritt. **Abweichung (Jan, 21.10.2026):** keine Trefferkarte, ein erkannter Code führt direkt zum Mengen-Schritt; während der Abfrage bei OFF eine Ladekarte „Suche EAN …“.
 - Nicht gefunden: Sheet mit EAN und „Eigenes Produkt anlegen“ / „Lokal suchen“ / „Nochmal scannen“.
 - Offline: Sheet „Kein Internet – Barcode gemerkt“, „Gemerkt für Abend · heute“, Anzahl offener Scans, „Jetzt manuell eintragen“ / „Später“.
 
