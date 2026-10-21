@@ -282,8 +282,8 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 
 ### Phase 3 – Tagebuch und Ziele (Kern)
 
-- [ ] Ersteinrichtung (4 Schritte)
-- [ ] Slots frei festlegbar mit Uhrzeitfenster
+- [x] Ersteinrichtung (4 Schritte)
+- [x] Slots frei festlegbar mit Uhrzeitfenster
 - [ ] Tagesansicht nach Prototyp `Kern.dc.html`, Tageswechsel, Monatskalender, einklappbare Slots
 - [ ] Hinzufügen-Sheet mit Suche, Mengen-Schritt, Ziffernblock, Portions-Chips; im Sheet bleiben
 - [ ] Einträge bearbeiten, verschieben, löschen (Wischen + Sheet)

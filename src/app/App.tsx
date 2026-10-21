@@ -9,6 +9,9 @@ import { Lebensmittel } from '../screens/Lebensmittel.tsx'
 import { Statistik } from '../screens/Statistik.tsx'
 import { Tagebuch } from '../screens/Tagebuch.tsx'
 import { Vorschau } from '../screens/Vorschau.tsx'
+import { Setup } from '../screens/setup/Setup.tsx'
+import { useLiveQuery } from '../db/live.ts'
+import { isSetupDone } from '../db/setup.ts'
 import { Navigation } from './Navigation.tsx'
 import { useRoute, useSubPath, type Route } from './router.ts'
 import { initTheme } from './theme.ts'
@@ -29,6 +32,8 @@ export function App() {
   const closeAdd = useCallback(() => setAddOpen(false), [])
 
   useEffect(initTheme, [])
+  // undefined = lädt noch; live, damit nach Abschluss oder Backup-Import sofort das Tagebuch kommt
+  const setupDone = useLiveQuery(isSetupDone, [])
 
   const CurrentScreen = screens[route]
 
@@ -37,10 +42,15 @@ export function App() {
     <div className="bg-bg text-text relative mx-auto flex h-full w-full max-w-[430px] flex-col overflow-hidden">
       <OverlayProvider>
         <ToastProvider>
-          <CurrentScreen key={route} />
-          {!isSubPage && <Navigation current={route} onAdd={() => setAddOpen(true)} />}
-          {/* Inhalt (Suche, Mengen-Schritt) kommt in Phase 3 */}
-          <Sheet open={addOpen} onClose={closeAdd} title="Hinzufügen" />
+          {setupDone === false && <Setup />}
+          {setupDone && (
+            <>
+              <CurrentScreen key={route} />
+              {!isSubPage && <Navigation current={route} onAdd={() => setAddOpen(true)} />}
+              {/* Inhalt (Suche, Mengen-Schritt) kommt in Phase 3 */}
+              <Sheet open={addOpen} onClose={closeAdd} title="Hinzufügen" />
+            </>
+          )}
         </ToastProvider>
       </OverlayProvider>
     </div>

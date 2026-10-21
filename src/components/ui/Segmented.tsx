@@ -5,7 +5,8 @@ type Option<T extends string> = { value: T; label: string }
 
 type Props<T extends string> = {
   options: readonly Option<T>[]
-  value: T
+  /** null = keins aktiv (z. B. eigene Mischung) */
+  value: T | null
   onChange: (value: T) => void
   /** Liegt der Umschalter in einer Karte? Dann hellere Spur */
   inCard?: boolean
