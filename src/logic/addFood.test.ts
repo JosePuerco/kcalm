@@ -4,7 +4,6 @@ import type { BlsPref, Entry, Product, ProductOverride } from '../db/types.ts'
 import {
   addedMessage,
   amountToKeypad,
-  applyOverride,
   canEditAsFood,
   choiceFromBls,
   choiceFromEntry,
@@ -17,6 +16,7 @@ import {
   portionLabelFor,
   recentRefs,
 } from './addFood.ts'
+import { mergeNutrients } from './verify.ts'
 
 const skyr: Product = newRecord<Product>({
   source: 'off',
@@ -63,7 +63,12 @@ describe('choiceFromProduct / choiceFromBls', () => {
 
   it('gelöschte Korrektur zählt nicht', () => {
     const o = { ...override({ per100: { kcal: 99 } }), deletedAt: '2026-10-21T00:00:00.000Z' }
-    expect(applyOverride(skyr.per100, o).kcal).toBe(63)
+    expect(mergeNutrients(skyr.per100, o).kcal).toBe(63)
+    expect(choiceFromProduct(skyr, o).verified).toBe(false)
+  })
+
+  it('eigene Produkte gelten als geprüft', () => {
+    expect(choiceFromProduct({ ...skyr, source: 'own' }).verified).toBe(true)
   })
 
   it('BLS: Gramm, eigene Portionen aus blsPrefs', () => {

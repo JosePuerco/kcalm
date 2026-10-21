@@ -87,9 +87,10 @@ describe('buildFoodRows', () => {
     expect(rows).toEqual([])
   })
 
-  it('geprüft nur mit aktivem Override und Prüfdatum', () => {
+  it('geprüft nur mit aktivem Override und Prüfdatum; eigene immer', () => {
+    const offWhey = { ...whey, source: 'off' as const }
     const rows = buildFoodRows({
-      products: [skyr, whey, milk],
+      products: [skyr, offWhey, milk, product('Eigenes Brot')],
       blsPrefs: [],
       overrides: [
         verifiedOverride(`product:${skyr.id}`),
@@ -98,7 +99,15 @@ describe('buildFoodRows', () => {
       ],
       bls,
     })
-    expect(rows.filter((r) => r.verified).map((r) => r.name)).toEqual(['Skyr natur'])
+    expect(rows.filter((r) => r.verified).map((r) => r.name)).toEqual(['Eigenes Brot', 'Skyr natur'])
+  })
+
+  it('kcal /100 aus den genutzten Werten (Korrektur bzw. Original)', () => {
+    const corrected = newRecord<ProductOverride>({ productRef: `product:${skyr.id}`, per100: { kcal: 65 }, verifiedAt: null, note: null })
+    const kcal = (p: typeof skyr) =>
+      buildFoodRows({ products: [p], blsPrefs: [], overrides: [corrected], bls })[0]!.kcalPer100
+    expect(kcal(skyr)).toBe(65)
+    expect(kcal({ ...skyr, useOverride: false })).toBe(63)
   })
 
   it('sortiert alphabetisch nach deutscher Sortierung, Umlaute richtig', () => {
@@ -135,8 +144,8 @@ describe('filterFoodRows', () => {
     expect(names('bls')).toEqual(['Banane roh'])
   })
 
-  it('Geprüft ist leer, solange nichts geprüft ist', () => {
-    expect(names('verified')).toEqual([])
+  it('Geprüft: eigene Produkte automatisch, OFF erst nach Prüfung', () => {
+    expect(names('verified')).toEqual(['Whey'])
   })
 
   it('Archiv-Ansicht zeigt nur Archiviertes', () => {

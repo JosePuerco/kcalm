@@ -3,6 +3,7 @@
 
 import type { BlsPref, FoodRef, Product, ProductOverride, Unit } from '../db/types.ts'
 import type { BlsFood } from './blsFoods.ts'
+import { effectiveNutrients, isVerified, mergeNutrients } from './verify.ts'
 
 export type FoodFilter = 'all' | 'verified' | 'own' | 'bls'
 
@@ -29,9 +30,8 @@ interface Input {
 }
 
 export function buildFoodRows({ products, blsPrefs, overrides, bls }: Input): FoodRow[] {
-  const verified = new Set(
-    overrides.filter((o) => o.deletedAt === null && o.verifiedAt !== null).map((o) => o.productRef),
-  )
+  const byRef = new Map(overrides.filter((o) => o.deletedAt === null).map((o) => [o.productRef, o]))
+  const verified = new Set([...byRef.values()].filter((o) => o.verifiedAt !== null).map((o) => o.productRef))
   const rows: FoodRow[] = []
 
   for (const p of products) {
@@ -43,9 +43,9 @@ export function buildFoodRows({ products, blsPrefs, overrides, bls }: Input): Fo
       name: p.name,
       brand: p.brand,
       meta: [p.brand, SOURCE_LABEL[p.source]].filter(Boolean).join(' · '),
-      kcalPer100: p.per100.kcal,
+      kcalPer100: effectiveNutrients(p.per100, byRef.get(ref), p.useOverride).kcal,
       unit: p.unit,
-      verified: verified.has(ref),
+      verified: isVerified(p.source, byRef.get(ref)),
       archived: p.archived,
     })
   }
@@ -65,7 +65,7 @@ export function buildFoodRows({ products, blsPrefs, overrides, bls }: Input): Fo
       name: food.name,
       brand: null,
       meta: withPortion.has(code) ? 'BLS · eigene Portion' : 'BLS',
-      kcalPer100: food.per100.kcal,
+      kcalPer100: mergeNutrients(food.per100, byRef.get(ref)).kcal,
       unit: 'g',
       verified: verified.has(ref),
       archived: false,

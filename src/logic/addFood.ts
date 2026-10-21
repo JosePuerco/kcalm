@@ -17,6 +17,7 @@ import type { BlsFood } from './blsFoods.ts'
 import { SOURCE_LABEL } from './foodList.ts'
 import { formatAmount, formatNumber } from './format.ts'
 import { nutrientsForAmount } from './nutrients.ts'
+import { effectiveNutrients, isVerified, mergeNutrients } from './verify.ts'
 
 /** Ein Lebensmittel, wie es Suche und Mengen-Schritt brauchen */
 export interface FoodChoice {
@@ -32,24 +33,14 @@ export interface FoodChoice {
   archived: boolean
 }
 
-/** Korrekturschicht über das Original legen; fehlendes Feld = Original (Verifizieren kommt in Phase 6) */
-export function applyOverride(base: Nutrients, override: ProductOverride | undefined): Nutrients {
-  if (!override || override.deletedAt !== null) return base
-  const result = { ...base }
-  for (const key of NUTRIENT_KEYS) if (key in override.per100) result[key] = override.per100[key] ?? null
-  return result
-}
-
-const isVerified = (o: ProductOverride | undefined) => !!o && o.deletedAt === null && o.verifiedAt !== null
-
 export function choiceFromProduct(p: Product, override?: ProductOverride): FoodChoice {
   return {
     ref: `product:${p.id}`,
     name: p.name,
     source: SOURCE_LABEL[p.source],
-    verified: isVerified(override),
+    verified: isVerified(p.source, override),
     unit: p.unit,
-    per100: p.useOverride ? applyOverride(p.per100, override) : p.per100,
+    per100: effectiveNutrients(p.per100, override, p.useOverride),
     portions: p.portions,
     archived: p.archived,
   }
@@ -60,10 +51,10 @@ export function choiceFromBls(food: BlsFood, pref?: BlsPref, override?: ProductO
     ref: `bls:${food.code}`,
     name: food.name,
     source: SOURCE_LABEL.bls,
-    verified: isVerified(override),
+    verified: isVerified('bls', override),
     // BLS-Werte gelten pro 100 g essbaren Anteil
     unit: 'g',
-    per100: applyOverride(food.per100, override),
+    per100: mergeNutrients(food.per100, override),
     portions: pref && pref.deletedAt === null ? pref.portions : [],
     archived: false,
   }
