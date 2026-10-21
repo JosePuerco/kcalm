@@ -49,6 +49,13 @@ export function normalizeBarcode(raw: string, format?: BarcodeFormat): string | 
   return null
 }
 
+/** Anzeige wie auf der Packung: EAN-13 „4 012345 678901“, EAN-8 „4012 3456“, sonst unverändert */
+export function formatEan(code: string): string {
+  if (/^\d{13}$/.test(code)) return `${code.slice(0, 1)} ${code.slice(1, 7)} ${code.slice(7)}`
+  if (/^\d{8}$/.test(code)) return `${code.slice(0, 4)} ${code.slice(4)}`
+  return code
+}
+
 /** Schreibweisen, unter denen ein Code lokal gespeichert sein kann (eigene Produkte: so wie eingetippt) */
 export function barcodeVariants(code: string): string[] {
   return code.length === 13 && code.startsWith('0') ? [code, code.slice(1)] : [code]

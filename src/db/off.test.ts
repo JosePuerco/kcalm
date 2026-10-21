@@ -110,6 +110,14 @@ describe('lookupBarcode', () => {
     expect((await findProductByBarcode('4002971243802'))?.id).toBe(archived.id)
   })
 
+  it('ohne kcal: nicht gespeichert, Daten zum Vorbefüllen zurück', async () => {
+    const noKcal = { ...skyr, product: { ...skyr.product, nutriments: { proteins_100g: 11 } } }
+    const result = await lookupBarcode('4002971243802', network({ body: noKcal }).net)
+    expect(result.kind).toBe('noNutrients')
+    expect(result.kind === 'noNutrients' && [result.data.name, result.data.per100.protein]).toEqual(['Skyr natur', 11])
+    expect(await db.products.count()).toBe(0)
+  })
+
   it('nicht gefunden: HTTP 404 mit status 0, nichts gespeichert', async () => {
     const { net } = network({ status: 404, body: { status: 0, status_verbose: 'product not found' } })
     expect(await lookupBarcode('4000000000006', net)).toEqual({ kind: 'notFound' })

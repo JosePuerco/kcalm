@@ -13,7 +13,7 @@ import { useToast } from '../../components/ui/toastContext.ts'
 import { db } from '../../db/db.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { createProduct, updateProduct } from '../../db/products.ts'
-import type { NutrientKey, Unit } from '../../db/types.ts'
+import type { NutrientKey, Product, Unit } from '../../db/types.ts'
 import { MAIN_NUTRIENTS, MORE_NUTRIENTS, NUTRIENT_INFO, REQUIRED_NUTRIENTS } from '../../logic/nutrientInfo.ts'
 import {
   emptyProductForm,
@@ -28,14 +28,23 @@ const UNITS = [
   { value: 'ml', label: 'ml' },
 ] as const
 
-/** id fehlt = neues Produkt */
-export function ProductForm({ id }: { id?: string }) {
+type Props = {
+  /** fehlt = neues Produkt */
+  id?: string
+  /** Startwerte für ein neues Produkt, z. B. Barcode aus dem Scanner */
+  initial?: ProductFormValues
+  /** Statt zur Produktseite zu springen (Formular über dem Scanner) */
+  onSaved?: (product: Product) => void
+  onBack?: () => void
+}
+
+export function ProductForm({ id, initial, onSaved, onBack }: Props) {
   const existing = useLiveQuery(async () => {
     if (!id) return null
     const p = await db.products.get(id)
     return p && p.deletedAt === null ? p : null
   }, [id])
-  const back = id ? href('lebensmittel', 'produkt', id) : href('lebensmittel')
+  const back = onBack ?? (id ? href('lebensmittel', 'produkt', id) : href('lebensmittel'))
 
   if (id && existing === undefined) return <SubScreen back={back} />
   if (id && !existing) {
@@ -45,13 +54,36 @@ export function ProductForm({ id }: { id?: string }) {
       </SubScreen>
     )
   }
+  // OFF-Original nie überschreiben (CLAUDE.md); eigene Werte kommen mit der Korrekturschicht
+  if (existing?.source === 'off') {
+    return (
+      <SubScreen back={back}>
+        <SubScreenTitle title={existing.name} meta="Werte aus Open Food Facts lassen sich hier nicht ändern." />
+      </SubScreen>
+    )
+  }
   // Startwerte nur einmal übernehmen; spätere Datenbank-Änderungen überschreiben die Eingaben nicht
-  return <FormBody key={id ?? 'neu'} id={id} back={back} initial={existing ? productToForm(existing) : emptyProductForm()} />
+  return (
+    <FormBody
+      key={id ?? 'neu'}
+      id={id}
+      back={back}
+      initial={existing ? productToForm(existing) : (initial ?? emptyProductForm())}
+      onSaved={onSaved}
+    />
+  )
 }
 
 const fieldId = (key: string) => `f-${key}`
 
-function FormBody({ id, back, initial }: { id?: string; back: string; initial: ProductFormValues }) {
+type BodyProps = {
+  id?: string
+  back: string | (() => void)
+  initial: ProductFormValues
+  onSaved?: (product: Product) => void
+}
+
+function FormBody({ id, back, initial, onSaved }: BodyProps) {
   const toast = useToast()
   const [values, setValues] = useState(initial)
   const [errors, setErrors] = useState<FormErrors>({})
@@ -79,7 +111,8 @@ function FormBody({ id, back, initial }: { id?: string; back: string; initial: P
     try {
       const saved = id ? await updateProduct(id, result.data) : await createProduct(result.data)
       toast('Gespeichert')
-      navigate(href('lebensmittel', 'produkt', saved.id), { replace: true })
+      if (onSaved) onSaved(saved)
+      else navigate(href('lebensmittel', 'produkt', saved.id), { replace: true })
     } catch (error) {
       console.error(error)
       toast('Speichern fehlgeschlagen')

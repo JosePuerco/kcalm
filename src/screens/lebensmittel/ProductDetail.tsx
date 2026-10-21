@@ -61,12 +61,15 @@ export function ProductDetail({ id }: { id: string }) {
 
       <NutrientTable per100={product.per100} unit={product.unit} />
 
-      <a
-        href={href('lebensmittel', 'produkt', id, 'bearbeiten')}
-        className="press bg-card rounded-field text-label flex min-h-12 items-center justify-center font-semibold"
-      >
-        Werte bearbeiten
-      </a>
+      {/* OFF-Original wird nie überschrieben; eigene Werte kommen mit der Korrekturschicht (Phase 6) */}
+      {product.source !== 'off' && (
+        <a
+          href={href('lebensmittel', 'produkt', id, 'bearbeiten')}
+          className="press bg-card rounded-field text-label flex min-h-12 items-center justify-center font-semibold"
+        >
+          Werte bearbeiten
+        </a>
+      )}
 
       <PortionsCard
         portions={product.portions}

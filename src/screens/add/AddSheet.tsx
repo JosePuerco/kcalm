@@ -54,7 +54,7 @@ import { useFoodResolver } from './useFoodResolver.ts'
 const NO_DATES = new Set<LocalDate>()
 
 // Scanner samt Decoder erst laden, wenn er gebraucht wird
-const Scanner = lazy(() => import('../scan/Scanner.tsx'))
+const ScanFlow = lazy(() => import('../scan/ScanFlow.tsx'))
 
 export function AddSheet() {
   const sheet = useAddSheet()
@@ -330,13 +330,21 @@ function AddFlow({ slots, initialSlotId, editing, onHeader }: FlowProps) {
       {scanning && (
         <Overlay>
           <Suspense fallback={<div className="bg-scanner-bg absolute inset-0 z-10" />}>
-            <Scanner
-              onClose={() => setScanning(false)}
-              onDetected={(code) => {
-                // Auswertung (lokal, OFF, nicht gefunden, offline) folgt in 4c
+            <ScanFlow
+              slot={slot}
+              date={viewed}
+              today={today}
+              resolver={resolver}
+              onPick={(food) => {
                 setScanning(false)
-                toast(`Barcode ${code} erkannt`)
+                pick(food)
               }}
+              onQuick={() => {
+                setScanning(false)
+                setStep({ kind: 'quick' })
+              }}
+              onClose={() => setScanning(false)}
+              onLater={closeAddSheet}
             />
           </Suspense>
         </Overlay>

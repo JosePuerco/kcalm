@@ -98,6 +98,8 @@ export type BarcodeLookup =
   | { kind: 'local'; product: Product }
   | { kind: 'fetched'; product: Product }
   | { kind: 'notFound' }
+  /** Bei OFF, aber ohne kcal: wird nicht gespeichert, sondern als eigenes Produkt angelegt (Jan, 21.10.2026) */
+  | { kind: 'noNutrients'; data: OffProduct }
   | Failure
 
 /** Scan auswerten: lokal, sonst OFF (Treffer wird gespeichert). barcode in Einheitsform. */
@@ -110,6 +112,7 @@ export async function lookupBarcode(barcode: string, net = browserNetwork(), now
   const result = parseProductResponse(response.json, barcode)
   if (result.kind === 'notFound') return result
   if (result.kind === 'invalid') return { kind: 'unreachable' }
+  if (result.product.per100.kcal === null) return { kind: 'noNutrients', data: result.product }
   return { kind: 'fetched', product: await saveOffProduct(result.product, now) }
 }
 

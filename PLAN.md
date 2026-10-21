@@ -296,7 +296,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 
 - [x] Kurztest: OFF aus dem Browser erreichbar (CORS), Antwortformat
 - [ ] Barcode-Scanner mit selbst gehostetem Decoder, Start per Tipp, Taschenlampe, manuelle Eingabe
-- [ ] OFF-Abfrage mit App-Kennung, Zod-Prüfung, lokales Speichern
+- [x] OFF-Abfrage mit App-Kennung, Zod-Prüfung, lokales Speichern
 - [ ] OFF-Textsuche auf Knopfdruck
 - [ ] Offline-Scans merken und nachladen; „nicht gefunden“ → eigenes Produkt mit Barcode
 - [ ] Scanner-Test im Supermarkt
@@ -355,6 +355,9 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 | BLS-Kürzel „TR“, „<LOD“, „<LOQ“ | Als 0 übernehmen; nur „-“ (fehlender Wert) wird `null` |
 | Nährwert Alkohol | Entfällt: wird nicht getrackt, auch nicht aus BLS oder OFF übernommen (Backup-Format 2, Datenbank-Version 2). Ob ein Getränk alkoholisch ist (Phase 7, Wasser), kommt aus der OFF-Kategorie bzw. der BLS-Code-Gruppe (Jan, 21.10.2026) |
 | OFF-Produkte nur mit kJ | kcal = kJ ÷ 4,184 beim Laden; kJ wird nie angezeigt oder gespeichert (Jan, 21.10.2026) |
+| OFF-Treffer ohne kcal | Wird nicht gespeichert; „Eigenes Produkt anlegen“ mit vorbefülltem Formular (Name, Marke, Barcode, bekannte Werte). Das OFF-Original wird nie überschrieben (Jan, 21.10.2026) |
+| „Werte bearbeiten“ bei OFF-Produkten | Bis zur Korrekturschicht (Phase 6) ausgeblendet; Portionen bleiben änderbar (Jan, 21.10.2026) |
+| Offline-Scan „Jetzt manuell eintragen“ | Öffnet den Schnelleintrag, der gemerkte Scan gilt als erledigt; OFF nicht erreichbar (Netz da) zeigt „Open Food Facts nicht erreichbar“ (Jan, 21.10.2026) |
 | Spalten „Monatsauswertung Claude“ | Ebene Tage, JSON: Datum, Vollständig, kcal, Eiweiß, Kohlenhydrate, Fett, Ballaststoffe, Budget, Gewicht |
 
 Offen nur noch:

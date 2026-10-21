@@ -4,8 +4,8 @@ import type { ReactNode } from 'react'
 import { IconBack } from '../icons/icons.tsx'
 
 type Props = {
-  /** Ziel des Zurück-Pfeils (Hash-Link) */
-  back: string
+  /** Ziel des Zurück-Pfeils (Hash-Link) oder Funktion, z. B. im Formular über dem Scanner */
+  back: string | (() => void)
   /** Knopf rechts im Kopf */
   action?: ReactNode
   children?: ReactNode
@@ -15,9 +15,15 @@ export function SubScreen({ back, action, children }: Props) {
   return (
     <>
       <header className="pt-safe-header flex shrink-0 items-center justify-between pr-2 pl-1">
-        <a href={back} aria-label="Zurück" className="press text-text flex size-11 items-center justify-center">
-          <IconBack />
-        </a>
+        {typeof back === 'string' ? (
+          <a href={back} aria-label="Zurück" className="press text-text flex size-11 items-center justify-center">
+            <IconBack />
+          </a>
+        ) : (
+          <button type="button" onClick={back} aria-label="Zurück" className="press text-text flex size-11 items-center justify-center">
+            <IconBack />
+          </button>
+        )}
         {action}
       </header>
       {/* Ohne Navigation reichen 24 px unten (Prototyp) plus Safe Area */}

@@ -97,6 +97,21 @@ export const IconTorch = (p: IconProps) => (
   </Svg>
 )
 
+/** Nicht gefunden (NichtGefunden.dc.html) */
+export const IconSearchOff = (p: IconProps) => (
+  <Svg size={26} {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.3-4.3M8.5 8.5l5 5M13.5 8.5l-5 5" />
+  </Svg>
+)
+
+/** Kein Internet (NichtGefunden.dc.html, Zustand Offline) */
+export const IconOffline = (p: IconProps) => (
+  <Svg size={26} {...p}>
+    <path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0M12 19h.01M3 3l18 18" />
+  </Svg>
+)
+
 export const IconClose = (p: IconProps) => (
   <Svg strokeWidth={2} size={18} {...p}>
     <path d="M6 6l12 12M18 6L6 18" />

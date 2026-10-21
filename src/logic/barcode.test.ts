@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { barcodeVariants, expandUpcE, hasValidCheckDigit, normalizeBarcode } from './barcode.ts'
+import { barcodeVariants, expandUpcE, formatEan, hasValidCheckDigit, normalizeBarcode } from './barcode.ts'
 
 describe('hasValidCheckDigit', () => {
   it('erkennt gültige Codes', () => {
@@ -77,6 +77,14 @@ describe('normalizeBarcode', () => {
     expect(normalizeBarcode('12345')).toBeNull()
     expect(normalizeBarcode('04000417025005')).toBeNull() // GTIN-14 nicht vorgesehen
     expect(normalizeBarcode('4,000417025005')).toBeNull()
+  })
+})
+
+describe('formatEan', () => {
+  it('gruppiert wie auf der Packung', () => {
+    expect(formatEan('4012345678901')).toBe('4 012345 678901')
+    expect(formatEan('96385074')).toBe('9638 5074')
+    expect(formatEan('abc')).toBe('abc')
   })
 })
 

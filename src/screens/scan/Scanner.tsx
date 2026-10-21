@@ -25,6 +25,8 @@ type Props = {
   paused?: boolean
   /** Karte unten über „Code eintippen“, z. B. der Treffer */
   children?: ReactNode
+  /** Sheet über dem Kamerabild (NichtGefunden.dc.html: nicht gefunden, offline) */
+  sheet?: ReactNode
 }
 
 const MESSAGES: Record<Exclude<CameraStatus, 'running'>, string> = {
@@ -33,7 +35,7 @@ const MESSAGES: Record<Exclude<CameraStatus, 'running'>, string> = {
   unavailable: 'Kamera nicht verfügbar. Tippe den Code ein.',
 }
 
-export default function Scanner({ onDetected, onClose, paused = false, children }: Props) {
+export default function Scanner({ onDetected, onClose, paused = false, children, sheet }: Props) {
   const reduced = useReduced()
   const video = useRef<HTMLVideoElement>(null)
   const dialog = useRef<HTMLDivElement>(null)
@@ -166,7 +168,7 @@ export default function Scanner({ onDetected, onClose, paused = false, children 
         )}
       </div>
 
-      {typing ? (
+      {typing && (
         <ManualEntry
           onSubmit={(code) => {
             setTyping(false)
@@ -174,7 +176,8 @@ export default function Scanner({ onDetected, onClose, paused = false, children 
           }}
           onCancel={() => setTyping(false)}
         />
-      ) : (
+      )}
+      {!typing && !sheet && (
         <div className="absolute inset-x-4 bottom-[max(env(safe-area-inset-bottom),34px)] flex flex-col gap-2.5">
           {children}
           <button
@@ -186,6 +189,7 @@ export default function Scanner({ onDetected, onClose, paused = false, children 
           </button>
         </div>
       )}
+      {sheet}
     </motion.div>
   )
 }
