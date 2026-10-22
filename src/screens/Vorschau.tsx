@@ -63,7 +63,6 @@ export function Vorschau() {
   const [tab, setTab] = useState<'p' | 'm' | 'r'>('p')
   const [slot, setSlot] = useState('Abend')
   const [filter, setFilter] = useState('Alle')
-  const [water, setWater] = useState(true)
   const [estimate, setEstimate] = useState(false)
   const [eaten, setEaten] = useState(1398)
   const [amount, setAmount] = useState('60')
@@ -154,13 +153,6 @@ export function Vorschau() {
         <Card padded={false}>
           <div className="flex min-h-[60px] items-center gap-2.5 px-4">
             <span className="flex flex-1 flex-col gap-0.5">
-              <span className="text-body">Wasser tracken</span>
-              <span className="text-small text-muted">Ziel 2,5 l · Schnellgrößen 250 / 500 ml</span>
-            </span>
-            <Switch label="Wasser tracken" checked={water} onChange={setWater} />
-          </div>
-          <div className="border-line flex min-h-[60px] items-center gap-2.5 border-t px-4">
-            <span className="flex flex-1 flex-col gap-0.5">
               <span className="text-body">Verbrauchsschätzung</span>
               <span className="text-small text-muted">Gewicht per Kurzbefehl aus Apple Health</span>
             </span>
@@ -207,11 +199,6 @@ export function Vorschau() {
             </Button>
           </div>
         </Card>
-        <Card className="flex items-center gap-3">
-          <span className="text-label font-medium">Wasser</span>
-          <ProgressBar value={1250 / 2500} height={4} tone="accent" />
-          <span className="text-secondary text-muted whitespace-nowrap">1,25 / 2,5 l</span>
-        </Card>
       </Section>
 
       <Section title="Ziffernblock">
@@ -234,7 +221,7 @@ export function Vorschau() {
         <Button variant="secondary" onClick={() => setSheetOpen(true)}>
           Sheet öffnen
         </Button>
-        <Button variant="secondary" onClick={() => toast('250 ml Wasser hinzugefügt')}>
+        <Button variant="secondary" onClick={() => toast('60 g Haferflocken hinzugefügt')}>
           Toast zeigen
         </Button>
       </Section>

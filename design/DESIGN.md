@@ -2,6 +2,8 @@
 
 Verbindlich für die Umsetzung. Werte stehen in `tokens.json`, die präzise Vorlage für jeden Screen ist der Prototyp in `prototypes/` (Abstände, Texte, Zustände, Animationen). Screenshots in `screenshots/` zeigen den Gesamteindruck.
 
+**Wasser entfällt (Jan, 22.10.2026):** Prototypen und Screenshots zeigen noch Wasser-Kachel, Wasser-Schalter, Wasser-Ziel, „Wasser Ø“ und Wasser im Export. Diese Teile werden nicht umgesetzt; hier im Dokument sind sie gestrichen.
+
 ## 1. Charakter
 
 - Ruhig, präzise, kompakt. Ein Werkzeug, kein Spiel: keine Streaks, Abzeichen, Maskottchen, Konfetti, Motivationssprüche.
@@ -50,7 +52,6 @@ Verbindlich für die Umsetzung. Werte stehen in `tokens.json`, die präzise Vorl
 | Tagesleiste | Datum „Do 15.10. · Heute“ (Tipp öffnet Monat), Pfeile, Kalender-Icon | Kern |
 | Monatskalender | Klappt als Karte oben im Inhalt auf; heute blau gefüllt, Punkt unter vollständigen Tagen, Zukunft `muted` | Kern |
 | Übersichtskarte | Ring 142 px / Strich 12 links mit Zahl „kcal übrig“, rechts 4 Makro-Balken (5 px, `text` auf `track`); darunter aufklappbare Zeile „Woche 10.302 / 19.600 kcal“ mit 7 Tagesbalken und gestricheltem Tagesziel | Kern |
-| Wasser-Kachel | Tropfen-Icon, Leiste 4 px, „1,25 / 2,5 l“, „+“ für erste Schnellgröße | Kern |
 | Slot-Karte | Chevron, Name, ggf. „2 Einträge“ (eingeklappt) bzw. „leer“, kcal rechts, „+“; aufgeklappt Einträge mit Trennlinien | Kern |
 | Eintragszeile | Name + Menge (`muted`), kcal rechts; Tipp = bearbeiten; nach links wischen zeigt „Löschen“ (88 px, `danger`), Schwelle 44 px | Kern |
 | Bottom-Sheet | Höhe bis 772 px, Radius oben 28, Griff 40 × 5, Scrim; Titel links, „Fertig“ rechts | Kern |
@@ -81,7 +82,7 @@ Jeder Screen entspricht einem Prototyp. Beispieldaten im Prototyp sind nur Beisp
 
 ### Tagebuch – `Kern.dc.html`
 
-- Aufbau von oben: Tagesleiste · (Monatskalender, aufgeklappt) · Übersichtskarte · Wasser-Kachel · Slot-Karten · schwebende Navigation.
+- Aufbau von oben: Tagesleiste · (Monatskalender, aufgeklappt) · Übersichtskarte · Slot-Karten · schwebende Navigation.
 - Ring zeigt Anteil gegessen am dynamischen Tagesziel; Zahl in der Mitte = übrig; bei Überschreitung orange und „kcal drüber“.
 - Hinzufügen-Sheet: Slot-Chips · Suche + Scan · Schnelleintrag / Mahlzeiten / Rezepte · Liste „Zuletzt gegessen“ bzw. „Treffer lokal“ (Name, Quelle, geprüft-Häkchen, kcal/100) · „In Open Food Facts suchen“.
 - Mengen-Schritt: Zurück, Produktname + Quelle + kcal/100 · große Menge mit Einheit und kcal · 4 Makro-Kacheln · Portions-Chips · Ziffernblock · „Zu Abend hinzufügen“ (beim Bearbeiten „Speichern“ + „Löschen“).
@@ -93,7 +94,7 @@ Jeder Screen entspricht einem Prototyp. Beispieldaten im Prototyp sind nur Beisp
 
 ### Ersteinrichtung – `Start.dc.html` (Schritt 2 von 4)
 
-- Fortschritt als 4 Striche. Schritte: 1 Slots, 2 Profil, 3 Optionen (Wasser, Schätzung), 4 Backup-Hinweis.
+- Fortschritt als 4 Striche. Schritte: 1 Slots, 2 Profil, 3 Optionen (Schätzung), 4 Backup-Hinweis.
 - Profil: Name, Wochenbudget mit „= 2.800 / Tag“, Makros mit Modus-Chip je Zeile (g/kg, %, Rest, g) und Ergebnis „≈ 133 g“, Körpergewicht-Hinweis.
 
 ### Scanner – `Scanner.dc.html`, `NichtGefunden.dc.html`
@@ -130,17 +131,17 @@ Jeder Screen entspricht einem Prototyp. Beispieldaten im Prototyp sind nur Beisp
 
 - Segment Woche / 4 Wochen / 3 Monate. 3 Kacheln (Ø kcal/Tag, Vollständig, Bilanz).
 - kcal pro Tag: Balken 4 px oben gerundet, vollständige Tage `accent`, unvollständige `neutralBar`, gestrichelte Linie Tagesziel mit Beschriftung, Legende; Tipp auf Balken hebt ihn hervor und zeigt den Wert oben rechts.
-- Makros Ø gegen Ziel als 8 px Balken. Gewicht: Messpunkte `neutralBar` + Trendlinie `accent` 2 px, Link zur Schätzung. Wasser Ø.
+- Makros Ø gegen Ziel als 8 px Balken. Gewicht: Messpunkte `neutralBar` + Trendlinie `accent` 2 px, Link zur Schätzung.
 - Eine Datenreihe pro Diagramm, keine zweite Achse, Werte nicht an jeden Balken schreiben.
 
 ### Einstellungen – `Einstellungen.dc.html`
 
-- Gruppen: Ziele (Profile und Ziele, Mahlzeiten-Slots), Funktionen (Schalter Wasser, Verbrauchsschätzung mit „Details“), Daten (Backup mit Status und „Jetzt sichern“, Import, Export), Darstellung (System / Hell / Dunkel), Über (Version, Quellen OFF ODbL und BLS).
+- Gruppen: Ziele (Profile und Ziele, Mahlzeiten-Slots), Funktionen (Verbrauchsschätzung mit „Details“), Daten (Backup mit Status und „Jetzt sichern“, Import, Export), Darstellung (System / Hell / Dunkel), Über (Version, Quellen OFF ODbL und BLS).
 - Backup älter als 14 Tage: Statuszeile in `warnText`.
 
 ### Profile und Ziele – `Profil.dc.html`
 
-- Profil-Chips (aktives mit Punkt) + „Neu“. Wochenbudget, Makros wie Ersteinrichtung, Wasser-Ziel, Körpergewicht für g/kg.
+- Profil-Chips (aktives mit Punkt) + „Neu“. Wochenbudget, Makros wie Ersteinrichtung, Körpergewicht für g/kg.
 - Aktives Profil: Hinweis „Aktiv seit … Änderungen gelten ab heute“. Inaktives: Auswahl „Ab nächstem Montag“ (Standard) / „Ab heute“ + Knopf „Diät aktivieren“.
 
 ### Verbrauchsschätzung – `Schaetzung.dc.html`

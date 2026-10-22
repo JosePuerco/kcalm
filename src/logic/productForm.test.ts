@@ -80,7 +80,6 @@ describe('validateProductForm', () => {
       fiber: null,
       protein: 11,
       salt: 0.13,
-      water: null,
     })
     expect(r.data.brand).toBeNull()
     expect(r.data.barcode).toBeNull()
@@ -119,9 +118,9 @@ describe('validateProductForm', () => {
     }
   })
 
-  it('Ballaststoffe und Wasser bleiben optional', () => {
-    const r = validateProductForm(form({ nutrients: { fiber: '', water: '' } }))
-    expect(r.ok && [r.data.per100.fiber, r.data.per100.water]).toEqual([null, null])
+  it('Ballaststoffe bleiben optional', () => {
+    const r = validateProductForm(form({ nutrients: { fiber: '' } }))
+    expect(r.ok && r.data.per100.fiber).toBeNull()
   })
 
   it('0 ist eine gültige Pflichtangabe', () => {
@@ -210,7 +209,6 @@ describe('productToForm', () => {
     barcode: null,
     unit: 'ml',
     per100: { ...unknownNutrients(), kcal: 47, fat: 1.5, satFat: 1, carbs: 4.9, sugar: 4.9, protein: 3.4, salt: 0.13 },
-    isDrink: true,
     portions: [{ label: '1 Glas', amount: 250 }],
   }
 

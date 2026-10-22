@@ -20,6 +20,30 @@ async function createV1() {
   old.close()
 }
 
+/** Datenbank im Stand von Version 3, mit Wasser-Feldern */
+async function createV3() {
+  const old = new Dexie(NAME)
+  old.version(3).stores(SCHEMA_V1)
+  const cola = { name: 'Cola', isDrink: true, countsAsWater: true, per100: { kcal: 42, water: 89.4 } }
+  await old.table('products').add({ id: 'p1', ...sync, ...cola })
+  await old.table('productOverrides').add({ id: 'o1', ...sync, productRef: 'product:p1', per100: { kcal: 40, water: 90 } })
+  const pref = { blsCode: 'N110000', portions: [], isDrink: true, countsAsWater: null, useOverride: true }
+  await old.table('blsPrefs').add({ id: 'b1', ...sync, ...pref })
+  const entry = { date: '2026-10-01', nutrients: { kcal: 210, water: 447 }, waterMl: 447 }
+  await old.table('entries').add({ id: 'e1', ...sync, ...entry })
+  await old.table('profileVersions').add({ id: 'v1', ...sync, profileId: 'x', weeklyKcal: 14000, waterMl: null })
+  await old.table('settings').add({ id: 's1', ...sync, key: 'waterEnabled', value: true })
+  await old.table('settings').add({ id: 's2', ...sync, key: 'theme', value: 'dark' })
+  old.close()
+}
+
+async function openCurrent() {
+  const db = new Dexie(NAME)
+  defineVersions(db)
+  await db.open()
+  return db
+}
+
 afterEach(async () => {
   await Dexie.delete(NAME)
 })
@@ -31,8 +55,8 @@ describe('Datenbank-Version 2', () => {
     defineVersions(db)
     await db.open()
 
-    expect(db.verno).toBe(3)
-    expect(await db.table('products').get('p1')).toMatchObject({ per100: { kcal: 42, water: 92 } })
+    expect(db.verno).toBe(4)
+    expect(await db.table('products').get('p1')).toMatchObject({ per100: { kcal: 42 } })
     expect((await db.table('products').get('p1')).per100).not.toHaveProperty('alcohol')
     expect((await db.table('productOverrides').get('o1')).per100).toEqual({})
     expect((await db.table('entries').get('e1')).nutrients).toEqual({ kcal: 210 })
@@ -54,7 +78,7 @@ describe('Datenbank-Version 2', () => {
     const db = new Dexie(NAME)
     defineVersions(db)
     await db.open()
-    expect(db.verno).toBe(3)
+    expect(db.verno).toBe(4)
     db.close()
   })
 })
@@ -66,6 +90,35 @@ describe('Datenbank-Version 3', () => {
     defineVersions(db)
     await db.open()
     expect(await db.table('blsPrefs').get('b1')).toMatchObject({ useOverride: true, updatedAt: T0 })
+    db.close()
+  })
+})
+
+describe('Datenbank-Version 4', () => {
+  it('entfernt Wasser-Felder und den Nährwert water, updatedAt bleibt', async () => {
+    await createV3()
+    const db = await openCurrent()
+    expect(await db.table('products').get('p1')).toEqual({ id: 'p1', ...sync, name: 'Cola', per100: { kcal: 42 } })
+    expect((await db.table('productOverrides').get('o1')).per100).toEqual({ kcal: 40 })
+    expect(await db.table('blsPrefs').get('b1')).toEqual({
+      id: 'b1',
+      ...sync,
+      blsCode: 'N110000',
+      portions: [],
+      useOverride: true,
+    })
+    expect(await db.table('entries').get('e1')).toEqual({ id: 'e1', ...sync, date: '2026-10-01', nutrients: { kcal: 210 } })
+    expect(await db.table('profileVersions').get('v1')).toEqual({ id: 'v1', ...sync, profileId: 'x', weeklyKcal: 14000 })
+    db.close()
+  })
+
+  it('Einstellung „Wasser tracken“ bekommt einen Löschmarker, andere bleiben', async () => {
+    await createV3()
+    const db = await openCurrent()
+    const water = await db.table('settings').get('s1')
+    expect(water.deletedAt).not.toBeNull()
+    expect(water.updatedAt).toBe(water.deletedAt)
+    expect(await db.table('settings').get('s2')).toMatchObject({ deletedAt: null, updatedAt: T0 })
     db.close()
   })
 })

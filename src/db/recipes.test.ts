@@ -31,7 +31,6 @@ function entryFor(ref: Entry['ref']) {
     unit: 'g',
     portionLabel: '1 Teller',
     nutrients: { ...unknownNutrients(), kcal: 608 },
-    waterMl: 0,
     mealGroupId: null,
     mealName: null,
   })

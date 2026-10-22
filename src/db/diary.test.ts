@@ -15,7 +15,6 @@ const profile = {
   fat: { mode: 'g' as const, value: 80 },
   carbs: { mode: 'rest' as const, value: null },
   fiberG: 30,
-  waterMl: null,
   manualWeightKg: null,
 }
 
@@ -30,7 +29,6 @@ function entry(date: string, kcal: number | null) {
     unit: null,
     portionLabel: null,
     nutrients: { ...unknownNutrients(), kcal },
-    waterMl: 0,
     mealGroupId: null,
     mealName: null,
   })

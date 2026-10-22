@@ -11,8 +11,6 @@ export async function createProduct(data: ProductFormData, now = new Date()): Pr
     {
       ...data,
       source: 'own',
-      // Feinere Wasser-Regeln (Alkohol, Kaffee) kommen in Phase 7
-      countsAsWater: data.isDrink,
       useOverride: true,
       archived: false,
       offFetchedAt: null,
@@ -26,8 +24,7 @@ export async function createProduct(data: ProductFormData, now = new Date()): Pr
 export async function updateProduct(id: string, data: ProductFormData, now = new Date()): Promise<Product> {
   return db.transaction('rw', db.products, async () => {
     const existing = await getProduct(id)
-    const countsAsWater = data.isDrink === existing.isDrink ? existing.countsAsWater : data.isDrink
-    const updated = touch(existing, { ...data, countsAsWater }, now)
+    const updated = touch(existing, data, now)
     await db.products.put(updated)
     return updated
   })
@@ -83,29 +80,21 @@ export async function getBlsPref(code: string): Promise<BlsPref | undefined> {
 /** Eigene Einstellung zu einem BLS-Lebensmittel ändern; legt sie bei Bedarf an (eindeutig je Code) */
 async function updateBlsPref(
   code: string,
-  changes: Partial<Pick<BlsPref, 'portions' | 'isDrink' | 'useOverride'>>,
+  changes: Partial<Pick<BlsPref, 'portions' | 'useOverride'>>,
   now: Date,
 ) {
   await db.transaction('rw', db.blsPrefs, async () => {
     const existing = await db.blsPrefs.where('blsCode').equals(code).first()
     const base =
       existing && existing.deletedAt === null
-        ? {
-            portions: existing.portions,
-            isDrink: existing.isDrink,
-            countsAsWater: existing.countsAsWater,
-            useOverride: existing.useOverride,
-          }
-        : { portions: [], isDrink: null, countsAsWater: null, useOverride: true }
+        ? { portions: existing.portions, useOverride: existing.useOverride }
+        : { portions: [], useOverride: true }
     await db.blsPrefs.put(upsertByKey<BlsPref>(existing, { ...base, ...changes, blsCode: code }, now))
   })
 }
 
 export const saveBlsPortions = (code: string, portions: Portion[], now = new Date()) =>
   updateBlsPref(code, { portions }, now)
-
-export const setBlsIsDrink = (code: string, isDrink: boolean, now = new Date()) =>
-  updateBlsPref(code, { isDrink }, now)
 
 export const setBlsUseOverride = (code: string, useOverride: boolean, now = new Date()) =>
   updateBlsPref(code, { useOverride }, now)

@@ -130,7 +130,7 @@ export type OffRefresh =
 /**
  * „Original jetzt aktualisieren“: Name, Marke und Nährwerte neu von OFF.
  * Die Korrektur wird nicht überschrieben; was OFF ändert, hält sie mit dem alten Wert fest,
- * damit „Meine Werte“ gleich bleiben (rebaseOnOffUpdate). Portionen und Getränk bleiben.
+ * damit „Meine Werte“ gleich bleiben (rebaseOnOffUpdate). Portionen bleiben.
  */
 export async function refreshOffProduct(id: string, net = browserNetwork(), now = new Date()): Promise<OffRefresh> {
   const product = await db.products.get(id)

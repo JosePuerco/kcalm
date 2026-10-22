@@ -10,7 +10,7 @@ import { useToast } from '../../components/ui/toastContext.ts'
 import type { FoodRef, Nutrients, ProductOverride, Unit } from '../../db/types.ts'
 import { setUseOverride, setVerified } from '../../db/verify.ts'
 import { formatDate } from '../../logic/format.ts'
-import { formatNutrient, MAIN_NUTRIENTS, NUTRIENT_INFO } from '../../logic/nutrientInfo.ts'
+import { formatNutrient, NUTRIENT_INFO } from '../../logic/nutrientInfo.ts'
 import { canVerify, compareRows, countCorrected, mergeNutrients, missingForVerify } from '../../logic/verify.ts'
 
 const USE_OPTIONS = [
@@ -48,8 +48,6 @@ export function VerifySection({ foodRef, original, override, useOverride, unit, 
   const mine = mergeNutrients(original, override)
   const missing = missingForVerify(mine)
   const verified = !!override?.verifiedAt
-  // Wasser nur zeigen, wenn eine Spalte es kennt
-  const shown = rows.filter((r) => MAIN_NUTRIENTS.includes(r.key) || r.original !== null || r.mine !== null)
 
   const run = async (action: () => Promise<void>, done?: string) => {
     setBusy(true)
@@ -88,7 +86,7 @@ export function VerifySection({ foodRef, original, override, useOverride, unit, 
           <span className="pr-2 text-right">Original</span>
           <span className="pr-2 text-right">Meine</span>
         </div>
-        {shown.map((r) => {
+        {rows.map((r) => {
           const info = NUTRIENT_INFO[r.key]
           return (
             <div key={r.key} className="border-line text-label grid min-h-10 grid-cols-[minmax(0,1fr)_76px_76px] items-center border-t">

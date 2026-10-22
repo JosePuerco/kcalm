@@ -26,7 +26,7 @@ import type {
 import { formatTime } from './format.ts'
 
 export const BACKUP_APP = 'kcalm'
-export const BACKUP_FORMAT_VERSION = 3
+export const BACKUP_FORMAT_VERSION = 4
 /** Ab so vielen Tagen ohne Backup warnt die Einstellungsseite */
 export const BACKUP_REMINDER_DAYS = 14
 
@@ -80,7 +80,6 @@ const nutrients = z.object({
   fiber: nutrientValue,
   protein: nutrientValue,
   salt: nutrientValue,
-  water: nutrientValue,
 })
 
 const sync = {
@@ -107,8 +106,6 @@ const product = z.object({
   unit,
   per100: nutrients,
   portions: z.array(portion),
-  isDrink: z.boolean(),
-  countsAsWater: z.boolean(),
   useOverride: z.boolean(),
   archived: z.boolean(),
   offFetchedAt: timestamp.nullable(),
@@ -126,8 +123,6 @@ const blsPref = z.object({
   ...sync,
   blsCode: z.string().min(1),
   portions: z.array(portion),
-  isDrink: z.boolean().nullable(),
-  countsAsWater: z.boolean().nullable(),
   useOverride: z.boolean(),
 })
 
@@ -160,14 +155,13 @@ const entry = z.object({
   ...sync,
   date: localDate,
   slotId: z.uuid(),
-  kind: z.enum(['food', 'quick', 'water']),
+  kind: z.enum(['food', 'quick']),
   ref: foodRef.nullable(),
   nameSnapshot: z.string(),
   amount: z.number().nullable(),
   unit: unit.nullable(),
   portionLabel: z.string().nullable(),
   nutrients,
-  waterMl: z.number(),
   mealGroupId: z.uuid().nullable(),
   mealName: z.string().nullable(),
 })
@@ -184,7 +178,6 @@ const profileVersion = z.object({
   fat: macroTarget,
   carbs: macroTarget,
   fiberG: z.number().nullable(),
-  waterMl: z.number().nullable(),
   manualWeightKg: z.number().nullable(),
 })
 
@@ -291,6 +284,17 @@ export const MIGRATIONS: Record<number, (data: Record<string, unknown>) => Recor
     if (Array.isArray(tables.blsPrefs)) tables.blsPrefs.forEach(addBlsUseOverride)
     return { ...data, formatVersion: 3 }
   },
+  3: (data) => {
+    // Format 4: Wasser-Tracking entfällt (Jan, 22.10.2026)
+    const tables = isObject(data.tables) ? data.tables : {}
+    for (const [table, records] of Object.entries(tables)) {
+      if (Array.isArray(records)) records.forEach((record) => removeWater(table, record))
+    }
+    if (Array.isArray(tables.settings)) {
+      tables.settings = tables.settings.filter((s) => !(isObject(s) && s.key === WATER_SETTING_KEY))
+    }
+    return { ...data, formatVersion: 4 }
+  },
 }
 
 /** Ergänzt blsPrefs.useOverride = true, falls es fehlt (verändert record). Auch für das Datenbank-Update. */
@@ -306,6 +310,26 @@ export function removeAlcohol(record: unknown, field: string): void {
   if (!isObject(record)) return
   const nutrients = record[field]
   if (isObject(nutrients)) delete nutrients.alcohol
+}
+
+/** Frühere Einstellung „Wasser tracken“ */
+export const WATER_SETTING_KEY = 'waterEnabled'
+
+/** Felder des früheren Wasser-Trackings je Tabelle */
+const WATER_FIELDS: Record<string, readonly string[]> = {
+  products: ['isDrink', 'countsAsWater'],
+  blsPrefs: ['isDrink', 'countsAsWater'],
+  entries: ['waterMl'],
+  profileVersions: ['waterMl'],
+}
+
+/** Entfernt Wasser-Felder und den Nährwert „water“ (verändert record). Auch für das Datenbank-Update. */
+export function removeWater(table: string, record: unknown): void {
+  if (!isObject(record)) return
+  for (const field of WATER_FIELDS[table] ?? []) delete record[field]
+  const nutrientField = (NUTRIENT_FIELDS as Record<string, string>)[table]
+  const nutrients = nutrientField === undefined ? undefined : record[nutrientField]
+  if (isObject(nutrients)) delete nutrients.water
 }
 
 export type ParseResult = { ok: true; backup: Backup } | { ok: false; error: string }

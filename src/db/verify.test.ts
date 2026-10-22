@@ -148,7 +148,7 @@ describe('refreshOffProduct', () => {
     expect(await getOverride(refOf(skyr))).toBeUndefined()
   })
 
-  it('Portionen, Getränk und Umschalter bleiben', async () => {
+  it('Portionen und Umschalter bleiben', async () => {
     const skyr = await scannedSkyr()
     await db.products.update(skyr.id, { portions: [{ label: '1 Becher', amount: 450 }], useOverride: false })
     await refreshOffProduct(skyr.id, network(offAnswer(SKYR)), T1)

@@ -2,19 +2,18 @@
 // (mit Jan abgestimmt). Zahlen über die iPhone-Zifferntastatur mit Komma (inputMode decimal).
 import { useState } from 'react'
 import { href, navigate } from '../../app/router.ts'
-import { IconChevronDown, IconClose } from '../../components/icons/icons.tsx'
+import { IconClose } from '../../components/icons/icons.tsx'
 import { Button } from '../../components/ui/Button.tsx'
 import { Card } from '../../components/ui/Card.tsx'
 import { Segmented } from '../../components/ui/Segmented.tsx'
 import { SubScreen, SubScreenTitle } from '../../components/ui/SubScreen.tsx'
-import { Switch } from '../../components/ui/Switch.tsx'
 import { TextField } from '../../components/ui/TextField.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { db } from '../../db/db.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { createProduct, updateProduct } from '../../db/products.ts'
 import type { NutrientKey, Product, Unit } from '../../db/types.ts'
-import { MAIN_NUTRIENTS, MORE_NUTRIENTS } from '../../logic/nutrientInfo.ts'
+import { MAIN_NUTRIENTS } from '../../logic/nutrientInfo.ts'
 import {
   emptyProductForm,
   fieldId,
@@ -82,7 +81,6 @@ function FormBody({ id, back, initial, onSaved }: BodyProps) {
   const toast = useToast()
   const [values, setValues] = useState(initial)
   const [errors, setErrors] = useState<FormErrors>({})
-  const [showMore, setShowMore] = useState(MORE_NUTRIENTS.some((k) => initial.nutrients[k] !== ''))
   const [saving, setSaving] = useState(false)
 
   const set = <K extends keyof ProductFormValues>(key: K, value: ProductFormValues[K]) =>
@@ -97,8 +95,7 @@ function FormBody({ id, back, initial, onSaved }: BodyProps) {
     if (!result.ok) {
       setErrors(result.errors)
       const keys = Object.keys(result.errors)
-      if (keys.some((k) => (MORE_NUTRIENTS as readonly string[]).includes(k))) setShowMore(true)
-      // Zum ersten Fehler springen (nach dem Rendern, falls „Weitere“ erst aufgeht)
+      // Zum ersten Fehler springen (nach dem Rendern)
       requestAnimationFrame(() => document.getElementById(fieldId(keys[0] ?? ''))?.focus())
       return
     }
@@ -183,31 +180,11 @@ function FormBody({ id, back, initial, onSaved }: BodyProps) {
         <Card padded={false} className="px-card-padding pt-3.5 pb-1">
           <h2 className="text-body pb-1 font-semibold">Nährwerte pro 100 {values.unit}</h2>
           {nutrientRows(MAIN_NUTRIENTS)}
-          {showMore && nutrientRows(MORE_NUTRIENTS)}
-          <button
-            type="button"
-            aria-expanded={showMore}
-            onClick={() => setShowMore((s) => !s)}
-            className="border-line text-label text-accent-text flex min-h-touch-min w-full items-center gap-1.5 border-t font-medium"
-          >
-            <IconChevronDown
-              className="transition-transform duration-200"
-              style={{ transform: showMore ? 'rotate(180deg)' : undefined }}
-            />
-            {showMore ? 'Weniger Nährwerte' : 'Weitere Nährwerte (Wasser)'}
-          </button>
         </Card>
         <p className="text-small text-muted px-1 leading-[1.45]">
           Pflicht sind der Name und alle Werte der Nährwerttabelle vom Etikett. Leere optionale Felder gelten als
           unbekannt, nicht als 0.
         </p>
-
-        <Card padded={false} className="px-card-padding py-1">
-          <div className="text-label flex min-h-12 items-center justify-between gap-3">
-            <span>Ist ein Getränk</span>
-            <Switch label="Ist ein Getränk" checked={values.isDrink} onChange={(c) => set('isDrink', c)} />
-          </div>
-        </Card>
 
         <Card padded={false} className="px-card-padding py-1">
           <div className="flex min-h-12 items-center justify-between">

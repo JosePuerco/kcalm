@@ -12,7 +12,6 @@ export interface Nutrients {
   fiber: NutrientValue
   protein: NutrientValue
   salt: NutrientValue
-  water: NutrientValue
 }
 export type NutrientKey = keyof Nutrients
 
@@ -49,8 +48,6 @@ export interface Product extends SyncFields {
   unit: Unit
   per100: Nutrients
   portions: Portion[]
-  isDrink: boolean
-  countsAsWater: boolean
   /** Korrekturschicht für künftige Einträge nutzen */
   useOverride: boolean
   archived: boolean
@@ -67,14 +64,11 @@ export interface ProductOverride extends SyncFields {
   note: string | null
 }
 
-/** Eigene Portionen und Wasser-Einstellung für BLS-Lebensmittel */
+/** Eigene Portionen und Umschalter Meine/Original für BLS-Lebensmittel */
 export interface BlsPref extends SyncFields {
   /** eindeutig */
   blsCode: string
   portions: Portion[]
-  /** null = Standard aus den BLS-Daten */
-  isDrink: boolean | null
-  countsAsWater: boolean | null
   /** Korrekturschicht für künftige Einträge nutzen (wie Product.useOverride) */
   useOverride: boolean
 }
@@ -119,8 +113,8 @@ export interface Slot extends SyncFields {
 export interface Entry extends SyncFields {
   date: LocalDate
   slotId: string
-  kind: 'food' | 'quick' | 'water'
-  /** null bei Schnell- und Wassereintrag */
+  kind: 'food' | 'quick'
+  /** null bei Schnelleintrag */
   ref: FoodRef | null
   nameSnapshot: string
   /** null bei Schnelleintrag */
@@ -129,8 +123,6 @@ export interface Entry extends SyncFields {
   portionLabel: string | null
   /** Snapshot, absolute Werte für diesen Eintrag */
   nutrients: Nutrients
-  /** 0 = zählt nicht zum Wasser */
-  waterMl: number
   mealGroupId: string | null
   mealName: string | null
 }
@@ -162,7 +154,6 @@ export interface ProfileVersion extends SyncFields {
   fat: MacroTarget
   carbs: MacroTarget
   fiberG: number | null
-  waterMl: number | null
   manualWeightKg: number | null
 }
 

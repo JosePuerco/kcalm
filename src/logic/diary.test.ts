@@ -35,7 +35,6 @@ function entry(slotId: string, n: Partial<Nutrients>, date = '2026-10-22', creat
       unit: null,
       portionLabel: null,
       nutrients: { ...unknownNutrients(), ...n },
-      waterMl: 0,
       mealGroupId: null,
       mealName: null,
     }),

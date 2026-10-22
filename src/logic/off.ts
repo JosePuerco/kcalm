@@ -29,7 +29,6 @@ export const OFF_FIELDS = [
   'product_quantity_unit',
   'serving_quantity',
   'nutrition_data_per',
-  'categories_tags',
   'nutriments',
 ] as const
 
@@ -95,7 +94,6 @@ const productSchema = z.object({
   product_quantity_unit: text,
   serving_quantity: number,
   nutrition_data_per: text,
-  categories_tags: loose.transform((v) => (Array.isArray(v) ? v.filter((t): t is string => typeof t === 'string') : [])),
   nutriments: loose.transform((v) =>
     typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Record<string, unknown>) : {},
   ),
@@ -117,7 +115,7 @@ const searchResponseSchema = z.object({
 /** Was Kcalm aus einem OFF-Produkt übernimmt */
 export type OffProduct = Pick<
   Product,
-  'barcode' | 'name' | 'brand' | 'unit' | 'per100' | 'portions' | 'isDrink' | 'countsAsWater'
+  'barcode' | 'name' | 'brand' | 'unit' | 'per100' | 'portions'
 >
 
 export const UNNAMED_PRODUCT = 'Unbenanntes Produkt'
@@ -152,7 +150,6 @@ export function offNutrients(n: Record<string, unknown>): Nutrients {
     fiber: grams('fiber'),
     protein: grams('proteins'),
     salt,
-    water: null, // OFF führt keinen verlässlichen Wassergehalt
   }
 }
 
@@ -178,7 +175,6 @@ function offName(raw: OffRaw): string | null {
 
 /** Geprüftes OFF-Produkt → Kcalm-Produktdaten; barcode = der gescannte Code (Einheitsform) */
 export function offToProduct(raw: OffRaw, barcode: string | null): OffProduct {
-  const isDrink = raw.categories_tags.includes('en:beverages')
   return {
     barcode,
     name: offName(raw) ?? UNNAMED_PRODUCT,
@@ -186,9 +182,6 @@ export function offToProduct(raw: OffRaw, barcode: string | null): OffProduct {
     unit: offUnit(raw),
     per100: offNutrients(raw.nutriments),
     portions: offPortions(raw),
-    isDrink,
-    // Feinere Wasser-Regeln kommen in Phase 7
-    countsAsWater: isDrink && !raw.categories_tags.includes('en:alcoholic-beverages'),
   }
 }
 

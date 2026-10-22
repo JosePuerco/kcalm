@@ -39,7 +39,6 @@ function ownProduct(barcode: string | null): ProductFormData {
     barcode,
     unit: 'g',
     per100: { ...unknownNutrients(), kcal: 60 },
-    isDrink: false,
     portions: [],
   }
 }
@@ -167,13 +166,13 @@ describe('saveOffProduct', () => {
     const result = await lookupBarcode('4002971243802', network({ body: skyr }).net)
     expect(result.kind === 'local' && result.product.id).toBe(own.id)
 
-    const saved = await saveOffProduct({ ...ownProduct('4002971243802'), countsAsWater: false, name: 'OFF' })
+    const saved = await saveOffProduct({ ...ownProduct('4002971243802'), name: 'OFF' })
     expect(saved.id).toBe(own.id)
     expect(await db.products.count()).toBe(1)
   })
 
   it('Suchtreffer ohne Barcode wird trotzdem gespeichert', async () => {
-    const saved = await saveOffProduct({ ...ownProduct(null), countsAsWater: false }, NOW)
+    const saved = await saveOffProduct({ ...ownProduct(null) }, NOW)
     expect(saved).toMatchObject({ source: 'off', barcode: null, offFetchedAt: NOW.toISOString() })
   })
 })

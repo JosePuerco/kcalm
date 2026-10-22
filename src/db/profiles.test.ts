@@ -19,7 +19,6 @@ const aufbau = {
   fat: { mode: 'percent' as const, value: 25 },
   carbs: { mode: 'rest' as const, value: null },
   fiberG: 30,
-  waterMl: null,
   manualWeightKg: 74,
 }
 const diaet = { ...aufbau, name: 'Diät', weeklyKcal: 15400, protein: { mode: 'gPerKg' as const, value: 2.2 } }
@@ -35,7 +34,6 @@ function entry(date: string, kcal: number) {
     unit: null,
     portionLabel: null,
     nutrients: { ...unknownNutrients(), kcal },
-    waterMl: 0,
     mealGroupId: null,
     mealName: null,
   })

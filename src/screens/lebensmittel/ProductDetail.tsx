@@ -117,28 +117,22 @@ export function ProductDetail({ id }: { id: string }) {
         onSave={(portions) => saveProductPortions(id, portions)}
       />
 
-      <Card padded={false} className="px-card-padding py-1">
-        <div className="text-label flex min-h-12 items-center justify-between">
-          <span>Ist ein Getränk</span>
-          <span className="text-muted">{product.isDrink ? 'Ja' : 'Nein'}</span>
-        </div>
-        {isOff && (
-          <>
-            <div className="border-line text-label flex min-h-12 items-center justify-between gap-3 border-t">
-              <span>Zuletzt aus Open Food Facts geladen</span>
-              <span className="text-muted">{product.offFetchedAt ? formatDate(new Date(product.offFetchedAt)) : '–'}</span>
-            </div>
-            <button
-              type="button"
-              disabled={refreshing}
-              onClick={() => void refresh()}
-              className="border-line text-label text-accent-text min-h-12 w-full border-t font-medium disabled:opacity-40"
-            >
-              {refreshing ? 'Wird aktualisiert …' : 'Original jetzt aktualisieren'}
-            </button>
-          </>
-        )}
-      </Card>
+      {isOff && (
+        <Card padded={false} className="px-card-padding py-1">
+          <div className="text-label flex min-h-12 items-center justify-between gap-3">
+            <span>Zuletzt aus Open Food Facts geladen</span>
+            <span className="text-muted">{product.offFetchedAt ? formatDate(new Date(product.offFetchedAt)) : '–'}</span>
+          </div>
+          <button
+            type="button"
+            disabled={refreshing}
+            onClick={() => void refresh()}
+            className="border-line text-label text-accent-text min-h-12 w-full border-t font-medium disabled:opacity-40"
+          >
+            {refreshing ? 'Wird aktualisiert …' : 'Original jetzt aktualisieren'}
+          </button>
+        </Card>
+      )}
 
       {product.archived ? (
         <Button variant="text" className="text-label justify-center font-medium" onClick={() => void run(() => restoreProduct(id), 'Wiederhergestellt')}>

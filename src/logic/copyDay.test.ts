@@ -15,7 +15,6 @@ function entry(slotId: string, kcal: number | null, createdAt: string, extra: Pa
       unit: 'g',
       portionLabel: '1 Becher',
       nutrients: { ...unknownNutrients(), kcal },
-      waterMl: 0,
       mealGroupId: null,
       mealName: null,
     }),

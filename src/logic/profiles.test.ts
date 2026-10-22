@@ -190,7 +190,6 @@ describe('targetsChanged', () => {
     fat: { mode: 'percent' as const, value: 25 },
     carbs: { mode: 'rest' as const, value: null },
     fiberG: 30,
-    waterMl: null,
     manualWeightKg: 74,
   }
   it('gleich / Budget / Modus / Gewicht', () => {

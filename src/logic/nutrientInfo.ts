@@ -21,12 +21,10 @@ export const NUTRIENT_INFO: Record<NutrientKey, NutrientInfo> = {
   fiber: { label: 'Ballaststoffe', unit: 'g', decimals: 1 },
   protein: { label: 'Eiweiß', unit: 'g', decimals: 1 },
   salt: { label: 'Salz', unit: 'g', decimals: 2 },
-  water: { label: 'Wasser', unit: 'g', decimals: 1 },
 }
 
-/** Die sieben Werte der EU-Nährwerttabelle + Ballaststoffe; Wasser unter „Weitere“ */
+/** Die sieben Werte der EU-Nährwerttabelle + Ballaststoffe */
 export const MAIN_NUTRIENTS: readonly NutrientKey[] = ['kcal', 'fat', 'satFat', 'carbs', 'sugar', 'fiber', 'protein', 'salt']
-export const MORE_NUTRIENTS: readonly NutrientKey[] = ['water']
 
 /**
  * Pflichtangaben der EU-Nährwerttabelle (LMIV, Art. 30). Müssen beim Anlegen eigener

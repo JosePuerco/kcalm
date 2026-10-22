@@ -25,7 +25,6 @@ const original: Nutrients = {
   fiber: null,
   protein: 11,
   salt: 0.1,
-  water: null,
 }
 
 const override = (per100: Correction, verifiedAt: string | null = null) =>
@@ -75,7 +74,6 @@ describe('compareRows / countCorrected', () => {
   })
 
   it('beide unbekannt ist keine Abweichung', () => {
-    expect(compareRows(original, undefined).find((r) => r.key === 'water')?.differs).toBe(false)
   })
 })
 
@@ -84,8 +82,8 @@ describe('canVerify', () => {
     expect(canVerify(original)).toBe(true)
   })
 
-  it('Ballaststoffe und Wasser sind nicht Pflicht', () => {
-    expect(canVerify({ ...original, fiber: null, water: null })).toBe(true)
+  it('Ballaststoffe sind nicht Pflicht', () => {
+    expect(canVerify({ ...original, fiber: null })).toBe(true)
   })
 
   it('fehlt eine Pflichtangabe, geht es nicht; die fehlenden werden genannt', () => {

@@ -7,7 +7,7 @@ const file = (rows: unknown[]) => ({ source: 'MRI', version: '4.0', fields, rows
 
 describe('parseBlsFile', () => {
   it('wandelt Zeilen in Lebensmittel mit Nutrients um', () => {
-    const foods = parseBlsFile(file([['C133000', 'Hafer Flocken', 348, 6.65, 1.34, 53.3, 0.74, 10.983, 13.22, 0.005, 10.07]]))
+    const foods = parseBlsFile(file([['C133000', 'Hafer Flocken', 348, 6.65, 1.34, 53.3, 0.74, 10.983, 13.22, 0.005]]))
     expect(foods).toEqual([
       {
         code: 'C133000',
@@ -21,14 +21,13 @@ describe('parseBlsFile', () => {
           fiber: 10.983,
           protein: 13.22,
           salt: 0.005,
-          water: 10.07,
         },
       },
     ])
   })
 
   it('null bleibt unbekannt', () => {
-    const [most] = parseBlsFile(file([['P355000', 'Most', 37, 0, 0, 1.6, 1.6, null, 0, 0.01, 91.4]]))
+    const [most] = parseBlsFile(file([['P355000', 'Most', 37, 0, 0, 1.6, 1.6, null, 0, 0.01]]))
     expect(most!.per100.fiber).toBeNull()
     expect(most!.per100.fat).toBe(0)
   })

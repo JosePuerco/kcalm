@@ -14,8 +14,6 @@ function product(name: string, changes: Partial<Product> = {}): Product {
       unit: 'g',
       per100: { ...unknownNutrients(), kcal: 100 },
       portions: [],
-      isDrink: false,
-      countsAsWater: false,
       useOverride: true,
       archived: false,
       offFetchedAt: null,
@@ -36,7 +34,7 @@ const bls = new Map([
 ])
 
 const prefs = (code: string, portions = [{ label: '1 Stück', amount: 120 }]) =>
-  newRecord<BlsPref>({ blsCode: code, portions, isDrink: null, countsAsWater: null, useOverride: true })
+  newRecord<BlsPref>({ blsCode: code, portions, useOverride: true })
 
 const verifiedOverride = (ref: ProductOverride['productRef'], verifiedAt: string | null = '2026-10-12T10:00:00.000Z') =>
   newRecord<ProductOverride>({ productRef: ref, per100: {}, verifiedAt, note: null })

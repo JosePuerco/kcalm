@@ -54,7 +54,7 @@ describe('validateQuick / quickEntry', () => {
   it('Eintrag ohne Produkt und Menge, leere Felder unbekannt', () => {
     const e = quickEntry(doener, '2026-10-21', 'abend')
     expect(e).toMatchObject({ kind: 'quick', ref: null, amount: null, unit: null, nameSnapshot: 'Döner Teller', slotId: 'abend' })
-    expect(e.nutrients).toMatchObject({ kcal: 850, protein: 38, carbs: 80, fat: 40, fiber: null, salt: null, water: null })
+    expect(e.nutrients).toMatchObject({ kcal: 850, protein: 38, carbs: 80, fat: 40, fiber: null, salt: null })
   })
 
   it('Name optional', () => {

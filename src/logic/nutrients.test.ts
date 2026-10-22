@@ -14,7 +14,6 @@ const oats: Nutrients = {
   fiber: null,
   protein: 13.5,
   salt: 0.02,
-  water: 10,
 }
 
 describe('valueForAmount', () => {
@@ -48,7 +47,6 @@ describe('nutrientsForAmount', () => {
     expect(n.carbs).toBeCloseTo(35.22, 10)
     expect(n.protein).toBeCloseTo(8.1, 10)
     expect(n.salt).toBeCloseTo(0.012, 10)
-    expect(n.water).toBe(6)
   })
 
   it('unbekannte Werte bleiben null, nie 0', () => {

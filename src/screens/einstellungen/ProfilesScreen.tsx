@@ -1,7 +1,7 @@
 // Profile und Ziele nach Profil.dc.html: Profil-Chips (aktives mit Punkt) + „Neu“, Wochenbudget und Makros wie
 // in der Ersteinrichtung. Aktives Profil: Hinweis „Aktiv seit …“; inaktives: „Ab nächstem Montag“ (Standard)
 // oder „Ab heute“ + „… aktivieren“. „Sichern“ erscheint, sobald etwas geändert ist (im Prototyp nicht gezeigt).
-// Wasser-Ziel kommt mit Phase 7.
+// Das Wasser-Ziel des Prototyps entfällt (kein Wasser-Tracking, Jan 22.10.2026).
 import { useState } from 'react'
 import { useToday } from '../../app/diaryState.ts'
 import { href } from '../../app/router.ts'

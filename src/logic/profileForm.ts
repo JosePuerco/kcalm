@@ -23,7 +23,7 @@ export interface ProfileFormValues {
 
 export type ProfileFormData = Pick<
   ProfileVersion,
-  'weeklyKcal' | 'protein' | 'fat' | 'carbs' | 'fiberG' | 'waterMl' | 'manualWeightKg'
+  'weeklyKcal' | 'protein' | 'fat' | 'carbs' | 'fiberG' | 'manualWeightKg'
 > & { name: string }
 
 export type MacroPreset = 'grams' | 'percent' | 'mixed'
@@ -256,8 +256,6 @@ export function validateProfileForm(values: ProfileFormValues): ProfileFormResul
       weeklyKcal: weekly as number,
       ...targets,
       fiberG: fiber as number | null,
-      // Wasser-Ziel kommt in Phase 7
-      waterMl: null,
       manualWeightKg: weight as number | null,
     },
   }

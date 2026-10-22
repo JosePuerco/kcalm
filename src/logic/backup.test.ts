@@ -12,6 +12,7 @@ import {
   mergeTables,
   parseBackup,
   removeAlcohol,
+  removeWater,
   serializeBackup,
   TABLE_NAMES,
   UNIQUE_KEYS,
@@ -36,8 +37,6 @@ function product(name: string, now = T0): Product {
       unit: 'g',
       per100: { ...unknownNutrients(), kcal: 372, protein: 13.5 },
       portions: [{ label: '1 Portion', amount: 40 }],
-      isDrink: false,
-      countsAsWater: false,
       useOverride: false,
       archived: false,
       offFetchedAt: null,
@@ -58,7 +57,6 @@ function entry(productId: string, now = T0): Entry {
       unit: 'g',
       portionLabel: '1 Portion',
       nutrients: { ...unknownNutrients(), kcal: 148.8 },
-      waterMl: 0,
       mealGroupId: null,
       mealName: null,
     },
@@ -94,7 +92,7 @@ describe('buildBackup / serializeBackup', () => {
   it('erzeugt app, formatVersion, exportedAt und alle Tabellen', () => {
     const backup = buildBackup(sampleTables(), T2)
     expect(backup.app).toBe('kcalm')
-    expect(backup.formatVersion).toBe(3)
+    expect(backup.formatVersion).toBe(4)
     expect(backup.exportedAt).toBe('2026-10-09T10:00:00.000Z')
     expect(Object.keys(backup.tables).sort()).toEqual([...TABLE_NAMES].sort())
   })
@@ -146,7 +144,7 @@ describe('parseBackup – Ablehnung', () => {
   })
 
   it('neuere formatVersion als die App', () => {
-    expect(parse({ ...valid(), formatVersion: 4 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
+    expect(parse({ ...valid(), formatVersion: 5 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
   })
 
   it('fehlende Tabelle', () => {
@@ -174,8 +172,8 @@ describe('parseBackup – Ablehnung', () => {
   it('fehlender Nährwert (statt null) wird abgelehnt', () => {
     const data = valid()
     const products = (data.tables as { products: { per100: Record<string, unknown> }[] }).products
-    delete products[0]!.per100.water
-    expect(parse(data)).toEqual({ ok: false, error: 'Backup ist beschädigt (products[0].per100.water)' })
+    delete products[0]!.per100.salt
+    expect(parse(data)).toEqual({ ok: false, error: 'Backup ist beschädigt (products[0].per100.salt)' })
   })
 
   it('ungültige Verweise und ids', () => {
@@ -250,7 +248,7 @@ describe('parseBackup – Migration Format 1 → 2', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     const { tables } = result.backup
-    expect(result.backup.formatVersion).toBe(3)
+    expect(result.backup.formatVersion).toBe(4)
     expect(tables.products.every((p) => !('alcohol' in p.per100))).toBe(true)
     expect(tables.entries.every((e) => !('alcohol' in e.nutrients))).toBe(true)
     expect(tables.productOverrides[0]!.per100).toEqual({ kcal: 40 })
@@ -288,10 +286,7 @@ describe('parseBackup – Migration Format 2 → 3', () => {
     data.tables.blsPrefs = blsPrefs
     return data
   }
-  const pref = newRecord<BlsPref>(
-    { blsCode: 'F503100', portions: [], isDrink: null, countsAsWater: null, useOverride: false },
-    T0,
-  )
+  const pref = newRecord<BlsPref>({ blsCode: 'F503100', portions: [], useOverride: false }, T0)
   function withoutUseOverride() {
     const old: Record<string, unknown> = { ...pref }
     delete old.useOverride
@@ -311,6 +306,70 @@ describe('parseBackup – Migration Format 2 → 3', () => {
   it('Format 3 ohne useOverride ist beschädigt', () => {
     const data = { ...v2Backup([withoutUseOverride()]), formatVersion: 3 }
     expect(parseBackup(JSON.stringify(data))).toEqual({ ok: false, error: 'Backup ist beschädigt (blsPrefs[0].useOverride)' })
+  })
+})
+
+describe('parseBackup – Migration Format 3 → 4', () => {
+  // Backup aus der Zeit vor dem Streichen des Wasser-Trackings
+  function v3Backup() {
+    const data = JSON.parse(serializeBackup(buildBackup(sampleTables(), T2))) as {
+      formatVersion: number
+      tables: Record<string, Record<string, unknown>[]>
+    }
+    data.formatVersion = 3
+    const products = data.tables.products!
+    const entries = data.tables.entries!
+    products.forEach((p) => Object.assign(p, { isDrink: true, countsAsWater: true }))
+    Object.assign(products[0]!.per100 as object, { water: 89.4 })
+    entries.forEach((e) => Object.assign(e, { waterMl: 447 }))
+    Object.assign(entries[0]!.nutrients as object, { water: null })
+    const pref = newRecord<BlsPref>({ blsCode: 'N110000', portions: [], useOverride: true }, T0)
+    data.tables.blsPrefs = [{ ...pref, isDrink: true, countsAsWater: null }]
+    data.tables.settings!.push({ ...setting('waterEnabled', true) })
+    return data
+  }
+
+  it('entfernt Wasser-Felder, den Nährwert water und die Einstellung', () => {
+    const result = parseBackup(JSON.stringify(v3Backup()))
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    const { tables } = result.backup
+    expect(result.backup.formatVersion).toBe(4)
+    expect(tables.products[0]).not.toHaveProperty('isDrink')
+    expect(tables.products[0]).not.toHaveProperty('countsAsWater')
+    expect(tables.products[0]!.per100).not.toHaveProperty('water')
+    expect(tables.entries[0]).not.toHaveProperty('waterMl')
+    expect(tables.entries[0]!.nutrients).not.toHaveProperty('water')
+    expect(tables.blsPrefs[0]).not.toHaveProperty('isDrink')
+    expect(tables.settings.map((s) => s.key)).toEqual(['theme', 'quickSizes'])
+  })
+
+  it('lässt alles andere unverändert', () => {
+    const result = parseBackup(JSON.stringify(v3Backup()))
+    const current = buildBackup(sampleTables(), T2)
+    expect(result.ok && result.backup.tables.products[0]!.per100).toEqual(current.tables.products[0]!.per100)
+    expect(result.ok && result.backup.tables.entries[0]!.nutrients.kcal).toBe(148.8)
+    expect(result.ok && result.backup.tables.blsPrefs[0]!.useOverride).toBe(true)
+  })
+})
+
+describe('removeWater', () => {
+  it('entfernt nur die Wasser-Felder der genannten Tabelle', () => {
+    const product = { name: 'Cola', isDrink: true, countsAsWater: true, per100: { kcal: 42, water: 89.4 } }
+    removeWater('products', product)
+    expect(product).toEqual({ name: 'Cola', per100: { kcal: 42 } })
+    const version = { weeklyKcal: 14000, waterMl: 2500, fiberG: 30 }
+    removeWater('profileVersions', version)
+    expect(version).toEqual({ weeklyKcal: 14000, fiberG: 30 })
+    const setting = { key: 'theme', value: { water: 'bleibt', isDrink: 'bleibt' } }
+    removeWater('settings', setting)
+    expect(setting.value).toEqual({ water: 'bleibt', isDrink: 'bleibt' })
+  })
+
+  it('übersteht fehlende oder falsche Daten', () => {
+    expect(() => removeWater('entries', null)).not.toThrow()
+    expect(() => removeWater('entries', { nutrients: null })).not.toThrow()
+    expect(() => removeWater('products', [1, 2])).not.toThrow()
   })
 })
 
@@ -421,13 +480,13 @@ describe('mergeTables', () => {
   it('Ergebnis verletzt keine eindeutigen Schlüssel', () => {
     const local = emptyTables()
     const incoming = emptyTables()
-    local.settings = [setting('theme', 'light', T0), setting('water', true, T2)]
-    incoming.settings = [setting('theme', 'dark', T1), setting('water', false, T1), setting('estimate', true, T1)]
+    local.settings = [setting('theme', 'light', T0), setting('lastBackupAt', 'neu', T2)]
+    incoming.settings = [setting('theme', 'dark', T1), setting('lastBackupAt', 'alt', T1), setting('estimate', true, T1)]
     const plan = mergeTables(local, incoming)
     const removed = new Set(plan.remove.settings)
     const written = new Map(plan.put.settings.map((s) => [s.id, s]))
     const result = [...local.settings.filter((s) => !removed.has(s.id) && !written.has(s.id)), ...written.values()]
-    expect(result.map((s) => `${s.key}=${String(s.value)}`).sort()).toEqual(['estimate=true', 'theme=dark', 'water=true'])
+    expect(result.map((s) => `${s.key}=${String(s.value)}`).sort()).toEqual(['estimate=true', 'lastBackupAt=neu', 'theme=dark'])
     expect(plan.added).toBe(1)
     expect(plan.updated).toBe(1)
   })

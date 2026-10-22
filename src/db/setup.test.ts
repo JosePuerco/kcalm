@@ -7,7 +7,7 @@ import { db } from './db.ts'
 import { assignVersion, createProfile, weekKcalBefore } from './profiles.ts'
 import { newRecord, unknownNutrients } from './records.ts'
 import { getSetting } from './settings.ts'
-import { ESTIMATE_KEY, SETUP_DONE_KEY, WATER_KEY, completeSetup, isSetupDone } from './setup.ts'
+import { ESTIMATE_KEY, SETUP_DONE_KEY, completeSetup, isSetupDone } from './setup.ts'
 import { getSlots, saveSlots } from './slots.ts'
 import type { Entry } from './types.ts'
 
@@ -22,7 +22,6 @@ const profile = {
   fat: { mode: 'percent' as const, value: 25 },
   carbs: { mode: 'rest' as const, value: null },
   fiberG: 30,
-  waterMl: null,
   manualWeightKg: 74,
 }
 
@@ -39,7 +38,6 @@ function entry(date: string, slotId: string, kcal: number | null) {
     unit: null,
     portionLabel: null,
     nutrients: { ...unknownNutrients(), kcal },
-    waterMl: 0,
     mealGroupId: null,
     mealName: null,
   })
@@ -119,11 +117,10 @@ describe('Profile', () => {
 describe('completeSetup', () => {
   it('speichert alles; Start am Donnerstag ergibt trotzdem 2.800 / Tag', async () => {
     expect(await isSetupDone()).toBe(false)
-    await completeSetup({ slots: defaults, profile, water: true, estimate: false }, thursday)
+    await completeSetup({ slots: defaults, profile, estimate: false }, thursday)
 
     expect(await isSetupDone()).toBe(true)
     expect(await getSetting(SETUP_DONE_KEY)).toBe(thursday.toISOString())
-    expect(await getSetting(WATER_KEY)).toBe(true)
     expect(await getSetting(ESTIMATE_KEY)).toBe(false)
     expect(await getSlots()).toHaveLength(4)
 
@@ -137,7 +134,7 @@ describe('completeSetup', () => {
   })
 
   it('Start am Montag: kein Override', async () => {
-    await completeSetup({ slots: defaults, profile, water: false, estimate: false }, new Date(2026, 9, 19, 9))
+    await completeSetup({ slots: defaults, profile, estimate: false }, new Date(2026, 9, 19, 9))
     expect((await db.profileAssignments.toArray())[0]?.weekBudgetOverride).toBeNull()
   })
 
@@ -148,7 +145,7 @@ describe('completeSetup', () => {
     }
     db.settings.hook('creating', fail)
     try {
-      await expect(completeSetup({ slots: defaults, profile, water: true, estimate: false }, thursday)).rejects.toThrow()
+      await expect(completeSetup({ slots: defaults, profile, estimate: false }, thursday)).rejects.toThrow()
     } finally {
       db.settings.hook('creating').unsubscribe(fail)
     }

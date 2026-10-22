@@ -154,7 +154,6 @@ describe('validateProfileForm', () => {
         fat: { mode: 'percent', value: 25 },
         carbs: { mode: 'rest', value: null },
         fiberG: 30,
-        waterMl: null,
         manualWeightKg: 74,
       },
     })

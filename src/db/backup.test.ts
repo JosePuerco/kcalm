@@ -18,7 +18,6 @@ const skyr = {
   barcode: null,
   unit: 'g' as const,
   per100: { ...unknownNutrients(), kcal: 63, protein: 11 },
-  isDrink: false,
   portions: [{ label: '1 Becher', amount: 150 }],
 }
 

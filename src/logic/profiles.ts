@@ -133,7 +133,7 @@ export function profileStatus(
   return { activeProfileId, activeSince, scheduled }
 }
 
-type Targets = Pick<ProfileVersion, 'weeklyKcal' | 'protein' | 'fat' | 'carbs' | 'fiberG' | 'waterMl' | 'manualWeightKg'>
+type Targets = Pick<ProfileVersion, 'weeklyKcal' | 'protein' | 'fat' | 'carbs' | 'fiberG' | 'manualWeightKg'>
 
 /** Haben sich die Ziele geändert? Nur dann braucht es eine neue Version (Umbenennen allein nicht) */
 export function targetsChanged(a: Targets, b: Targets): boolean {
@@ -145,7 +145,6 @@ export function targetsChanged(a: Targets, b: Targets): boolean {
     !same(a.fat, b.fat) ||
     !same(a.carbs, b.carbs) ||
     a.fiberG !== b.fiberG ||
-    a.waterMl !== b.waterMl ||
     a.manualWeightKg !== b.manualWeightKg
   )
 }

@@ -75,16 +75,12 @@ Screen nach design/prototypes/Produkt.dc.html.
 
 ## Phase 7 – Wasser
 
-```
-Phase 6 ist fertig. Starte Phase 7 aus PLAN.md.
-Zeig mir zuerst die Wassergehalt-Berechnung und die Getränke-Regeln mit Tests. Warte auf mein OK.
-Wasser-Kachel nach design/prototypes/Kern.dc.html, Schalter nach Einstellungen.dc.html.
-```
+Entfällt (Jan, 22.10.2026): kein Wasser-Tracking. Weiter mit Phase 8.
 
 ## Phase 8 – Statistiken
 
 ```
-Phase 7 ist fertig. Starte Phase 8 aus PLAN.md.
+Phase 6 ist fertig, Phase 7 entfällt. Starte Phase 8 aus PLAN.md.
 Schlag mir zuerst vor: Diagramm-Bibliothek oder eigenes SVG, mit Begründung (Bundle-Größe, Offline, Motion, Bedienung per Tipp). Warte auf mein OK.
 Screen nach design/prototypes/Statistik.dc.html.
 ```

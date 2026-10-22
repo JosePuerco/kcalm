@@ -11,8 +11,8 @@ import {
   isFoodUsed,
   restoreProduct,
   saveBlsPortions,
+  setBlsUseOverride,
   saveProductPortions,
-  setBlsIsDrink,
   updateProduct,
 } from './products.ts'
 import { newRecord, softDelete, unknownNutrients } from './records.ts'
@@ -28,7 +28,6 @@ const skyr: ProductFormData = {
   barcode: null,
   unit: 'g',
   per100: { ...unknownNutrients(), kcal: 63, protein: 11 },
-  isDrink: false,
   portions: [{ label: '1 Becher', amount: 450 }],
 }
 
@@ -43,7 +42,6 @@ function entryFor(ref: Entry['ref']) {
     unit: 'g',
     portionLabel: null,
     nutrients: unknownNutrients(),
-    waterMl: 0,
     mealGroupId: null,
     mealName: null,
   })
@@ -63,11 +61,6 @@ describe('Produkte', () => {
     expect(stored.per100.fiber).toBeNull() // unbekannt bleibt null in der Datenbank
   })
 
-  it('Getränk zählt standardmäßig zum Wasser', async () => {
-    const p = await createProduct({ ...skyr, isDrink: true, unit: 'ml' })
-    expect(p.countsAsWater).toBe(true)
-  })
-
   it('bearbeitet ein Produkt, behält id und createdAt', async () => {
     const p = await createProduct(skyr, t0)
     const u = await updateProduct(p.id, { ...skyr, name: 'Skyr', per100: { ...skyr.per100, kcal: 64 } }, t1)
@@ -75,14 +68,6 @@ describe('Produkte', () => {
     expect(u.createdAt).toBe(t0.toISOString())
     expect(u.updatedAt).toBe(t1.toISOString())
     expect((await getProduct(p.id)).per100.kcal).toBe(64)
-  })
-
-  it('countsAsWater folgt isDrink nur, wenn isDrink sich ändert', async () => {
-    const p = await createProduct({ ...skyr, isDrink: true })
-    await db.products.update(p.id, { countsAsWater: false }) // z. B. Bier, später per Schalter
-    expect((await updateProduct(p.id, { ...skyr, isDrink: true, name: 'Bier' })).countsAsWater).toBe(false)
-    expect((await updateProduct(p.id, { ...skyr, isDrink: false })).countsAsWater).toBe(false)
-    expect((await updateProduct(p.id, { ...skyr, isDrink: true })).countsAsWater).toBe(true)
   })
 
   it('ändern eines Produkts ändert keine alten Einträge (Snapshot)', async () => {
@@ -168,14 +153,14 @@ describe('BLS-Einstellungen', () => {
     await saveBlsPortions('F503100', [{ label: '1 große', amount: 150 }], t1)
     const all = await db.blsPrefs.toArray()
     expect(all).toHaveLength(1)
-    expect(all[0]).toMatchObject({ blsCode: 'F503100', portions: [{ label: '1 große', amount: 150 }], isDrink: null })
+    expect(all[0]).toMatchObject({ blsCode: 'F503100', portions: [{ label: '1 große', amount: 150 }] })
     expect(all[0]!.createdAt).toBe(t0.toISOString())
   })
 
-  it('Getränk-Einstellung behält die Portionen', async () => {
+  it('Umschalter Meine/Original behält die Portionen', async () => {
     await saveBlsPortions('N100000', [{ label: '1 Tasse', amount: 200 }])
-    await setBlsIsDrink('N100000', true)
-    expect(await getBlsPref('N100000')).toMatchObject({ isDrink: true, portions: [{ label: '1 Tasse', amount: 200 }] })
+    await setBlsUseOverride('N100000', false)
+    expect(await getBlsPref('N100000')).toMatchObject({ useOverride: false, portions: [{ label: '1 Tasse', amount: 200 }] })
   })
 
   it('belebt einen gelöschten Datensatz wieder statt doppelt anzulegen', async () => {

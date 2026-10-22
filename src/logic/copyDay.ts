@@ -35,7 +35,6 @@ export function copiedEntries(
         unit: e.unit,
         portionLabel: e.portionLabel,
         nutrients: { ...e.nutrients },
-        waterMl: e.waterMl,
         mealGroupId,
         mealName: e.mealName,
       }

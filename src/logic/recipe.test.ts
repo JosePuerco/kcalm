@@ -28,7 +28,6 @@ const full = {
   fiber: 0,
   protein: 0,
   salt: 0,
-  water: null,
 }
 
 const food = (ref: FoodRef, per100: Partial<Nutrients>, unit: 'g' | 'ml' = 'g'): FoodChoice => ({
@@ -118,7 +117,8 @@ describe('recipePer100', () => {
   })
 
   it('bei allen Zutaten unbekannt → null', () => {
-    expect((recipePer100(chili, 1400) as Nutrients).water).toBeNull()
+    const lines = [line(food('bls:a', { fiber: null }), 100), line(food('bls:b', { fiber: null }), 100)]
+    expect((recipePer100(lines, 200) as Nutrients).fiber).toBeNull()
   })
 
   it('bekannte 0 bleibt 0', () => {

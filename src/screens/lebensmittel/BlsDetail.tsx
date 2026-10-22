@@ -1,13 +1,11 @@
 // BLS-Lebensmittel nach Produkt.dc.html: Original gegen Meine Werte (Korrekturschicht),
-// eigene Portionen, „Ist ein Getränk“ und der Umschalter Meine/Original in blsPrefs.
+// eigene Portionen und der Umschalter Meine/Original in blsPrefs.
 import { href } from '../../app/router.ts'
-import { Card } from '../../components/ui/Card.tsx'
 import { Badge, SubScreen, SubScreenTitle } from '../../components/ui/SubScreen.tsx'
-import { Switch } from '../../components/ui/Switch.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { useBls } from '../../data/bls.ts'
 import { useLiveQuery } from '../../db/live.ts'
-import { getBlsPref, saveBlsPortions, setBlsIsDrink } from '../../db/products.ts'
+import { getBlsPref, saveBlsPortions } from '../../db/products.ts'
 import { getOverride } from '../../db/verify.ts'
 import { PortionsCard } from './PortionsCard.tsx'
 import { VerifiedBadge, VerifySection } from './VerifySection.tsx'
@@ -60,22 +58,6 @@ export function BlsDetail({ code }: { code: string }) {
           if (portions.length > 0 && (pref?.portions.length ?? 0) === 0) toast('Steht jetzt in deinen Lebensmitteln')
         }}
       />
-
-      <Card padded={false} className="px-card-padding py-1">
-        <div className="text-label flex min-h-12 items-center justify-between gap-3">
-          <span>Ist ein Getränk</span>
-          <Switch
-            label="Ist ein Getränk"
-            checked={pref?.isDrink ?? false}
-            onChange={(checked) => {
-              setBlsIsDrink(code, checked).catch((error: unknown) => {
-                console.error(error)
-                toast('Das hat nicht geklappt')
-              })
-            }}
-          />
-        </div>
-      </Card>
     </SubScreen>
   )
 }

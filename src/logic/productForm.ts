@@ -16,12 +16,11 @@ export interface ProductFormValues {
   barcode: string
   unit: Unit
   nutrients: Record<NutrientKey, string>
-  isDrink: boolean
   portions: PortionInput[]
 }
 
 /** Das, was das Formular am Produkt festlegt */
-export type ProductFormData = Pick<Product, 'name' | 'brand' | 'barcode' | 'unit' | 'per100' | 'isDrink' | 'portions'>
+export type ProductFormData = Pick<Product, 'name' | 'brand' | 'barcode' | 'unit' | 'per100' | 'portions'>
 
 /** Fehlertext je Feld: „name“, „kcal“, „portions.0.amount“ … */
 export type FormErrors = Record<string, string>
@@ -31,7 +30,7 @@ export type FormResult = { ok: true; data: ProductFormData } | { ok: false; erro
 export function emptyProductForm(): ProductFormValues {
   const nutrients = {} as Record<NutrientKey, string>
   for (const key of NUTRIENT_KEYS) nutrients[key] = ''
-  return { name: '', brand: '', barcode: '', unit: 'g', nutrients, isDrink: false, portions: [] }
+  return { name: '', brand: '', barcode: '', unit: 'g', nutrients, portions: [] }
 }
 
 /** Zahl fürs Eingabefeld: exakt, nur mit Komma (keine Rundung, kein Tausenderpunkt) */
@@ -46,7 +45,6 @@ export function productToForm(p: ProductFormData): ProductFormValues {
     barcode: p.barcode ?? '',
     unit: p.unit,
     nutrients: nutrientsToForm(p.per100),
-    isDrink: p.isDrink,
     portions: p.portions.map((x) => ({ label: x.label, amount: toInput(x.amount) })),
   }
 }
@@ -75,7 +73,7 @@ const portionSchema = z.object({
   amount: z.number({ error: 'Bitte Menge eingeben' }).positive('Mehr als 0').max(10000, 'Höchstens 10.000'),
 })
 
-// Pflicht sind die Werte der EU-Nährwerttabelle (REQUIRED_NUTRIENTS); Ballaststoffe und Wasser optional
+// Pflicht sind die Werte der EU-Nährwerttabelle (REQUIRED_NUTRIENTS); Ballaststoffe optional
 const schema = z.object({
   name: z.string().trim().min(1, 'Bitte einen Namen eingeben').max(120, 'Höchstens 120 Zeichen'),
   brand: z.string().trim().max(80, 'Höchstens 80 Zeichen'),
@@ -93,9 +91,7 @@ const schema = z.object({
     fiber: optionalGrams,
     protein: requiredGrams,
     salt: requiredGrams,
-    water: optionalGrams,
   }),
-  isDrink: z.boolean(),
   portions: z.array(portionSchema),
 })
 
@@ -159,7 +155,6 @@ export function validateProductForm(values: ProductFormValues): FormResult {
       barcode: v.barcode === '' ? null : v.barcode,
       unit: v.unit,
       per100: v.per100,
-      isDrink: v.isDrink,
       portions: v.portions.map((p): Portion => ({ label: p.label, amount: p.amount })),
     },
   }
@@ -183,7 +178,6 @@ const correctionSchema = z.object({
   fiber: optionalGrams,
   protein: optionalGrams,
   salt: optionalGrams,
-  water: optionalGrams,
 })
 
 /**

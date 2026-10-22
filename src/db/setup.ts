@@ -10,7 +10,6 @@ import { getSetting, setSetting } from './settings.ts'
 import { saveSlots, type SlotData } from './slots.ts'
 
 export const SETUP_DONE_KEY = 'setupDoneAt'
-export const WATER_KEY = 'waterEnabled'
 export const ESTIMATE_KEY = 'estimateEnabled'
 
 /** Eingerichtet, wenn der Merker gesetzt ist oder (Backup vor Phase 3) schon ein Profil zugewiesen ist */
@@ -22,7 +21,6 @@ export async function isSetupDone(): Promise<boolean> {
 export interface SetupData {
   slots: readonly SlotData[]
   profile: ProfileFormData
-  water: boolean
   estimate: boolean
 }
 
@@ -37,7 +35,6 @@ export async function completeSetup(data: SetupData, now = new Date()): Promise<
       // Mitten in der Woche: nur der Rest der Woche bekommt Budget, sonst wäre das Tagesziel zu hoch.
       // Vortage gehören zu keinem Profil, daher Verbrauch davor 0 (sie zählen auch später nicht, countFrom)
       await assignVersion(version.id, switchFromToday(today, version.weeklyKcal, 0), now)
-      await setSetting(WATER_KEY, data.water, now)
       await setSetting(ESTIMATE_KEY, data.estimate, now)
       await setSetting(SETUP_DONE_KEY, now.toISOString(), now)
     },

@@ -21,7 +21,6 @@ const marzipan = {
   status_verbose: 'product found',
   product: {
     brands: 'Ritter Sport',
-    categories_tags: ['nl:Chocolade', 'nl:Koeken/Chocolade/Snoep'],
     code: '4000417025005',
     nutriments: {
       'energy-kcal_100g': 496,
@@ -101,7 +100,6 @@ describe('offNutrients', () => {
       fiber: 6.2,
       protein: 7,
       salt: 1,
-      water: null,
     })
   })
 
@@ -148,8 +146,6 @@ describe('parseProductResponse', () => {
         unit: 'g',
         per100: offNutrients(marzipan.product.nutriments),
         portions: [{ label: '1 Portion', amount: 6.52 }, { label: '1 Packung', amount: 100 }],
-        isDrink: false,
-        countsAsWater: false,
       },
     })
   })
@@ -202,14 +198,6 @@ describe('parseProductResponse', () => {
       { label: '1 Packung', amount: 500 },
     ])
     expect(product({ serving_quantity: undefined, product_quantity: 25000 }).portions).toEqual([])
-  })
-
-  it('Getränk aus der Kategorie; alkoholische zählen nicht zum Wasser', () => {
-    const cola = product({ categories_tags: ['en:beverages', 'en:sodas'] })
-    expect([cola.isDrink, cola.countsAsWater]).toEqual([true, true])
-    const beer = product({ categories_tags: ['en:beverages', 'en:alcoholic-beverages', 'en:beers'] })
-    expect([beer.isDrink, beer.countsAsWater]).toEqual([true, false])
-    expect(product({ categories_tags: 'en:beverages' }).isDrink).toBe(false)
   })
 
   it('ohne Nährwerte: Produkt bleibt, alle Werte unbekannt', () => {

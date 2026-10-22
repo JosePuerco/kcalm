@@ -24,7 +24,6 @@ export function Setup() {
   const [slotErrors, setSlotErrors] = useState<{ errors: SlotErrors; general?: string }>({ errors: {} })
   const [profile, setProfile] = useState(emptyProfileForm)
   const [profileErrors, setProfileErrors] = useState<ProfileErrors>({})
-  const [water, setWater] = useState(false)
   const [estimate, setEstimate] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -53,7 +52,7 @@ export function Setup() {
     setSaving(true)
     try {
       // Danach zeigt die App von selbst das Tagebuch (isSetupDone wird live abgefragt)
-      await completeSetup({ slots: s.slots, profile: p.data, water, estimate })
+      await completeSetup({ slots: s.slots, profile: p.data, estimate })
     } catch (error) {
       console.error(error)
       toast('Speichern fehlgeschlagen')
@@ -74,16 +73,14 @@ export function Setup() {
     },
     3: {
       title: 'Optionen',
-      text: 'Beides kannst du später in den Einstellungen ändern.',
+      text: 'Das kannst du später in den Einstellungen ändern.',
       body: (
         <Card padded={false}>
-          <ToggleRow label="Wasser tracken" sub="Getränke gegen ein Tagesziel in ml" checked={water} onChange={setWater} />
           <ToggleRow
             label="Verbrauchsschätzung"
             sub="Gewicht per Kurzbefehl aus Apple Health"
             checked={estimate}
             onChange={setEstimate}
-            border
           />
         </Card>
       ),
@@ -154,11 +151,11 @@ export function Setup() {
   )
 }
 
-type ToggleProps = { label: string; sub: string; checked: boolean; onChange: (v: boolean) => void; border?: boolean }
+type ToggleProps = { label: string; sub: string; checked: boolean; onChange: (v: boolean) => void }
 
-function ToggleRow({ label, sub, checked, onChange, border }: ToggleProps) {
+function ToggleRow({ label, sub, checked, onChange }: ToggleProps) {
   return (
-    <div className={`flex min-h-[60px] items-center gap-2.5 px-4 py-2 ${border ? 'border-line border-t' : ''}`}>
+    <div className="flex min-h-[60px] items-center gap-2.5 px-4 py-2">
       <span className="flex flex-1 flex-col gap-0.5">
         <span className="text-body">{label}</span>
         <span className="text-small text-muted">{sub}</span>

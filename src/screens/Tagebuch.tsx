@@ -1,6 +1,6 @@
 // Tagebuch nach Kern.dc.html und Leer.dc.html. Aufbau von oben: Tagesleiste · (Monatskalender) ·
 // Übersichtskarte · (gemerkte Scans) · (leerer Tag) · Slot-Karten · „vollständig getrackt“.
-// Die Wasser-Kachel kommt in Phase 7.
+// Die Wasser-Kachel des Prototyps entfällt (kein Wasser-Tracking, Jan 22.10.2026).
 import { useCallback, useState } from 'react'
 import { openAddSheet, openEditSheet, setDiaryDate, setSlotOpen, useDiaryState, useToday } from '../app/diaryState.ts'
 import { useToast } from '../components/ui/toastContext.ts'

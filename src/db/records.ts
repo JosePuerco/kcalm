@@ -11,7 +11,6 @@ export const NUTRIENT_KEYS: readonly NutrientKey[] = [
   'fiber',
   'protein',
   'salt',
-  'water',
 ]
 
 /** Alle Nährwerte unbekannt (null), nicht 0 */
@@ -25,7 +24,6 @@ export function unknownNutrients(): Nutrients {
     fiber: null,
     protein: null,
     salt: null,
-    water: null,
   }
 }
 

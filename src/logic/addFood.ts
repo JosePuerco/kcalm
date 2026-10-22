@@ -115,8 +115,6 @@ export function foodEntry(food: FoodChoice, amount: number, date: LocalDate, slo
     unit: food.unit,
     portionLabel: portionLabelFor(food, amount),
     nutrients: nutrientsForAmount(food.per100, amount),
-    // Wassergehalt von Getränken kommt mit Phase 7
-    waterMl: 0,
     mealGroupId: null,
     mealName: null,
   }

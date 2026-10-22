@@ -107,7 +107,6 @@ export function quickEntry(values: QuickValues, date: LocalDate, slotId: string)
     amount: null,
     unit: null,
     portionLabel: null,
-    waterMl: 0,
     mealGroupId: null,
     mealName: null,
   }

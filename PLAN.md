@@ -22,11 +22,10 @@ Kcalm ist eine minimalistische Offline-PWA fürs iPhone, mit der Jan Kalorien un
 | Ziele | kcal als Wochenbudget (Woche ab Montag), Makros pro Tag | Passt zum Ernährungsplan inkl. Essen außer Haus |
 | Nährwerte | kcal, Fett, gesättigte Fettsäuren, Kohlenhydrate, Zucker, Ballaststoffe, Eiweiß, Salz | EU-Pflichtangaben + Ballaststoffe; nur kcal, kein kJ |
 | Essbarer Anteil | Kein Feature, Jan wiegt netto | Einfachheit |
-| Wasser | Optional, im selben Tagebuch, nur Getränke | Trinkempfehlungen beziehen sich auf Getränke |
 | Verbrauchsschätzung | Optional, Gewicht per Kurzbefehl aus Apple Health | Getrennt vom Ziel |
 | Backup | Teilen-Menü → iCloud Drive, Ersatz per Download | Kein Server nötig |
 | Export | CSV (international) + JSON, frei einstellbar | Monatsauswertung mit Claude + universell |
-| Bewusst nicht | Gamification, Yazio-/Mixli-Import, kJ, Excel/PDF, Mikronährstoffe, Schritte, Android-Tests | Minimalismus |
+| Bewusst nicht | Gamification, Yazio-/Mixli-Import, kJ, Excel/PDF, Mikronährstoffe, Wasser-Tracking, Schritte, Android-Tests | Minimalismus |
 
 ## 2. Funktionsumfang
 
@@ -56,11 +55,11 @@ Der wichtigste Ablauf ist: beim Essen App öffnen, Slot wählen, Produkt scannen
 
 ### Produkte
 
-- Felder: Name, Marke, Barcode, Einheit (g oder ml), Nährwerte pro 100 g/ml, Portionsgrößen, „ist Getränk“, „zählt zum Wasser“
+- Felder: Name, Marke, Barcode, Einheit (g oder ml), Nährwerte pro 100 g/ml, Portionsgrößen
 - Herkunft: OFF, BLS oder eigenes Produkt
 - **Verifizieren (optional):** eigene Werte als Korrekturschicht über dem Original, Status „geprüft“ mit Datum; Tabelle Original gegen Meine Werte mit markierten Abweichungen; pro Produkt umschaltbar, welche Werte genutzt werden (gilt für künftige Einträge); ein späteres OFF-Update ändert nur das Original
 - Fehlende Werte werden als „unbekannt“ geführt, nie als 0; Summen zeigen dann „mind. …“
-- Pflichtangaben beim Anlegen eigener Produkte und beim Prüfen: Name und alle Werte der EU-Nährwerttabelle (Energie, Fett, davon gesättigte Fettsäuren, Kohlenhydrate, davon Zucker, Eiweiß, Salz); Ballaststoffe und Wasser optional
+- Pflichtangaben beim Anlegen eigener Produkte und beim Prüfen: Name und alle Werte der EU-Nährwerttabelle (Energie, Fett, davon gesättigte Fettsäuren, Kohlenhydrate, davon Zucker, Eiweiß, Salz); Ballaststoffe optional
 - Archivieren statt löschen, wenn das Produkt im Tagebuch verwendet wurde
 - Lebensmittel-Liste mit Reitern Produkte / Mahlzeiten / Rezepte und Filtern Alle / Geprüft / Eigene / BLS; BLS-Lebensmittel erscheinen dort erst mit eigener Portion oder Prüfung
 - Quellenhinweis auf OFF (ODbL) und BLS im Bereich „Über“
@@ -83,15 +82,9 @@ Der wichtigste Ablauf ist: beim Essen App öffnen, Slot wählen, Produkt scannen
 - Profile (z. B. Aufbau, Diät, Erhalt) mit Wochenbudget kcal und Makros pro Tag
 - Makros je Makro wahlweise in g, in % des festen Tagesziels, in g/kg Körpergewicht (Eiweiß/Fett) oder als „Rest“ (übrige Kalorien, meist Kohlenhydrate)
 - Körpergewicht für g/kg: Trendgewicht der Verbrauchsschätzung; ist sie aus, manuelles Feld im Profil
-- Ballaststoffziel und Wasserziel pro Profil
+- Ballaststoffziel pro Profil
 - Profilwechsel manuell: „Ab nächstem Montag“ (Standard) oder „Ab heute“ mit anteilig umgerechnetem Restbudget der Woche
 - Jeder Tag behält das damals gültige Profil (Snapshot)
-
-### Wasser (optional, in Einstellungen abschaltbar)
-
-- Kachel in der Tagesansicht mit Fortschrittsleiste gegen Tagesziel in ml und „+“ für die erste Schnellgröße
-- Schnellgrößen konfigurierbar (z. B. 250 ml, 500 ml) + exakte Eingabe im Hinzufügen-Ablauf
-- Getränke zählen mit ihrem Wassergehalt; Kaffee und Tee zählen mit; alkoholische Getränke standardmäßig nicht; Wasser aus Essen zählt nicht; pro Produkt umstellbar
 
 ### Statistiken
 
@@ -100,7 +93,6 @@ Der wichtigste Ablauf ist: beim Essen App öffnen, Slot wählen, Produkt scannen
 - kcal pro Tag als Balken gegen gestrichelte Ziellinie; unvollständige Tage grau; Tipp auf Balken zeigt den Wert
 - Makros Ø pro Tag gegen Ziel
 - Gewicht: Messpunkte + Trendlinie (nur bei aktiver Verbrauchsschätzung)
-- Wasser Ø pro Tag (nur bei aktivem Wasser)
 
 ### Verbrauchsschätzung (optional)
 
@@ -124,7 +116,7 @@ Der wichtigste Ablauf ist: beim Essen App öffnen, Slot wählen, Produkt scannen
 
 ### Ersteinrichtung
 
-- 4 Schritte: Slots, erstes Profil, Optionen (Wasser, Verbrauchsschätzung), Hinweis auf Backup
+- 4 Schritte: Slots, erstes Profil, Optionen (Verbrauchsschätzung), Hinweis auf Backup
 - App startet ohne Beispieldaten
 
 ### Berechnungen
@@ -140,7 +132,6 @@ Intern wird exakt gerechnet, nur die Anzeige wird gerundet (kcal ganzzahlig, Mak
 | Makro in g/kg | Faktor × Körpergewicht (Trend oder manuell) | 1,8 g/kg × 74,0 kg = 133,2 g Eiweiß |
 | Makro „Rest“ | (Festes Tagesziel − kcal der anderen Makros) ÷ 4 | (2.800 − 133 × 4 − 78 × 9) ÷ 4 ≈ 392 g KH |
 | Profilwechsel „ab heute“ | Neues Wochenbudget × verbleibende Tage ÷ 7 + bisheriger Verbrauch dieser Woche = Wochenbudget dieser Woche | Wechsel Do auf 15.400: 15.400 × 4 ÷ 7 + 8.900 = 17.700 |
-| Wasser aus Getränk | BLS-Wassergehalt, sonst 100 − (Fett + KH + Eiweiß + Ballaststoffe + Salz); 1 ml ≈ 1 g | Cola: 100 − 10,6 = 89,4 % → 500 ml ergibt 447 ml |
 | Rezept pro 100 g | Summe der Zutaten-Nährwerte ÷ Endgewicht × 100 | Chili 1.890 kcal, Endgewicht 1.400 g → 135 kcal/100 g; 450 g → 608 kcal |
 | Makro-Plausibilität | Eiweiß × 4 + KH × 4 + Fett × 9 gegen kcal; > 10 % Abweichung → Hinweis | 38/80/40 g → 832 kcal gegen 850 kcal: passt |
 | Gewichtstrend | Exponentiell geglätteter Mittelwert der Tageswerte (Faktor in Phase 9 mit Tests festlegen, Startwert 0,1–0,15) | Schwankungen von ±1 kg glätten |
@@ -178,7 +169,7 @@ Der Stack entspricht Mixli, ergänzt um Scanner, Diagramme und ein Build-Skript 
 
 - Kostenfrei nutzbar, ausdrücklich auch für App-Entwicklung ([BLS-FAQ](https://blsdb.de/faq)); Quellenhinweis: Max Rubner-Institut (2025), BLS 4.0
 - Quelle: Excel-Hauptdatei `BLS_4_0_Daten_2025_DE.xlsx` in `data/bls/`, Werte pro 100 g essbaren Anteil; je Nährstoff drei Spalten (Gehalt, Herkunft, Referenz)
-- Skript übernimmt nur: Code, Name, Energie kcal, Fett, gesättigte Fettsäuren, Kohlenhydrate, Zucker, Ballaststoffe, Eiweiß, Salz, Wasser
+- Skript übernimmt nur: Code, Name, Energie kcal, Fett, gesättigte Fettsäuren, Kohlenhydrate, Zucker, Ballaststoffe, Eiweiß, Salz
 - Fehlende Werte bleiben leer (nicht 0)
 - Ergebnis-JSON liegt im Repo und im Offline-Cache
 
@@ -210,7 +201,7 @@ Alle Tabellen sind sync-fähig angelegt, und jeder Tagebucheintrag speichert sei
 ### Gemeinsame Regeln
 
 - Jeder Datensatz hat: `id` (UUID), `createdAt`, `updatedAt`, `deletedAt` (Löschmarker statt echtem Löschen)
-- **Nährwert-Objekt** `Nutrients`: kcal, fat, satFat, carbs, sugar, fiber, protein, salt, water; jeder Wert Zahl oder `null` (= unbekannt, nie 0)
+- **Nährwert-Objekt** `Nutrients`: kcal, fat, satFat, carbs, sugar, fiber, protein, salt; jeder Wert Zahl oder `null` (= unbekannt, nie 0)
 - Datum als lokales Kalenderdatum `YYYY-MM-DD` (Tag beginnt um Mitternacht)
 - Abgeleitete Werte (Summen, Tagesziele, Trend, Schätzung) werden berechnet, nicht gespeichert
 - BLS-Daten liegen statisch in der App und werden über ihren BLS-Code referenziert, nicht in die Datenbank kopiert
@@ -219,20 +210,20 @@ Alle Tabellen sind sync-fähig angelegt, und jeder Tagebucheintrag speichert sei
 
 | Tabelle | Wichtige Felder | Hinweis |
 | --- | --- | --- |
-| products | source (off / own / recipe), barcode?, name, brand?, unit (g / ml), per100: Nutrients, portions [{label, amount}], isDrink, countsAsWater, useOverride, archived, offFetchedAt? | OFF-Produkte werden hier lokal gespeichert |
+| products | source (off / own / recipe), barcode?, name, brand?, unit (g / ml), per100: Nutrients, portions [{label, amount}], useOverride, archived, offFetchedAt? | OFF-Produkte werden hier lokal gespeichert |
 | productOverrides | productRef (Produkt-ID oder BLS-Code), per100: Nutrients (nur geänderte Felder), verifiedAt?, note? | Korrekturschicht fürs Verifizieren; Original bleibt unverändert |
-| blsPrefs | blsCode, portions, isDrink?, countsAsWater? | Eigene Portionen und Wasser-Einstellung für BLS-Lebensmittel |
+| blsPrefs | blsCode, portions, useOverride | Eigene Portionen und Umschalter Meine/Original für BLS-Lebensmittel |
 | meals | name, items [{ref, amount, unit, portionLabel?}], archived | Mahlzeiten-Vorlagen |
 | recipes | name, ingredients [{ref, amount}], finalWeightG, portions, archived | Berechnung pro 100 g aus Zutaten ÷ Endgewicht |
 | slots | name, order, timeFrom?, timeTo?, archived | Frei festlegbare Mahlzeiten-Slots mit Uhrzeitfenster |
-| entries | date, slotId, kind (food / quick / water), ref?, nameSnapshot, amount, unit, portionLabel?, nutrients (Snapshot, absolut), waterMl, mealGroupId?, mealName? | Ein Eintrag pro Lebensmittel; Mahlzeiten über mealGroupId gruppiert |
+| entries | date, slotId, kind (food / quick), ref?, nameSnapshot, amount, unit, portionLabel?, nutrients (Snapshot, absolut), mealGroupId?, mealName? | Ein Eintrag pro Lebensmittel; Mahlzeiten über mealGroupId gruppiert |
 | days | date, complete | Nur Tage mit Markierung |
 | profiles | name, archived | Z. B. Aufbau, Diät |
-| profileVersions | profileId, weeklyKcal, protein / fat / carbs (Wert + Modus: g, %, g/kg, rest), fiberG?, waterMl?, manualWeightKg? | Ändern erzeugt eine neue Version, alte bleibt für die Historie |
+| profileVersions | profileId, weeklyKcal, protein / fat / carbs (Wert + Modus: g, %, g/kg, rest), fiberG?, manualWeightKg? | Ändern erzeugt eine neue Version, alte bleibt für die Historie |
 | profileAssignments | validFrom (Datum), profileVersionId, weekBudgetOverride? | Welche Version ab welchem Tag gilt; Override für anteiligen Wechsel „ab heute“ |
 | weights | date, kg, source (health / manual), measuredAt | Ein Wert pro Tag (erste Messung), nur bei aktiver Schätzung |
 | pendingScans | barcode, scannedAt, slotId?, date? | Offline gescannte Codes |
-| settings | key, value | Wasser an/aus, Schätzung an/aus, Schnellgrößen, Darstellung, letzte Sicherung, App-UUID für OFF |
+| settings | key, value | Schätzung an/aus, Darstellung, letzte Sicherung, App-UUID für OFF |
 
 ### Backup-Format
 
@@ -245,7 +236,7 @@ Alle Tabellen sind sync-fähig angelegt, und jeder Tagebucheintrag speichert sei
 
 Verbindliche Vorgabe ist `design/DESIGN.md` zusammen mit `design/tokens.json` und den Prototypen in `design/prototypes/`. Kurzfassung:
 
-- Stil „Mix 1“: Tagesleiste mit Datum und Kalender-Knopf, abgerundete Karten, großer Ring mit „kcal übrig“ und Makros daneben, aufklappbare Woche, Wasser-Kachel, einklappbare Slots, schwebende Pill-Navigation
+- Stil „Mix 1“: Tagesleiste mit Datum und Kalender-Knopf, abgerundete Karten, großer Ring mit „kcal übrig“ und Makros daneben, aufklappbare Woche, einklappbare Slots, schwebende Pill-Navigation
 - Schrift Geist, Akzent Blau #3D5AFE
 - Heller und dunkler Modus, Standard folgt der iPhone-Einstellung, manuell umschaltbar
 - Touch-Ziele mindestens 44 px, Bottom-Sheets statt Popups, Linien-Icons, keine Emojis, keine Gamification
@@ -314,16 +305,14 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 - [x] OFF-Aktualisierung überschreibt Korrekturen nicht (Test)
 - [x] Prüf-Dialog beim Scan und bei der Auswahl aus der Suche: ungeprüftes OFF-Produkt → einmalig Nährwerte vs. Etikett, „Stimmt so“ (geprüft) / Werte korrigieren (Korrekturschicht) / „Später prüfen“ (fragt beim nächsten Scan bzw. der nächsten Auswahl wieder), danach direkt zur Menge; eigene Produkte gelten automatisch als geprüft (Jan, 21.10.2026)
 
-### Phase 7 – Wasser
+### Phase 7 – Wasser (entfällt)
 
-- [ ] Schalter in Einstellungen, Tagesziel im Profil
-- [ ] Wasser-Kachel, Schnellgrößen + exakte Eingabe im Hinzufügen-Ablauf
-- [ ] Wassergehalt-Berechnung und Getränke-Regeln mit Tests
+Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert. Vorbereitete Felder und Oberflächen sind entfernt; die Nummern der folgenden Phasen bleiben.
 
 ### Phase 8 – Statistiken
 
 - [ ] Entscheidung Diagramm-Bibliothek vs. eigenes SVG
-- [ ] Kacheln, kcal pro Tag, Makros, Wasser; Zeitraumwahl; Tipp zeigt Wert
+- [ ] Kacheln, kcal pro Tag, Makros; Zeitraumwahl; Tipp zeigt Wert
 
 ### Phase 9 – Verbrauchsschätzung
 
@@ -355,7 +344,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 | Energiedichte Verbrauchsschätzung | Fest 7.700 kcal/kg |
 | Pflichtfelder eigener Produkte | Name + alle Werte der EU-Nährwerttabelle (LMIV Art. 30); gilt auch beim Prüfen (Jan, 17.10.2026) |
 | BLS-Kürzel „TR“, „<LOD“, „<LOQ“ | Als 0 übernehmen; nur „-“ (fehlender Wert) wird `null` |
-| Nährwert Alkohol | Entfällt: wird nicht getrackt, auch nicht aus BLS oder OFF übernommen (Backup-Format 2, Datenbank-Version 2). Ob ein Getränk alkoholisch ist (Phase 7, Wasser), kommt aus der OFF-Kategorie bzw. der BLS-Code-Gruppe (Jan, 21.10.2026) |
+| Nährwert Alkohol | Entfällt: wird nicht getrackt, auch nicht aus BLS oder OFF übernommen (Backup-Format 2, Datenbank-Version 2) (Jan, 21.10.2026) |
 | OFF-Produkte nur mit kJ | kcal = kJ ÷ 4,184 beim Laden; kJ wird nie angezeigt oder gespeichert (Jan, 21.10.2026) |
 | OFF-Treffer ohne kcal | Wird nicht gespeichert; „Eigenes Produkt anlegen“ mit vorbefülltem Formular (Name, Marke, Barcode, bekannte Werte). Das OFF-Original wird nie überschrieben (Jan, 21.10.2026) |
 | „Werte bearbeiten“ bei OFF-Produkten | Bis zur Korrekturschicht (Phase 6) ausgeblendet; Portionen bleiben änderbar (Jan, 21.10.2026) |
@@ -368,6 +357,7 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 | Umschalter Meine/Original bei BLS | Feld `useOverride` in `blsPrefs`, Backup-Format 3 und Datenbank-Version 3 (Bestand: `true`) (Jan, 21.10.2026) |
 | OFF-Update bei vorhandener Korrektur | Felder, die OFF ändert, werden mit dem alten Wert in der Korrektur festgehalten: „Meine Werte“ bleiben gleich, die Änderung erscheint als Abweichung. Ohne Korrektur übernimmt das Produkt das neue Original. Liefert OFF keine kcal mehr, bleibt alles (Jan, 21.10.2026) |
 | Prüfstatus | „Geprüft“ bezieht sich auf „Meine Werte“; „Original nutzen“ und „Werte bearbeiten“ behalten die Prüfung; „Prüfung entfernen“ lässt Korrekturen stehen; Korrektur ohne Felder und ohne Prüfung bekommt den Löschmarker (Jan, 21.10.2026) |
+| Wasser-Tracking | Entfällt ganz, Phase 7 gestrichen (Jan, 22.10.2026). Entfernt: Nährwert `water` (auch aus dem BLS), `isDrink`/„Ist ein Getränk“, `countsAsWater`, `entries.waterMl` und Art `water`, `profileVersions.waterMl`, Einstellung `waterEnabled` (bekommt den Löschmarker). Backup-Format 4 und Datenbank-Version 4; ältere Backups werden beim Import umgewandelt |
 | Spalten „Monatsauswertung Claude“ | Ebene Tage, JSON: Datum, Vollständig, kcal, Eiweiß, Kohlenhydrate, Fett, Ballaststoffe, Budget, Gewicht |
 
 Offen nur noch:
@@ -377,6 +367,12 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**22.10.2026 · Phase 7 (Wasser) gestrichen** – auf Jans Wunsch; alle Vorbereitungen fürs Wasser entfernt, 686 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 8 (Statistiken).
+
+- Datenmodell ohne Nährwert `water`, `isDrink`, `countsAsWater`, `waterMl`, Eintragsart `water`; Backup-Format 4 und Datenbank-Version 4 mit Migration und Tests; `public/bls.json` ohne Wasser-Spalte neu erzeugt.
+- Oberfläche: Ersteinrichtung Schritt 3 nur noch „Verbrauchsschätzung“; Produktformular ohne „Ist ein Getränk“ und „Weitere Nährwerte (Wasser)“; BLS- und Produktdetail ohne Getränk-Zeile; Wasser-Beispiele aus der Vorschauseite entfernt; Fortschrittsleiste ohne Wasser-Variante (Höhe 4, Farbe accent).
+- OFF-Abfrage ohne `categories_tags` (wurde nur für „Getränk“ gebraucht).
 
 **21.10.2026 · Phase 6 abgeschlossen** – alle Punkte erledigt (Teilschritte 6a–6d, je ein Commit), deployt und von Jan auf dem iPhone getestet. 683 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 7 (Wasser).
 
@@ -407,7 +403,6 @@ Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt i
 - Erledigt: Rechenlogik `dates.ts`, `goals.ts`, `profiles.ts`, `diary.ts`, `addFood.ts`, `quickEntry.ts`, `copyDay.ts`, `slots.ts`, `profileForm.ts`; Ersteinrichtung (4 Schritte, speichert am Ende in einer Transaktion), Slot-Editor, Tagesansicht, Hinzufügen-Sheet, Bearbeiten/Verschieben/Löschen, Schnelleintrag, Profile und Ziele, Tag kopieren / „Wie gestern“ / vollständig.
 - Mit Jan abgestimmt: Künftige Tage zeigen das heutige Ziel (vorgeplante Einträge zählen nicht), in künftigen Wochen Budget ÷ 7; dynamisches Ziel darf negativ werden („kcal drüber“); Rest negativ → 0 g + Hinweis; g/kg ohne Gewicht → unbekannt; Override „ab heute“ gilt nur in seiner Woche; Bearbeiten des aktiven Profils gilt ab heute (anteilig); erstes Profil mitten in der Woche bekommt den anteiligen Wochenrest, Tage davor zählen nicht (`countFrom`); festes Tagesziel immer aus dem Wochenbudget der Version.
 - Abweichungen vom Prototyp (mit Jan abgestimmt): Monatspfeile im Kalender, Kalenderfelder 44 px, Tageszeile zum Verschieben im Bearbeiten-Sheet, „Zurück“ beim Bearbeiten schließt, Schnelleintrag zeigt „–“ statt „0“, „Sichern“ in Profile und Ziele, Profilformular mit Name und Vorlagen-Umschalter, Schalter „Tag vollständig getrackt“ unter den Slots, Kopier-Sheet eigenes Design. Wasser-Kachel und Wasser-Ziel folgen in Phase 7, Scan/OFF in Phase 4, Mahlzeiten/Rezepte in Phase 5.
-- Einträge speichern bis Phase 7 `waterMl: 0`.
 
 **21.10.2026 · Phase 2 abgeschlossen** – alle Punkte erledigt, deployt, Backup-Test (anlegen → sichern → App löschen → neu installieren → importieren) von Jan auf dem iPhone bestanden. Nächster Schritt: Phase 3 (Tagebuch und Ziele).
 
