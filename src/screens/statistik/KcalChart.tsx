@@ -6,6 +6,9 @@ import { Card } from '../../components/ui/Card.tsx'
 import { formatNumber } from '../../logic/format.ts'
 import { nearestBar, type Stats } from '../../logic/stats.ts'
 
+// Breite des Streifens rechts für die Zielzahl („2.800“ in 11 px plus Abstand zur Linie)
+const GUTTER = 'w-9'
+
 const barTransition = 'height var(--kc-motion-bars-and-ring-duration) var(--kc-motion-bars-and-ring-easing)'
 
 export function KcalChart({ stats }: { stats: Stats }) {
@@ -75,62 +78,67 @@ export function KcalChart({ stats }: { stats: Stats }) {
         </p>
       ) : (
         <>
-          <div
-            ref={area}
-            className="relative mt-3 h-[150px] touch-pan-y select-none"
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerCancel}
-          >
-            {goalLine !== null && (
-              <>
+          <div className="mt-3 flex h-[150px]">
+            <div
+              ref={area}
+              className="relative min-w-0 flex-1 touch-pan-y select-none"
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerCancel}
+            >
+              {goalLine !== null && (
                 <div
                   aria-hidden="true"
                   className="border-muted absolute right-0 left-0 border-t-[1.5px] border-dashed opacity-50"
                   style={{ bottom: pct(goalLine) }}
                 />
+              )}
+              <div className={`absolute inset-0 flex items-end ${gap}`}>
+                {bars.map((b, i) => (
+                  <button
+                    key={b.date}
+                    type="button"
+                    aria-label={b.caption}
+                    aria-pressed={selected === i}
+                    onClick={(e) => onBarClick(e, i)}
+                    className="flex h-full min-w-0 flex-1 items-end"
+                  >
+                    <span
+                      className={`rounded-t-bar-top block w-full rounded-b-[2px] ${b.full ? 'bg-accent' : 'bg-neutral-bar'}`}
+                      style={{
+                        height: b.kcal?.value ? pct(b.kcal.value) : 0,
+                        opacity: selected === null || selected === i ? 1 : 0.45,
+                        transition: `${barTransition}, opacity 200ms ease`,
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Eigener Streifen für die Zielzahl, damit kein Balken sie überdeckt; mittig auf der Linie */}
+            <div aria-hidden="true" className={`relative shrink-0 ${GUTTER}`}>
+              {goalLine !== null && (
                 <span
-                  aria-hidden="true"
-                  className="text-tiny text-muted bg-card absolute right-0 -translate-y-0.5 pl-1"
+                  className="text-tiny text-muted absolute right-0 translate-y-1/2"
                   style={{ bottom: pct(goalLine) }}
                 >
                   {formatNumber(goalLine)}
                 </span>
-              </>
-            )}
-            <div className={`absolute inset-0 flex items-end ${gap}`}>
-              {bars.map((b, i) => (
-                <button
-                  key={b.date}
-                  type="button"
-                  aria-label={b.caption}
-                  aria-pressed={selected === i}
-                  onClick={(e) => onBarClick(e, i)}
-                  className="flex h-full min-w-0 flex-1 items-end"
-                >
-                  <span
-                    className={`rounded-t-bar-top block w-full rounded-b-[2px] ${b.full ? 'bg-accent' : 'bg-neutral-bar'}`}
-                    style={{
-                      height: b.kcal?.value ? pct(b.kcal.value) : 0,
-                      opacity: selected === null || selected === i ? 1 : 0.45,
-                      transition: `${barTransition}, opacity 200ms ease`,
-                    }}
-                  />
-                </button>
-              ))}
+              )}
             </div>
           </div>
 
-          <div className={`mt-1.5 flex ${gap}`} aria-hidden="true">
-            {bars.map((b) => (
-              <span
-                key={b.date}
-                className={`text-tiny text-muted min-w-0 flex-1 whitespace-nowrap ${range === 'month' ? 'text-left' : 'text-center'}`}
-              >
-                {b.label}
-              </span>
-            ))}
+          {/* Beschriftung mittig unter ihrem Balken; breitere Texte stehen gleichmäßig zu beiden Seiten über */}
+          <div className="mt-1.5 flex" aria-hidden="true">
+            <div className={`flex min-w-0 flex-1 ${gap}`}>
+              {bars.map((b) => (
+                <span key={b.date} className="text-tiny text-muted flex min-w-0 flex-1 justify-center whitespace-nowrap">
+                  {b.label}
+                </span>
+              ))}
+            </div>
+            <div className={`shrink-0 ${GUTTER}`} />
           </div>
 
           <div className="text-small text-muted mt-2.5 flex flex-wrap gap-x-3.5 gap-y-1">
