@@ -309,6 +309,8 @@ Zwölf Phasen in der Reihenfolge Fundament → Daten → Sicherung → Kernnutze
 
 Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert. Vorbereitete Felder und Oberflächen sind entfernt; die Nummern der folgenden Phasen bleiben.
 
+- [x] Wasser-Vorbereitungen entfernt, Migration Datenbank-Version 4 und Backup-Format 4, deployt und von Jan auf dem iPhone getestet (22.10.2026)
+
 ### Phase 8 – Statistiken
 
 - [ ] Entscheidung Diagramm-Bibliothek vs. eigenes SVG
@@ -368,11 +370,12 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**22.10.2026 · Phase 7 (Wasser) gestrichen** – auf Jans Wunsch; alle Vorbereitungen fürs Wasser entfernt, 686 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 8 (Statistiken).
+**22.10.2026 · Phase 7 (Wasser) gestrichen und abgeschlossen** – auf Jans Wunsch; alle Vorbereitungen fürs Wasser entfernt, deployt und von Jan auf dem iPhone getestet (Daten nach dem Umbau vollständig, Backup-Import aus der alten Version klappt). 686 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 8 (Statistiken).
 
 - Datenmodell ohne Nährwert `water`, `isDrink`, `countsAsWater`, `waterMl`, Eintragsart `water`; Backup-Format 4 und Datenbank-Version 4 mit Migration und Tests; `public/bls.json` ohne Wasser-Spalte neu erzeugt.
 - Oberfläche: Ersteinrichtung Schritt 3 nur noch „Verbrauchsschätzung“; Produktformular ohne „Ist ein Getränk“ und „Weitere Nährwerte (Wasser)“; BLS- und Produktdetail ohne Getränk-Zeile; Wasser-Beispiele aus der Vorschauseite entfernt; Fortschrittsleiste ohne Wasser-Variante (Höhe 4, Farbe accent).
 - OFF-Abfrage ohne `categories_tags` (wurde nur für „Getränk“ gebraucht).
+- Nach Jans Test: „Als geprüft markieren“ / „Prüfung entfernen“ im Produkt- und BLS-Detail stehen jetzt mittig (globales `text-align: left` für Knöpfe).
 
 **21.10.2026 · Phase 6 abgeschlossen** – alle Punkte erledigt (Teilschritte 6a–6d, je ein Commit), deployt und von Jan auf dem iPhone getestet. 683 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 7 (Wasser).
 

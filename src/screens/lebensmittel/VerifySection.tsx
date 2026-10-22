@@ -113,7 +113,7 @@ export function VerifySection({ foodRef, original, override, useOverride, unit, 
             type="button"
             disabled={busy}
             onClick={() => void run(() => setVerified(foodRef, original, false), 'Prüfung entfernt')}
-            className="press bg-card rounded-field text-label min-h-12 font-semibold"
+            className="press bg-card rounded-field text-label flex min-h-12 items-center justify-center text-center font-semibold"
           >
             Prüfung entfernen
           </button>
@@ -122,7 +122,7 @@ export function VerifySection({ foodRef, original, override, useOverride, unit, 
             type="button"
             disabled={busy || !canVerify(mine)}
             onClick={() => void run(() => setVerified(foodRef, original, true), 'Als geprüft markiert')}
-            className="press bg-accent text-on-accent rounded-field text-label min-h-12 font-semibold disabled:opacity-40"
+            className="press bg-accent text-on-accent rounded-field text-label flex min-h-12 items-center justify-center text-center font-semibold disabled:opacity-40"
           >
             Als geprüft markieren
           </button>
