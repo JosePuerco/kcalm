@@ -313,7 +313,7 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 
 ### Phase 8 – Statistiken
 
-- [ ] Entscheidung Diagramm-Bibliothek vs. eigenes SVG
+- [x] Entscheidung Diagramm-Bibliothek vs. eigenes SVG → eigenes SVG/HTML (Jan, 22.10.2026)
 - [ ] Kacheln, kcal pro Tag, Makros; Zeitraumwahl; Tipp zeigt Wert
 
 ### Phase 9 – Verbrauchsschätzung
@@ -360,6 +360,11 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 | OFF-Update bei vorhandener Korrektur | Felder, die OFF ändert, werden mit dem alten Wert in der Korrektur festgehalten: „Meine Werte“ bleiben gleich, die Änderung erscheint als Abweichung. Ohne Korrektur übernimmt das Produkt das neue Original. Liefert OFF keine kcal mehr, bleibt alles (Jan, 21.10.2026) |
 | Prüfstatus | „Geprüft“ bezieht sich auf „Meine Werte“; „Original nutzen“ und „Werte bearbeiten“ behalten die Prüfung; „Prüfung entfernen“ lässt Korrekturen stehen; Korrektur ohne Felder und ohne Prüfung bekommt den Löschmarker (Jan, 21.10.2026) |
 | Wasser-Tracking | Entfällt ganz, Phase 7 gestrichen (Jan, 22.10.2026). Entfernt: Nährwert `water` (auch aus dem BLS), `isDrink`/„Ist ein Getränk“, `countsAsWater`, `entries.waterMl` und Art `water`, `profileVersions.waterMl`, Einstellung `waterEnabled` (bekommt den Löschmarker). Backup-Format 4 und Datenbank-Version 4; ältere Backups werden beim Import umgewandelt |
+| Diagramme | Eigenes SVG/HTML, keine Bibliothek: kleiner, Motion über Tokens inkl. `prefers-reduced-motion`, echte Tipp-Ziele und VoiceOver statt Canvas. Ganze Diagrammfläche antippbar (nächster Balken), Wischen wandert (Jan, 22.10.2026) |
+| Statistik: welche Tage zählen | Ø kcal/Tag, Bilanz und Makro-Ø nur über vollständige Tage; unvollständige Tage im Diagramm grau, Tage ohne Einträge ohne Balken und nirgends mitgezählt (auch nicht bei „Vollständig x/y“) (Jan, 22.10.2026) |
+| Statistik: Zeiträume | Immer ganze Wochen Mo–So: Woche = laufende Woche (künftige Tage leer), 4 Wochen bzw. 3 Monate = 4 bzw. 13 Wochen bis einschließlich der laufenden (Jan, 22.10.2026) |
+| Statistik: Ziel bei Profilwechsel | Bilanz rechnet jeden Tag gegen sein damals gültiges Tagesziel; die gestrichelte Linie zeigt das aktuelle Ziel (Jan, 22.10.2026) |
+| Statistik: vollständige Woche (3 Monate) | Balken = Ø der vollständigen Tage der Woche; blau ab 5 von 7 vollständigen Tagen, grau bei 1–4, kein Balken bei 0. Laufende Woche blau, solange alle bisherigen Tage mit Einträgen vollständig sind. Kachel „Vollständig“ zählt Tage (Jan, 22.10.2026) |
 | Spalten „Monatsauswertung Claude“ | Ebene Tage, JSON: Datum, Vollständig, kcal, Eiweiß, Kohlenhydrate, Fett, Ballaststoffe, Budget, Gewicht |
 
 Offen nur noch:
