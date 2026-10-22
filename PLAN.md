@@ -375,11 +375,12 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**22.10.2026 · Phase 8 (Statistik) umgesetzt, iPhone-Test durch Jan steht aus** – 8a Rechenlogik (`src/logic/stats.ts`, `isoWeek` in `dates.ts`, `loadStats` in `src/db/stats.ts`), 8b Screen (`src/screens/Statistik.tsx`, `src/screens/statistik/`). 736 Tests grün, Build und Lint sauber. Im Browser bei 390 px geprüft (Hell/Dunkel, alle drei Zeiträume, Tippen, Wischen).
+**22.10.2026 · Phase 8 (Statistik) abgeschlossen** – deployt und von Jan auf dem iPhone getestet. Nächster Schritt: Phase 9 (Verbrauchsschätzung). 8a Rechenlogik (`src/logic/stats.ts`, `isoWeek` in `dates.ts`, `loadStats` in `src/db/stats.ts`), 8b Screen (`src/screens/Statistik.tsx`, `src/screens/statistik/`). 736 Tests grün, Build und Lint sauber. Im Browser bei 390 px geprüft (Hell/Dunkel, alle drei Zeiträume, Tippen, Wischen).
 
 - Abweichungen vom Prototyp: keine Wasser-Karte (Phase 7 gestrichen), Gewichts-Karte erst in Phase 9; bei 3 Monaten nur jede zweite KW beschriftet; Achse/Ziel 11 statt 10 px, Kachelwert `unit` 20 px/600, Radien `card` 18, Ziellinie `muted` mit halber Deckkraft; leerer Zeitraum zeigt „Keine Einträge in diesem Zeitraum“.
 - Laufende Woche (3 Monate): heute zählt erst, wenn markiert.
 - Zeitraum bleibt beim Tab-Wechsel erhalten, nach Neustart „Woche“.
+- Nach Jans iPhone-Test (`0254ed5`): Achsenbeschriftung in allen Zeiträumen mittig unter ihrem Balken; Zielzahl „2.800“ in eigenem Streifen rechts neben den Balken, damit kein Balken sie überdeckt.
 
 **22.10.2026 · Phase 7 (Wasser) gestrichen und abgeschlossen** – auf Jans Wunsch; alle Vorbereitungen fürs Wasser entfernt, deployt und von Jan auf dem iPhone getestet (Daten nach dem Umbau vollständig, Backup-Import aus der alten Version klappt). 686 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 8 (Statistiken).
 
