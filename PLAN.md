@@ -319,7 +319,8 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 ### Phase 9 – Verbrauchsschätzung
 
 - [ ] Schalter in Einstellungen, Gewichte einfügen (Zwischenablage) und manuell
-- [ ] Trendgewicht, Schätzung und Spanne als reine Funktionen mit Tests (Grenzfälle: Lücken, wenig Tage, unvollständige Tage, mehrere Messungen pro Tag)
+- [x] Trendgewicht, Schätzung und Spanne als reine Funktionen mit Tests (Grenzfälle: Lücken, wenig Tage, unvollständige Tage, mehrere Messungen pro Tag)
+- [x] Format der Zwischenablage, Parser mit Zod, Anleitung `docs/kurzbefehl-gewichte.md`
 - [ ] Screen mit Ergebnis / „Sammelt Daten“, Abstand zum Budget, Gewichtstrend in der Statistik
 - [ ] g/kg-Makros nutzen das Trendgewicht
 
@@ -366,6 +367,12 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 | Statistik: Ziel bei Profilwechsel | Bilanz rechnet jeden Tag gegen sein damals gültiges Tagesziel; die gestrichelte Linie zeigt das aktuelle Ziel (Jan, 22.10.2026) |
 | Statistik: vollständige Woche (3 Monate) | Balken = Ø der vollständigen Tage der Woche; blau ab 5 von 7 vollständigen Tagen, grau bei 1–4, kein Balken bei 0. Laufende Woche blau, solange alle bisherigen Tage mit Einträgen vollständig sind. Kachel „Vollständig“ zählt Tage (Jan, 22.10.2026) |
 | Spalten „Monatsauswertung Claude“ | Ebene Tage, JSON: Datum, Vollständig, kcal, Eiweiß, Kohlenhydrate, Fett, Ballaststoffe, Budget, Gewicht |
+| Gewichtstrend | Glättungsfaktor 0,1; Lücken zwischen Wiegungen linear aufgefüllt; nach der letzten Wiegung bleibt der Trend stehen (Jan, 22.10.2026) |
+| Verbrauchsschätzung: Zeitraum und Bedingungen | Letzte 28 Tage inkl. heute; Ergebnis ab 14 vollständigen Tagen, 7 Wiegetagen und einem Trend über mind. 14 Tage. Trendänderung von der ersten bis zur letzten Wiegung im Zeitraum ÷ Tage dazwischen (Jan, 22.10.2026) |
+| Spanne | 1,96 × Standardfehler der Steigung einer Ausgleichsgeraden durch die Wiegungen × 7.700 (≈ 95 %); bei ±0,4 kg Streuung nach 14 Tagen ca. ±290, nach 21 Tagen ca. ±160 kcal (Jan, 22.10.2026) |
+| Sammelt Daten: Legende | „vollständig“ statt „vollständig + gewogen“; ein Tag zählt ohne Wiegung (Jan, 22.10.2026) |
+| g/kg-Makros vergangener Tage | Trendgewicht an diesem Tag; ändert sich, wenn später ältere Gewichte nachgetragen werden (berechneter Wert) (Jan, 22.10.2026) |
+| Format Kurzbefehl | Kopfzeile `kcalm-gewichte 1`, je Zeile `Zeitpunkt ISO 8601;Gewicht;Einheit` (Komma oder Punkt, kg oder lb). Tag = Kalendertag laut Zeitzone im Text. Streng: eine kaputte Zeile → nichts übernommen, Fehler nennt die Zeile. 20–300 kg. Zusammenführen: früheste Messung pro Tag gewinnt, auch gegen gespeicherte; gelöschter Tag kommt mit derselben Messung nicht zurück |
 
 Offen nur noch:
 
