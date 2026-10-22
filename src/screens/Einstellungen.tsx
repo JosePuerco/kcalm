@@ -3,6 +3,8 @@ import { href, useSubPath } from '../app/router.ts'
 import { IconChevronRight } from '../components/icons/icons.tsx'
 import { Card } from '../components/ui/Card.tsx'
 import { Screen } from '../components/ui/Screen.tsx'
+import { ToggleRow } from '../components/ui/ToggleRow.tsx'
+import { getEstimateEnabled, setEstimateEnabled } from '../db/weights.ts'
 import { useLiveQuery } from '../db/live.ts'
 import { getSlots } from '../db/slots.ts'
 import { formatNumber } from '../logic/format.ts'
@@ -29,6 +31,7 @@ function Overview() {
   const slots = useLiveQuery(getSlots, [])
   const today = useToday()
   const profiles = useLiveQuery(loadProfiles, [])
+  const estimate = useLiveQuery(getEstimateEnabled, [])
   const activeId = profiles && profileStatus(profiles.assignments, profiles.versions, today).activeProfileId
   const activeName = profiles?.profiles.find((p) => p.id === activeId)?.name ?? ''
   const slotsMeta = slots
@@ -41,6 +44,18 @@ function Overview() {
         <Card padded={false}>
           <LinkRow to={href('einstellungen', 'profile')} label="Profile und Ziele" meta={activeName} />
           <LinkRow to={href('einstellungen', 'slots')} label="Mahlzeiten-Slots" meta={slotsMeta} border />
+        </Card>
+      </Group>
+      <Group title="Funktionen">
+        <Card padded={false}>
+          <ToggleRow
+            label="Verbrauchsschätzung"
+            sub="Gewicht per Kurzbefehl aus Apple Health"
+            checked={estimate === true}
+            onChange={(on) => {
+              setEstimateEnabled(on).catch((error: unknown) => console.error('Einstellung nicht gespeichert', error))
+            }}
+          />
         </Card>
       </Group>
       <Group title="Daten">

@@ -5,7 +5,7 @@ import { useState, type ReactNode } from 'react'
 import { IconBack } from '../../components/icons/icons.tsx'
 import { Button } from '../../components/ui/Button.tsx'
 import { Card } from '../../components/ui/Card.tsx'
-import { Switch } from '../../components/ui/Switch.tsx'
+import { ToggleRow } from '../../components/ui/ToggleRow.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { completeSetup } from '../../db/setup.ts'
 import { emptyProfileForm, profileFieldId, validateProfileForm, type ProfileErrors } from '../../logic/profileForm.ts'
@@ -148,19 +148,5 @@ export function Setup() {
       </div>
       {backupImport.element}
     </>
-  )
-}
-
-type ToggleProps = { label: string; sub: string; checked: boolean; onChange: (v: boolean) => void }
-
-function ToggleRow({ label, sub, checked, onChange }: ToggleProps) {
-  return (
-    <div className="flex min-h-[60px] items-center gap-2.5 px-4 py-2">
-      <span className="flex flex-1 flex-col gap-0.5">
-        <span className="text-body">{label}</span>
-        <span className="text-small text-muted">{sub}</span>
-      </span>
-      <Switch checked={checked} onChange={onChange} label={label} />
-    </div>
   )
 }
