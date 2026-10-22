@@ -229,10 +229,12 @@ export function dayBars(days: readonly StatsDay[], today: LocalDate): StatsBar[]
 /**
  * Ein Balken je Woche (3 Monate): Ø der vollständigen Tage. Blau ab 5 von 7 vollständigen Tagen;
  * die laufende Woche ist blau, solange alle bisherigen Tage mit Einträgen vollständig sind
- * (heute zählt erst, wenn er markiert ist).
+ * (heute zählt erst, wenn er markiert ist). Beschriftet ist jede zweite Woche, von der laufenden rückwärts,
+ * weil 13 × „KW30“ in 11 px nicht nebeneinander passt.
  */
 export function weekBars(days: readonly StatsDay[], today: LocalDate): StatsBar[] {
   const bars: StatsBar[] = []
+  const count = Math.ceil(days.length / 7)
   for (let i = 0; i < days.length; i += 7) {
     const week = days.slice(i, i + 7)
     const monday = (week[0] as StatsDay).date
@@ -245,7 +247,7 @@ export function weekBars(days: readonly StatsDay[], today: LocalDate): StatsBar[
     const name = `KW ${isoWeek(monday)}`
     bars.push({
       date: monday,
-      label: `KW${isoWeek(monday)}`,
+      label: (count - 1 - i / 7) % 2 === 0 ? `KW${isoWeek(monday)}` : '',
       kcal,
       full,
       completeDays: complete.length,

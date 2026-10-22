@@ -311,7 +311,7 @@ describe('weekBars', () => {
   it('5 von 7 vollständig → blau, Ø nur der vollständigen Tage', () => {
     const e = prevWeek.map((d, i) => entry(d, 2000 + i * 100))
     const b = bars(e, prevWeek.slice(0, 5))
-    expect(b[0]).toMatchObject({ full: true, completeDays: 5, label: 'KW42', kcal: { value: 2200, atLeast: false } })
+    expect(b[0]).toMatchObject({ full: true, completeDays: 5, label: '', kcal: { value: 2200, atLeast: false } })
     expect(b[0]!.caption).toBe('KW 42: Ø 2.200 kcal · 5 von 7 Tagen vollständig')
   })
 
@@ -351,7 +351,14 @@ describe('weekBars', () => {
   it('KW über den Jahreswechsel', () => {
     const d = statsDates('2027-01-06', 'quarter')
     const b = weekBars(statsDays({ ...base, today: '2027-01-06', dates: d, entries: [], completeDates: new Set() }), '2027-01-06')
-    expect(b.slice(-3).map((x) => x.label)).toEqual(['KW52', 'KW53', 'KW1'])
+    expect(b.slice(-3).map((x) => x.caption.split(':')[0])).toEqual(['KW 52', 'KW 53', 'KW 1'])
+  })
+
+  it('3 Monate: jede zweite Woche beschriftet, die laufende immer', () => {
+    const b = weekBars(days([], [], statsDates(today, 'quarter')), today)
+    expect(b.map((x) => x.label)).toEqual([
+      'KW31', '', 'KW33', '', 'KW35', '', 'KW37', '', 'KW39', '', 'KW41', '', 'KW43',
+    ])
   })
 })
 
