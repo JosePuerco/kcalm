@@ -318,7 +318,7 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 
 ### Phase 9 – Verbrauchsschätzung
 
-- [ ] Schalter in Einstellungen, Gewichte einfügen (Zwischenablage) und manuell
+- [x] Schalter in Einstellungen, Gewichte einfügen (Zwischenablage) und manuell
 - [x] Trendgewicht, Schätzung und Spanne als reine Funktionen mit Tests (Grenzfälle: Lücken, wenig Tage, unvollständige Tage, mehrere Messungen pro Tag)
 - [x] Format der Zwischenablage, Parser mit Zod, Anleitung `docs/kurzbefehl-gewichte.md`
 - [ ] Screen mit Ergebnis / „Sammelt Daten“, Abstand zum Budget, Gewichtstrend in der Statistik
@@ -381,6 +381,14 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**22.10.2026 · Phase 9 (Verbrauchsschätzung) läuft** – 9a–9d erledigt, nicht gepusht. 834 Tests grün, Build und Lint sauber. Nächster Schritt: 9e (Gewichtskarte in der Statistik, g/kg-Makros mit Trendgewicht).
+
+- 9a `src/logic/estimate.ts` (Trend, Schätzung, Spanne), 9b `src/logic/weightImport.ts` + `docs/kurzbefehl-gewichte.md`, 9c `src/db/weights.ts` + Schalter „Funktionen“ in den Einstellungen (`ToggleRow` jetzt in `components/ui`), 9d `src/logic/estimateView.ts`, `src/db/estimate.ts`, Screen `src/screens/einstellungen/EstimateScreen.tsx` mit Sheets in `schaetzung/` (Einfügen-Ersatz, Manuell mit „Letzte Gewichte“, Anleitung).
+- Mit Jan abgestimmt: Raster „Sammelt Daten“ ab dem ersten Tag mit Einträgen, danach helle Felder für fehlende Tage (heute unmarkiert zählt noch nicht als grau); „Letzte Gewichte“ (14 Tage) im Manuell-Sheet, Tipp = bearbeiten, Wischen = löschen.
+- Eigene Entscheidungen im Screen: Spanne auf 10 kcal gerundet; Leiste mit 400 kcal Luft, Enden auf volle 100; manuelles Gewicht gilt als Messung um Mitternacht (Import überschreibt es nicht) und ersetzt den Wert des Tages; Zwischenablage nicht lesbar oder Text falsch → Sheet mit Textfeld und Fehlermeldung.
+- Abweichungen vom Prototyp: ohne Demo-Umschalter oben; „Letztes Gewicht“ statt „Letzter Import“ (zeigt auch manuelle Werte); Rasterfelder Radius 4 (`barTop`) statt 6, Legende ebenso; Hero-Karte Radius 22 (`calendar`); Hinweis aufs Gewicht unter dem Raster, solange Wiegungen fehlen.
+- Geprüft im Browser (Chrome, eigene Test-Datenbank): beide Zustände, Manuell-Sheet, Einfügen-Ersatz mit Fehler und Erfolg, Anleitung. Bildschirmfotos klappten nicht (Chrome-Erweiterung hing), Hell/Dunkel daher nicht optisch geprüft.
 
 **22.10.2026 · Phase 8 (Statistik) abgeschlossen** – deployt und von Jan auf dem iPhone getestet. Nächster Schritt: Phase 9 (Verbrauchsschätzung). 8a Rechenlogik (`src/logic/stats.ts`, `isoWeek` in `dates.ts`, `loadStats` in `src/db/stats.ts`), 8b Screen (`src/screens/Statistik.tsx`, `src/screens/statistik/`). 736 Tests grün, Build und Lint sauber. Im Browser bei 390 px geprüft (Hell/Dunkel, alle drei Zeiträume, Tippen, Wischen).
 

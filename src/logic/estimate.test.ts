@@ -193,6 +193,7 @@ describe('estimate', () => {
         weighings: 0,
         daysMissing: 14,
         weightsMissing: true,
+        trendDays: 0,
       })
     })
 
@@ -240,6 +241,7 @@ describe('estimate', () => {
         status: 'collecting',
         weighings: 13,
         weightsMissing: true,
+        trendDays: 13,
       })
     })
 

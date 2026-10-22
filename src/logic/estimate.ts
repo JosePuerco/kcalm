@@ -136,6 +136,8 @@ export interface EstimateCollecting extends EstimateBasis {
   daysMissing: number
   /** Gewicht reicht noch nicht (zu wenige Wiegungen oder zu kurzer Trend) */
   weightsMissing: boolean
+  /** Tage von der ersten bis zur letzten Wiegung im Zeitraum, beide mitgezählt; 0 = keine */
+  trendDays: number
 }
 
 export interface EstimateReady extends EstimateBasis {
@@ -188,6 +190,7 @@ export function estimate(input: EstimateInput): Estimate {
       ...basis,
       daysMissing: Math.max(0, MIN_COMPLETE_DAYS - complete.length),
       weightsMissing,
+      trendDays,
     }
   }
 

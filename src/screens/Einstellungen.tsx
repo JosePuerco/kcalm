@@ -9,6 +9,7 @@ import { useLiveQuery } from '../db/live.ts'
 import { getSlots } from '../db/slots.ts'
 import { formatNumber } from '../logic/format.ts'
 import { BackupCard } from './BackupCard.tsx'
+import { EstimateScreen } from './einstellungen/EstimateScreen.tsx'
 import { ProfilesScreen } from './einstellungen/ProfilesScreen.tsx'
 import { SlotsScreen } from './einstellungen/SlotsScreen.tsx'
 import { useToday } from '../app/diaryState.ts'
@@ -19,10 +20,12 @@ import { profileStatus } from '../logic/profiles.ts'
 //  #/einstellungen          Übersicht
 //  #/einstellungen/profile  Profile und Ziele
 //  #/einstellungen/slots    Mahlzeiten-Slots
+//  #/einstellungen/schaetzung  Verbrauchsschätzung
 export function Einstellungen() {
   const [view] = useSubPath()
   if (view === 'slots') return <SlotsScreen />
   if (view === 'profile') return <ProfilesScreen />
+  if (view === 'schaetzung') return <EstimateScreen />
   return <Overview />
 }
 
@@ -55,7 +58,16 @@ function Overview() {
             onChange={(on) => {
               setEstimateEnabled(on).catch((error: unknown) => console.error('Einstellung nicht gespeichert', error))
             }}
-          />
+          >
+            {estimate && (
+              <a
+                href={href('einstellungen', 'schaetzung')}
+                className="text-secondary text-accent-text min-h-touch-min flex items-center px-1"
+              >
+                Details
+              </a>
+            )}
+          </ToggleRow>
         </Card>
       </Group>
       <Group title="Daten">
