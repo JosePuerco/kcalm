@@ -3,6 +3,7 @@ import {
   addDays,
   daysBetween,
   daysLeftInWeek,
+  isoWeek,
   nextMonday,
   toLocalDate,
   weekDates,
@@ -92,5 +93,21 @@ describe('Wochen ab Montag', () => {
     expect(daysBetween('2026-10-19', '2026-10-22')).toBe(3)
     expect(daysBetween('2026-10-22', '2026-10-19')).toBe(-3)
     expect(daysBetween('2026-10-24', '2026-10-26')).toBe(2) // über die Zeitumstellung
+  })
+})
+
+describe('isoWeek', () => {
+  it('mitten im Jahr', () => {
+    expect(isoWeek('2026-10-22')).toBe(43)
+    expect(isoWeek('2026-10-19')).toBe(43)
+    expect(isoWeek('2026-10-25')).toBe(43)
+  })
+
+  it('Jahreswechsel: Tage Ende Dezember können zu KW 1 gehören, Anfang Januar zur letzten KW', () => {
+    expect(isoWeek('2026-12-31')).toBe(53)
+    expect(isoWeek('2027-01-03')).toBe(53)
+    expect(isoWeek('2027-01-04')).toBe(1)
+    expect(isoWeek('2025-12-29')).toBe(1)
+    expect(isoWeek('2026-01-01')).toBe(1)
   })
 })

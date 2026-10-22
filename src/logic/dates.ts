@@ -61,3 +61,14 @@ export function nextMonday(date: LocalDate): LocalDate {
 export function daysLeftInWeek(date: LocalDate): number {
   return 7 - weekdayIndex(date)
 }
+
+/**
+ * Kalenderwoche nach ISO 8601: KW 1 ist die Woche mit dem ersten Donnerstag des Jahres.
+ * 2026-12-31 (Do) → 53, 2027-01-01 (Fr) → 53, 2027-01-04 (Mo) → 1
+ */
+export function isoWeek(date: LocalDate): number {
+  // Der Donnerstag derselben Woche bestimmt das Jahr der KW
+  const thursday = addDays(weekStart(date), 3)
+  const jan1 = `${thursday.slice(0, 4)}-01-01`
+  return Math.floor(daysBetween(jan1, thursday) / 7) + 1
+}
