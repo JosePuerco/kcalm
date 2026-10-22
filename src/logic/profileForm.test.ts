@@ -40,6 +40,11 @@ describe('profilePreview', () => {
     expect(p.grams.fat).toBeCloseTo(77.78, 2)
   })
 
+  it('Trendgewicht geht dem Feld vor', () => {
+    expect(profilePreview(aufbau, 80).grams.protein).toBeCloseTo(144, 10)
+    expect(profilePreview({ ...aufbau, weightKg: '' }, 80).grams.protein).toBeCloseTo(144, 10)
+  })
+
   it('unfertiger Makro-Wert: dieses und Rest unbekannt', () => {
     const p = profilePreview({ ...aufbau, macros: { ...aufbau.macros, fat: { mode: 'percent', value: '' } } })
     expect(p.grams.fat).toBeNull()
@@ -176,6 +181,11 @@ describe('validateProfileForm', () => {
     expect(!r.ok && r.errors.weightKg).toMatch(/Körpergewicht/)
     const grams = { ...aufbau, weightKg: '', macros: presetMacros('grams') }
     expect(validateProfileForm(grams)).toMatchObject({ ok: true, data: { manualWeightKg: null } })
+  })
+
+  it('mit Trendgewicht ist das Körpergewicht für g/kg nicht nötig; ein eingetragenes bleibt gespeichert', () => {
+    expect(validateProfileForm({ ...aufbau, weightKg: '' }, 74.6)).toMatchObject({ ok: true, data: { manualWeightKg: null } })
+    expect(validateProfileForm(aufbau, 74.6)).toMatchObject({ ok: true, data: { manualWeightKg: 74 } })
   })
 
   it('Grenzen je Modus', () => {

@@ -1,15 +1,20 @@
-// Statistik (Statistik.dc.html): Zeitraum, Kacheln, kcal pro Tag, Makros.
-// Gewicht folgt in Phase 9 mit der Verbrauchsschätzung.
+// Statistik (Statistik.dc.html): Zeitraum, Kacheln, kcal pro Tag, Makros,
+// Gewicht (nur bei aktiver Verbrauchsschätzung).
 import { useState } from 'react'
 import { Screen } from '../components/ui/Screen.tsx'
 import { Segmented } from '../components/ui/Segmented.tsx'
 import { useToday } from '../app/diaryState.ts'
 import { useLiveQuery } from '../db/live.ts'
+import { loadEstimate } from '../db/estimate.ts'
 import { loadStats } from '../db/stats.ts'
-import type { StatsRange } from '../logic/stats.ts'
+import { getEstimateEnabled } from '../db/weights.ts'
+import { estimateLinkText } from '../logic/estimateView.ts'
+import { statsDates, type StatsRange } from '../logic/stats.ts'
+import { weightChart } from '../logic/weightChart.ts'
 import { KcalChart } from './statistik/KcalChart.tsx'
 import { MacroCard } from './statistik/MacroCard.tsx'
 import { StatTiles } from './statistik/StatTiles.tsx'
+import { WeightCard } from './statistik/WeightCard.tsx'
 
 const RANGES = [
   { value: 'week', label: 'Woche' },
@@ -24,6 +29,8 @@ export function Statistik() {
   const today = useToday()
   const [range, setRange] = useState<StatsRange>(lastRange)
   const stats = useLiveQuery(() => loadStats(today, range), [today, range])
+  const estimateOn = useLiveQuery(getEstimateEnabled, [])
+  const estimate = useLiveQuery(() => loadEstimate(today), [today])
 
   const pick = (next: StatsRange) => {
     lastRange = next
@@ -44,6 +51,12 @@ export function Statistik() {
           <StatTiles tiles={stats.tiles} goal={stats.goalLine} />
           <KcalChart stats={stats} />
           <MacroCard macros={stats.macros} />
+          {estimateOn && estimate && (
+            <WeightCard
+              chart={weightChart(statsDates(today, range), today, estimate.weights, range)}
+              estimateText={estimateLinkText(estimate.estimate)}
+            />
+          )}
         </>
       )}
     </Screen>

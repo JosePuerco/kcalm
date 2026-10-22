@@ -169,6 +169,8 @@ export interface DayGoalInput {
   version: Pick<ProfileVersion, 'weeklyKcal' | 'protein' | 'fat' | 'carbs' | 'fiberG' | 'manualWeightKg'>
   weekBudget: number
   countFrom: LocalDate | null
+  /** Trendgewicht an dem Tag für g/kg; null/fehlt = das manuelle Gewicht aus dem Profil */
+  trendKg?: number | null
 }
 
 // Reihenfolge wie in Kern.dc.html / Leer.dc.html
@@ -181,7 +183,7 @@ const OVERVIEW_MACROS: readonly { key: OverviewMacroKey; label: string }[] = [
 
 /**
  * Übersichtskarte eines Tages. dayEntries = Einträge des Tages, weekKcal = kcal je Tag der Woche.
- * Gewicht für g/kg ist bis Phase 9 das manuelle Gewicht im Profil.
+ * Gewicht für g/kg: Trendgewicht an dem Tag, sonst das manuelle Gewicht im Profil.
  */
 export function dayOverview(
   date: LocalDate,
@@ -201,7 +203,7 @@ export function dayOverview(
     const options = { countFrom: goal.countFrom, weeklyKcal: goal.version.weeklyKcal }
     target = dynamicTargetFor(date, today, weekKcal, goal.weekBudget, options)
     week = weekStatus(date, today, weekKcal, goal.weekBudget, options)
-    grams = { ...macroGoals(goal.version, goal.version.manualWeightKg).grams, fiber: goal.version.fiberG }
+    grams = { ...macroGoals(goal.version, goal.trendKg ?? goal.version.manualWeightKg).grams, fiber: goal.version.fiberG }
   }
 
   const remaining = target === null ? null : target - kcal

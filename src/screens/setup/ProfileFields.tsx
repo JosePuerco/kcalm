@@ -31,10 +31,12 @@ type Props = {
   values: ProfileFormValues
   errors: ProfileErrors
   onChange: (values: ProfileFormValues) => void
+  /** heutiges Trendgewicht (aktive Verbrauchsschätzung); geht dem Feld vor */
+  trendKg?: number | null
 }
 
-export function ProfileFields({ values, errors, onChange }: Props) {
-  const preview = profilePreview(values)
+export function ProfileFields({ values, errors, onChange, trendKg = null }: Props) {
+  const preview = profilePreview(values, trendKg)
   const total = percentTotal(values.macros)
   // Während der Eingabe im Tagesfeld den getippten Text zeigen, sonst den Wert aus dem Wochenbudget
   const [dailyText, setDailyText] = useState<string | null>(null)
@@ -149,9 +151,11 @@ export function ProfileFields({ values, errors, onChange }: Props) {
         <div className="flex items-center gap-3">
           <IconInfo className="text-muted shrink-0" />
           <label htmlFor={profileFieldId('weightKg')} className="text-secondary text-muted flex-1 leading-[1.4]">
-            {MACRO_KEYS.some((k) => values.macros[k].mode === 'gPerKg')
-              ? 'Eiweiß in g/kg nutzt dein Körpergewicht. Ohne Verbrauchsschätzung trägst du es hier ein.'
-              : 'Körpergewicht für g/kg (optional).'}
+            {!MACRO_KEYS.some((k) => values.macros[k].mode === 'gPerKg')
+              ? 'Körpergewicht für g/kg (optional).'
+              : trendKg !== null
+                ? `g/kg nutzt dein Trendgewicht (${formatNumber(trendKg, 1)} kg). Das Feld gilt nur ohne Trend.`
+                : 'Eiweiß in g/kg nutzt dein Körpergewicht. Ohne Verbrauchsschätzung trägst du es hier ein.'}
           </label>
           <span className="flex items-baseline">
             <input

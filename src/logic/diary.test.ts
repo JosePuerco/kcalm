@@ -194,6 +194,13 @@ describe('dayOverview', () => {
     expect(o.macros[3]?.eaten).toEqual({ value: null, atLeast: false })
   })
 
+  it('g/kg mit Trendgewicht statt des manuellen Gewichts; null = manuell', () => {
+    const withTrend = dayOverview('2026-10-22', '2026-10-22', [], week, { ...goal, trendKg: 80 })
+    expect(withTrend.macros[0]?.goal).toBeCloseTo(144, 10)
+    const noTrend = dayOverview('2026-10-22', '2026-10-22', [], week, { ...goal, trendKg: null })
+    expect(noTrend.macros[0]?.goal).toBeCloseTo(133.2, 10)
+  })
+
   it('Profilstart mitten in der Woche: Vortage zählen nicht, festes Ziel aus der Version', () => {
     // Start Mi 21.10.: Budget Mi–So = 19.600 × 5 ÷ 7 = 14.000; Mo/Di ohne Profil
     const start = { version, weekBudget: 14000, countFrom: '2026-10-21' }

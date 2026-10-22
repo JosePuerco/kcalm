@@ -166,3 +166,11 @@ export function manualWeightError(value: string): string | null {
   if (kg < MIN_KG || kg > MAX_KG) return `Zwischen ${MIN_KG} und ${MAX_KG} kg`
   return null
 }
+
+/** Link in der Gewichtskarte der Statistik: „Verbrauch 2.585 ± 150 kcal“ bzw. „Sammelt Daten“ */
+export function estimateLinkText(e: EstimateReady | EstimateCollecting): string {
+  if (e.status === 'collecting') return 'Sammelt Daten'
+  const kcal = Math.round(e.kcal.value)
+  const spread = Math.round(e.spread / SPREAD_STEP) * SPREAD_STEP
+  return `Verbrauch ${e.kcal.atLeast ? 'mind. ' : ''}${formatNumber(kcal)} ± ${formatNumber(spread)} kcal`
+}

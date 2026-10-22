@@ -57,12 +57,20 @@ export function statsDates(today: LocalDate, range: StatsRange): LocalDate[] {
   return Array.from({ length: weeks * 7 }, (_, i) => addDays(first, i))
 }
 
-/** Ziel eines Tages aus dem damals gültigen Profil. Gewicht für g/kg ist bis Phase 9 das manuelle. */
-export function dayGoal(assignments: readonly Assignment[], versions: readonly Version[], date: LocalDate): DayGoalValues | null {
+/**
+ * Ziel eines Tages aus dem damals gültigen Profil. Gewicht für g/kg: Trendgewicht an dem Tag
+ * (trendKg, nur bei aktiver Verbrauchsschätzung), sonst das manuelle aus dem Profil.
+ */
+export function dayGoal(
+  assignments: readonly Assignment[],
+  versions: readonly Version[],
+  date: LocalDate,
+  trendKg: number | null = null,
+): DayGoalValues | null {
   const goal = goalFor(assignments, versions, date)
   if (!goal) return null
   const { version } = goal
-  const grams = macroGoals(version, version.manualWeightKg).grams
+  const grams = macroGoals(version, trendKg ?? version.manualWeightKg).grams
   return {
     kcal: fixedDailyTarget(version.weeklyKcal),
     macros: { protein: grams.protein, carbs: grams.carbs, fat: grams.fat, fiber: version.fiberG },
@@ -77,6 +85,8 @@ export interface StatsInput {
   completeDates: ReadonlySet<LocalDate>
   assignments: readonly Assignment[]
   versions: readonly Version[]
+  /** Trendgewicht an einem Tag für g/kg; fehlt = immer das manuelle Gewicht */
+  weightAt?: (date: LocalDate) => number | null
 }
 
 export function statsDays(input: StatsInput): StatsDay[] {
@@ -102,7 +112,7 @@ export function statsDays(input: StatsInput): StatsDay[] {
       state,
       kcal: sums.kcal,
       macros: { protein: sums.protein, carbs: sums.carbs, fat: sums.fat, fiber: sums.fiber },
-      goal: dayGoal(input.assignments, input.versions, date),
+      goal: dayGoal(input.assignments, input.versions, date, input.weightAt?.(date) ?? null),
     }
   })
 }
@@ -289,7 +299,7 @@ export interface Stats {
 export function buildStats(range: StatsRange, input: Omit<StatsInput, 'dates'>): Stats {
   const days = statsDays({ ...input, dates: statsDates(input.today, range) })
   const bars = range === 'quarter' ? weekBars(days, input.today) : dayBars(days, input.today)
-  const goalLine = dayGoal(input.assignments, input.versions, input.today)?.kcal ?? null
+  const goalLine = dayGoal(input.assignments, input.versions, input.today, input.weightAt?.(input.today) ?? null)?.kcal ?? null
   return {
     range,
     tiles: statsTiles(days),

@@ -142,6 +142,14 @@ describe('statsDays', () => {
     expect(d[0]!.goal!.macros.protein).toBeNull()
   })
 
+  it('g/kg mit Trendgewicht: je Tag das Trendgewicht, sonst das manuelle', () => {
+    const v = version('v1', 19600, { protein: { mode: 'gPerKg', value: 2 }, manualWeightKg: 70 })
+    const weightAt = (date: LocalDate) => (date >= '2026-10-21' ? 75 : null)
+    const d = days([], [], undefined, { versions: [v], weightAt })
+    expect(d[0]!.goal!.macros.protein).toBe(140)
+    expect(d[2]!.goal!.macros.protein).toBe(150)
+  })
+
   it('Einträge außerhalb des Zeitraums werden ignoriert', () => {
     const d = days([entry('2026-10-18', 9999)], [])
     expect(d.every((x) => x.state !== 'complete' && x.state !== 'incomplete')).toBe(true)

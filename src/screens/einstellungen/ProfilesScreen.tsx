@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/Button.tsx'
 import { Card } from '../../components/ui/Card.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { useLiveQuery } from '../../db/live.ts'
+import { currentTrendKg } from '../../db/weights.ts'
 import {
   activateProfile,
   cancelScheduled,
@@ -66,6 +67,8 @@ function ProfilesBody({ data }: { data: ProfilesData }) {
   const [errors, setErrors] = useState<ProfileErrors>({})
   const [mode, setMode] = useState<ActivateMode>('nextMonday')
   const [busy, setBusy] = useState(false)
+  // Heutiges Trendgewicht (aktive Verbrauchsschätzung) für g/kg
+  const trendKg = useLiveQuery(() => currentTrendKg(today), [today])
 
   const isNew = selected === NEW
   const isActive = selected === status.activeProfileId
@@ -82,7 +85,7 @@ function ProfilesBody({ data }: { data: ProfilesData }) {
 
   /** Prüfen und speichern; liefert die Profil-id oder null bei Fehlern */
   const persist = async (): Promise<string | null> => {
-    const r = validateProfileForm(values)
+    const r = validateProfileForm(values, trendKg ?? null)
     if (!r.ok) {
       setErrors(r.errors)
       const first = Object.keys(r.errors)[0]
@@ -180,6 +183,7 @@ function ProfilesBody({ data }: { data: ProfilesData }) {
 
       <main className="scroll-area px-screen-x gap-card-gap flex flex-col pb-[calc(24px+env(safe-area-inset-bottom))]">
         <ProfileFields
+          trendKg={trendKg ?? null}
           values={values}
           errors={errors}
           onChange={(v) => {

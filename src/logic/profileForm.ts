@@ -153,8 +153,11 @@ const number = (text: string): number | null => {
   return typeof v === 'number' ? v : null
 }
 
-/** Live-Ergebnis während der Eingabe („= 2.800 / Tag“, „≈ 133 g“); unfertige Eingaben ergeben null */
-export function profilePreview(values: ProfileFormValues): ProfilePreview {
+/**
+ * Live-Ergebnis während der Eingabe („= 2.800 / Tag“, „≈ 133 g“); unfertige Eingaben ergeben null.
+ * trendKg = heutiges Trendgewicht (aktive Verbrauchsschätzung); es geht dem Feld vor.
+ */
+export function profilePreview(values: ProfileFormValues, trendKg: number | null = null): ProfilePreview {
   const weekly = number(values.weeklyKcal)
   const none = { grams: { protein: null, fat: null, carbs: null }, restNegative: false }
   if (weekly === null || weekly <= 0) return { daily: null, ...none }
@@ -170,7 +173,7 @@ export function profilePreview(values: ProfileFormValues): ProfilePreview {
     targets[k] = { mode, value: mode === 'rest' ? null : (v ?? 0) }
   }
   try {
-    const r = macroGoals({ weeklyKcal: weekly, ...targets }, number(values.weightKg))
+    const r = macroGoals({ weeklyKcal: weekly, ...targets }, trendKg ?? number(values.weightKg))
     const grams = { ...r.grams }
     const restKey = MACRO_KEYS.find((k) => targets[k].mode === 'rest')
     for (const k of missing) grams[k] = null
@@ -195,8 +198,11 @@ const LIMITS: Record<Exclude<MacroMode, 'rest'>, { max: number; unit: string }> 
   gPerKg: { max: 10, unit: 'g/kg' },
 }
 
-/** Prüft das Formular. Verbietet nichts, was die App rechnen kann, aber fängt Tippfehler ab. */
-export function validateProfileForm(values: ProfileFormValues): ProfileFormResult {
+/**
+ * Prüft das Formular. Verbietet nichts, was die App rechnen kann, aber fängt Tippfehler ab.
+ * Mit Trendgewicht (trendKg) ist das Körpergewicht für g/kg nicht mehr Pflicht.
+ */
+export function validateProfileForm(values: ProfileFormValues, trendKg: number | null = null): ProfileFormResult {
   const errors: ProfileErrors = {}
 
   const name = values.name.trim()
@@ -235,7 +241,7 @@ export function validateProfileForm(values: ProfileFormValues): ProfileFormResul
   const usesWeight = MACRO_KEYS.some((k) => targets[k].mode === 'gPerKg')
   const weight = parseDecimal(values.weightKg)
   if (weight === 'invalid') errors.weightKg = 'Bitte als Zahl, z. B. 74,0'
-  else if (weight === null && usesWeight) errors.weightKg = 'Für g/kg brauchst du dein Körpergewicht'
+  else if (weight === null && usesWeight && trendKg === null) errors.weightKg = 'Für g/kg brauchst du dein Körpergewicht'
   else if (weight !== null && (weight < 30 || weight > 300)) errors.weightKg = 'Zwischen 30 und 300 kg'
 
   const fiber = parseDecimal(values.fiberG)
@@ -243,7 +249,7 @@ export function validateProfileForm(values: ProfileFormValues): ProfileFormResul
   else if (fiber !== null && fiber > 150) errors.fiberG = 'Höchstens 150 g'
 
   if (Object.keys(errors).length === 0 && rests.length === 1) {
-    const r = macroGoals({ weeklyKcal: weekly as number, ...targets }, weight as number | null)
+    const r = macroGoals({ weeklyKcal: weekly as number, ...targets }, trendKg ?? (weight as number | null))
     const restKey = rests[0] as MacroKey
     if (r.issues.includes('restNegative')) errors[restKey] = 'Die anderen Makros brauchen schon das ganze Tagesziel'
   }

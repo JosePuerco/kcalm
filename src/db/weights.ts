@@ -1,6 +1,7 @@
 // Gewichte für die Verbrauchsschätzung: Import aus der Zwischenablage, manuell eintragen, löschen.
 // Ein Wert pro Tag; Regeln in src/logic/weightImport.ts.
 
+import { dailyTrend, trendAt, type TrendPoint } from '../logic/estimate.ts'
 import { mergeWeights, MAX_KG, MIN_KG, parseWeights } from '../logic/weightImport.ts'
 import { db } from './db.ts'
 import { newRecord, softDelete, touch } from './records.ts'
@@ -68,4 +69,15 @@ export async function deleteWeight(id: string, now = new Date()): Promise<void> 
     const weight = await db.weights.get(id)
     if (weight && weight.deletedAt === null) await db.weights.put(softDelete(weight, now))
   })
+}
+
+/** Trend für g/kg-Makros bis `today`; leer, wenn die Verbrauchsschätzung aus ist (dann gilt das manuelle Gewicht) */
+export async function loadGoalTrend(today: LocalDate): Promise<TrendPoint[]> {
+  if (!(await getEstimateEnabled())) return []
+  return dailyTrend(await getWeights(), today)
+}
+
+/** Heutiges Trendgewicht für das Profilformular; null = Schätzung aus oder noch keine Wiegung */
+export async function currentTrendKg(today: LocalDate): Promise<number | null> {
+  return trendAt(await loadGoalTrend(today), today)
 }

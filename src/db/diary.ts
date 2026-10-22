@@ -2,8 +2,10 @@
 
 import { addDays, weekDates, weekStart } from '../logic/dates.ts'
 import { kcalByDate } from '../logic/diary.ts'
+import { trendAt } from '../logic/estimate.ts'
 import { goalFor } from '../logic/profiles.ts'
 import { db } from './db.ts'
+import { loadGoalTrend } from './weights.ts'
 import type { Entry, LocalDate, ProfileVersion, Slot } from './types.ts'
 
 export interface DiaryData {
@@ -13,7 +15,8 @@ export interface DiaryData {
   yesterday: { kcal: number; count: number }
   /** alle nicht gelöschten Slots, auch archivierte (für alte Tage) */
   slots: Slot[]
-  goal: { version: ProfileVersion; weekBudget: number; countFrom: LocalDate | null } | null
+  /** trendKg = Trendgewicht an dem Tag für g/kg (nur bei aktiver Verbrauchsschätzung) */
+  goal: { version: ProfileVersion; weekBudget: number; countFrom: LocalDate | null; trendKg: number | null } | null
   /** vollständig markierte Tage im angezeigten Monat */
   completeDates: Set<LocalDate>
   /** angezeigter Tag als vollständig markiert */
@@ -28,7 +31,7 @@ export async function loadDiary(date: LocalDate, month: string): Promise<DiaryDa
   // Montag: der Vortag liegt in der Woche davor
   const from = yesterdayDate < weekStart(date) ? yesterdayDate : weekStart(date)
   const to = weekDates(date)[6] as LocalDate
-  const [entries, slots, assignments, versions, days, day, weekDays] = await Promise.all([
+  const [entries, slots, assignments, versions, days, day, weekDays, trend] = await Promise.all([
     db.entries.where('date').between(from, to, true, true).filter((e) => e.deletedAt === null).toArray(),
     db.slots.filter((s) => s.deletedAt === null).toArray(),
     db.profileAssignments.toArray(),
@@ -36,6 +39,7 @@ export async function loadDiary(date: LocalDate, month: string): Promise<DiaryDa
     db.days.filter((d) => d.deletedAt === null && d.complete && d.date.startsWith(month)).toArray(),
     db.days.where('date').equals(date).first(),
     db.days.where('date').between(weekStart(date), to, true, true).toArray(),
+    loadGoalTrend(date),
   ])
   const byDay = kcalByDate(entries)
   const yesterdayEntries = entries.filter((e) => e.date === yesterdayDate)
@@ -45,7 +49,12 @@ export async function loadDiary(date: LocalDate, month: string): Promise<DiaryDa
     weekKcal: byDay,
     yesterday: { kcal: byDay[yesterdayDate] ?? 0, count: yesterdayEntries.length },
     slots,
-    goal: goal && { version: goal.version, weekBudget: goal.weekBudget, countFrom: goal.countFrom },
+    goal: goal && {
+      version: goal.version,
+      weekBudget: goal.weekBudget,
+      countFrom: goal.countFrom,
+      trendKg: trendAt(trend, date),
+    },
     completeDates: new Set(days.map((d) => d.date)),
     complete: day?.deletedAt === null && day.complete,
     weekComplete: new Set(weekDays.filter((d) => d.deletedAt === null && d.complete).map((d) => d.date)),

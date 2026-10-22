@@ -321,8 +321,8 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 - [x] Schalter in Einstellungen, Gewichte einfügen (Zwischenablage) und manuell
 - [x] Trendgewicht, Schätzung und Spanne als reine Funktionen mit Tests (Grenzfälle: Lücken, wenig Tage, unvollständige Tage, mehrere Messungen pro Tag)
 - [x] Format der Zwischenablage, Parser mit Zod, Anleitung `docs/kurzbefehl-gewichte.md`
-- [ ] Screen mit Ergebnis / „Sammelt Daten“, Abstand zum Budget, Gewichtstrend in der Statistik
-- [ ] g/kg-Makros nutzen das Trendgewicht
+- [x] Screen mit Ergebnis / „Sammelt Daten“, Abstand zum Budget, Gewichtstrend in der Statistik
+- [x] g/kg-Makros nutzen das Trendgewicht
 
 ### Phase 10 – Export
 
@@ -382,7 +382,10 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**22.10.2026 · Phase 9 (Verbrauchsschätzung) läuft** – 9a–9d erledigt, nicht gepusht. 834 Tests grün, Build und Lint sauber. Nächster Schritt: 9e (Gewichtskarte in der Statistik, g/kg-Makros mit Trendgewicht).
+**22.10.2026 · Phase 9 (Verbrauchsschätzung) fertig, noch nicht gepusht** – 9a–9e erledigt. 849 Tests grün, Build und Lint sauber. Nächster Schritt: Push nach Jans OK und iPhone-Test (Kurzbefehl einrichten, Einfügen, Hell/Dunkel ansehen), danach Phase 10 (Export).
+
+- 9e: g/kg-Makros nutzen bei aktiver Schätzung das Trendgewicht des jeweiligen Tages (Tagebuch, Statistik), sonst bzw. vor der ersten Wiegung das manuelle Gewicht. Profilformular: Vorschau mit heutigem Trendgewicht, Hinweis „g/kg nutzt dein Trendgewicht (74,6 kg). Das Feld gilt nur ohne Trend.“, Körpergewicht dann nicht Pflicht. Gewichtskarte in der Statistik (`src/logic/weightChart.ts`, `src/screens/statistik/WeightCard.tsx`): Punkte und Trend in der Tagesspalte wie die Balken, Trend nur bis zur letzten Wiegung, Achse auf 0,5 kg, mind. 1 kg; Text „+0,3 kg in 4 Wochen“ bzw. „in 39 Tagen“, wenn der Trend den Zeitraum nicht ganz abdeckt; Link „Verbrauch … ± … kcal“ bzw. „Sammelt Daten“ zum Schätz-Screen.
+- Abweichungen vom Prototyp (Gewichtskarte): Radius 18 (`card`) statt 20, Achsenzahlen 11 statt 10 px (`tiny`), „Keine Wiegungen in diesem Zeitraum“ ohne Daten.
 
 - 9a `src/logic/estimate.ts` (Trend, Schätzung, Spanne), 9b `src/logic/weightImport.ts` + `docs/kurzbefehl-gewichte.md`, 9c `src/db/weights.ts` + Schalter „Funktionen“ in den Einstellungen (`ToggleRow` jetzt in `components/ui`), 9d `src/logic/estimateView.ts`, `src/db/estimate.ts`, Screen `src/screens/einstellungen/EstimateScreen.tsx` mit Sheets in `schaetzung/` (Einfügen-Ersatz, Manuell mit „Letzte Gewichte“, Anleitung).
 - Mit Jan abgestimmt: Raster „Sammelt Daten“ ab dem ersten Tag mit Einträgen, danach helle Felder für fehlende Tage (heute unmarkiert zählt noch nicht als grau); „Letzte Gewichte“ (14 Tage) im Manuell-Sheet, Tipp = bearbeiten, Wischen = löschen.

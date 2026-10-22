@@ -5,6 +5,7 @@ import { estimateDates, type EstimateCollecting, type EstimateDay, type Estimate
 import {
   budgetView,
   collectingView,
+  estimateLinkText,
   importMessage,
   lastWeightText,
   manualWeightError,
@@ -176,5 +177,13 @@ describe('manualWeightError', () => {
     ['74,', null],
   ])('„%s“ → %s', (value, error) => {
     expect(manualWeightError(value)).toBe(error)
+  })
+})
+
+describe('estimateLinkText', () => {
+  it('Ergebnis wie im Prototyp, sonst „Sammelt Daten“', () => {
+    expect(estimateLinkText(ready(2584.6, 147))).toBe('Verbrauch 2.585 ± 150 kcal')
+    expect(estimateLinkText(ready(2585, 150, { kcal: { value: 2585, atLeast: true } }))).toBe('Verbrauch mind. 2.585 ± 150 kcal')
+    expect(estimateLinkText(collecting())).toBe('Sammelt Daten')
   })
 })
