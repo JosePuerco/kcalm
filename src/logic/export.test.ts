@@ -424,6 +424,15 @@ describe('JSON', () => {
     })
   })
 
+  it('partial in einer Zeile, auch Namen mit Komma bleiben unverändert', () => {
+    const text = toJson(
+      { level: 'days', keys: ['name', 'partial'], rows: [['a, b', ['fiber_g', 'salt_g']]] },
+      meta,
+    )
+    expect(text).toContain('"partial": ["fiber_g", "salt_g"]')
+    expect(JSON.parse(text).rows).toEqual([{ name: 'a, b', partial: ['fiber_g', 'salt_g'] }])
+  })
+
   it('Vorschau deutet weitere Zeilen an', () => {
     const text = toJson(table, meta, 1)
     expect(text).toContain('"date": "2026-09-01"')

@@ -326,8 +326,8 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 
 ### Phase 10 – Export
 
-- [ ] CSV (international) und JSON, Zeitraum, Ebene, Spalten wählbar, Live-Vorschau
-- [ ] Vorlage „Monatsauswertung Claude“
+- [x] CSV (international) und JSON, Zeitraum, Ebene, Spalten wählbar, Live-Vorschau
+- [x] Vorlage „Monatsauswertung Claude“
 
 ### Phase 11 – Feinschliff
 
@@ -367,6 +367,10 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 | Statistik: Ziel bei Profilwechsel | Bilanz rechnet jeden Tag gegen sein damals gültiges Tagesziel; die gestrichelte Linie zeigt das aktuelle Ziel (Jan, 22.10.2026) |
 | Statistik: vollständige Woche (3 Monate) | Balken = Ø der vollständigen Tage der Woche; blau ab 5 von 7 vollständigen Tagen, grau bei 1–4, kein Balken bei 0. Laufende Woche blau, solange alle bisherigen Tage mit Einträgen vollständig sind. Kachel „Vollständig“ zählt Tage (Jan, 22.10.2026) |
 | Spalten „Monatsauswertung Claude“ | Ebene Tage, JSON: Datum, Vollständig, kcal, Eiweiß, Kohlenhydrate, Fett, Ballaststoffe, Budget, Gewicht |
+| Export: Format | Gerundet wie die Anzeige (kcal 0, g 1, Salz 2, kg 1 Stelle); unbekannt = `null` bzw. leeres CSV-Feld. Summen (Slots, Tage, Wochen) = Summe der bekannten Werte, Schlüssel mit unbekannten Teilen in `partial` (CSV letzte Spalte, `;`-getrennt; JSON nur, wenn nicht leer). JSON-Kopf `app`, `exportVersion` (1), `exportedAt`, `from`, `to`, `level`, `rows` (Jan, 25.10.2026) |
+| Export: Spalten je Ebene | Budget und Gewicht nur bei Tagen und Wochen; Slot bei Einträgen und Slots; Name und Menge (`amount`, `unit`) nur bei Einträgen; Gewicht nur bei aktiver Verbrauchsschätzung. Wochen: `week` (ISO, z. B. `2026-W36`), `from`, `to`, `days`, `complete_days`. Keine Trend-Spalte (Jan, 25.10.2026) |
+| Export: Tage und Werte | Tage: jeder Tag des Zeitraums bis heute, ohne Einträge Nährwerte `null`; vollständig nur mit Einträgen. Budget pro Tag = festes Tagesziel der damals gültigen Version; pro Woche = Wochenbudget am letzten Tag mit Profil × Tage mit Profil ÷ 7. Gewicht = erste Wiegung des Tages bzw. Ø der Wiegungen der Woche (Jan, 25.10.2026) |
+| Export: Zeiträume | Letzter Monat = voriger Kalendermonat; 4 Wochen = 28 Tage inkl. heute; Alles = erster Tag mit Einträgen oder Gewicht bis heute; Frei = zwei Datumsfelder, Ende höchstens heute. Screen startet jedes Mal mit der Vorlage (Jan, 25.10.2026) |
 | Gewichtstrend | Glättungsfaktor 0,1; Lücken zwischen Wiegungen linear aufgefüllt; nach der letzten Wiegung bleibt der Trend stehen (Jan, 22.10.2026) |
 | Verbrauchsschätzung: Zeitraum und Bedingungen | Letzte 28 Tage inkl. heute; Ergebnis ab 14 vollständigen Tagen, 7 Wiegetagen und einem Trend über mind. 14 Tage. Trendänderung von der ersten bis zur letzten Wiegung im Zeitraum ÷ Tage dazwischen (Jan, 22.10.2026) |
 | Spanne | 1,96 × Standardfehler der Steigung einer Ausgleichsgeraden durch die Wiegungen × 7.700 (≈ 95 %); bei ±0,4 kg Streuung nach 14 Tagen ca. ±290, nach 21 Tagen ca. ±160 kcal (Jan, 22.10.2026) |
@@ -381,6 +385,11 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**25.10.2026 · Phase 10 (Export) umgesetzt, noch nicht deployt** – 10a Rechenlogik `src/logic/export.ts`, 10b `src/db/export.ts`, 10c Screen `src/screens/einstellungen/ExportScreen.tsx` (Einstellungen › Daten › Export). 893 Tests grün, Build und Lint sauber. Im Headless-Chrome bei 390 px geprüft (Hell/Dunkel, alle Ebenen, CSV/JSON, Frei). Nächster Schritt: Jans iPhone-Test (Teilen, Datumsfelder), danach Phase 11.
+
+- Abweichungen vom Prototyp: Vorlagen-Karte immer `card`-Fläche (helles Blau `#F5F7FF` ist kein Token), aktiv nur mit `accent`-Rahmen; Untertitel „kcal, Makros, Ballaststoffe, Budget, Gewicht“ statt „alle Nährwerte + Gewicht“; Spalten-Chips aus mit Rahmen `line`; keine Wasser-Spalte; Ebene/Format mit dem vorhandenen `Segmented` (Höhe 36 statt 34); Vorschau in `ui-monospace` (SF Mono auf dem iPhone), weil Geist Mono nicht gebündelt ist.
+- Vorschau: CSV 3 Zeilen, JSON 1 Zeile, danach „…“. Knopf gesperrt ohne Zeilen, ohne Spalten oder ohne gültigen Zeitraum.
 
 **25.10.2026 · Phase 9 (Verbrauchsschätzung) abgeschlossen** – 9a–9e erledigt (je ein Commit), deployt und von Jan auf dem iPhone getestet (Kurzbefehl, Einfügen, Hell/Dunkel). 849 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 10 (Export).
 

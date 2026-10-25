@@ -10,6 +10,7 @@ import { getSlots } from '../db/slots.ts'
 import { formatNumber } from '../logic/format.ts'
 import { BackupCard } from './BackupCard.tsx'
 import { EstimateScreen } from './einstellungen/EstimateScreen.tsx'
+import { ExportScreen } from './einstellungen/ExportScreen.tsx'
 import { ProfilesScreen } from './einstellungen/ProfilesScreen.tsx'
 import { SlotsScreen } from './einstellungen/SlotsScreen.tsx'
 import { useToday } from '../app/diaryState.ts'
@@ -21,11 +22,13 @@ import { profileStatus } from '../logic/profiles.ts'
 //  #/einstellungen/profile  Profile und Ziele
 //  #/einstellungen/slots    Mahlzeiten-Slots
 //  #/einstellungen/schaetzung  Verbrauchsschätzung
+//  #/einstellungen/export   Export
 export function Einstellungen() {
   const [view] = useSubPath()
   if (view === 'slots') return <SlotsScreen />
   if (view === 'profile') return <ProfilesScreen />
   if (view === 'schaetzung') return <EstimateScreen />
+  if (view === 'export') return <ExportScreen />
   return <Overview />
 }
 

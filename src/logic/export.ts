@@ -386,7 +386,8 @@ export function toJson(table: ExportTable, meta: JsonMeta, limit = Infinity): st
     },
     null,
     2,
-  )
+    // Textlisten (`partial`) in einer Zeile statt einer Zeile je Schlüssel
+  ).replace(/\[\n\s+("[^"\n]*"(?:,\n\s+"[^"\n]*")*)\n\s+\]/g, (_, items: string) => `[${items.replace(/,\n\s+/g, ', ')}]`)
   // Vorschau: angedeutet, dass weitere Zeilen folgen
   const more = table.rows.length > limit ? text.replace(/\n {2}\]\n\}$/, ',\n    …\n  ]\n}') : text
   return `${more}\n`

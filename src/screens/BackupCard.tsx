@@ -1,6 +1,7 @@
 // Gruppe „Daten“ in den Einstellungen nach Einstellungen.dc.html: Backup-Zeile mit „Jetzt sichern“
-// und „Backup importieren“ (Import-Sheet in BackupImport.tsx).
+// „Backup importieren“ (Import-Sheet in BackupImport.tsx) und der Weg zum Export.
 import { useState } from 'react'
+import { href } from '../app/router.ts'
 import { shareOrDownload } from '../app/share.ts'
 import { IconChevronRight } from '../components/icons/icons.tsx'
 import { Button } from '../components/ui/Button.tsx'
@@ -55,6 +56,14 @@ export function BackupCard() {
         <span className="text-body flex-1">Backup importieren</span>
         <IconChevronRight className="text-chevron-muted" />
       </button>
+      <a
+        href={href('einstellungen', 'export')}
+        className="border-line text-text flex min-h-[52px] items-center gap-2.5 border-t pr-3 pl-4"
+      >
+        <span className="text-body flex-1">Export</span>
+        <span className="text-label text-muted">CSV, JSON</span>
+        <IconChevronRight className="text-chevron-muted" />
+      </a>
       {backupImport.element}
     </Card>
   )
