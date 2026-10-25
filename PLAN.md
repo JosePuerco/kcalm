@@ -386,7 +386,7 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**25.10.2026 · Phase 10 (Export) umgesetzt, noch nicht deployt** – 10a Rechenlogik `src/logic/export.ts`, 10b `src/db/export.ts`, 10c Screen `src/screens/einstellungen/ExportScreen.tsx` (Einstellungen › Daten › Export). 893 Tests grün, Build und Lint sauber. Im Headless-Chrome bei 390 px geprüft (Hell/Dunkel, alle Ebenen, CSV/JSON, Frei). Nächster Schritt: Jans iPhone-Test (Teilen, Datumsfelder), danach Phase 11.
+**25.10.2026 · Phase 10 (Export) abgeschlossen** – deployt und von Jan auf dem iPhone getestet (Teilen, CSV, Datumsfelder, Hell/Dunkel). 10a Rechenlogik `src/logic/export.ts`, 10b `src/db/export.ts`, 10c Screen `src/screens/einstellungen/ExportScreen.tsx` (Einstellungen › Daten › Export). 893 Tests grün, Build und Lint sauber. Im Headless-Chrome bei 390 px geprüft (Hell/Dunkel, alle Ebenen, CSV/JSON, Frei). Nächster Schritt: Phase 11 (Feinschliff).
 
 - Abweichungen vom Prototyp: Vorlagen-Karte immer `card`-Fläche (helles Blau `#F5F7FF` ist kein Token), aktiv nur mit `accent`-Rahmen; Untertitel „kcal, Makros, Ballaststoffe, Budget, Gewicht“ statt „alle Nährwerte + Gewicht“; Spalten-Chips aus mit Rahmen `line`; keine Wasser-Spalte; Ebene/Format mit dem vorhandenen `Segmented` (Höhe 36 statt 34); Vorschau in `ui-monospace` (SF Mono auf dem iPhone), weil Geist Mono nicht gebündelt ist.
 - Vorschau: CSV 3 Zeilen, JSON 1 Zeile, danach „…“. Knopf gesperrt ohne Zeilen, ohne Spalten oder ohne gültigen Zeitraum.
