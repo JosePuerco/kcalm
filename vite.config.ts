@@ -17,6 +17,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png', 'favicon.svg'],
       manifest: {
+        // Feste Kennung der App, unabhängig von start_url
+        id: base,
         name: 'Kcalm',
         short_name: 'Kcalm',
         description: 'Kalorien ruhig tracken. Alle Daten bleiben auf dem Gerät.',

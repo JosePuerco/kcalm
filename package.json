@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "bls": "node scripts/build-bls.ts"
+    "bls": "node scripts/build-bls.ts",
+    "splash": "node scripts/build-splash.ts"
   },
   "dependencies": {
     "@fontsource/geist": "^5.3.0",
