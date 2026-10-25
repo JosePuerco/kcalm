@@ -58,6 +58,7 @@ describe('loadDiary', () => {
     ])
 
     const d = await loadDiary('2026-10-22', '2026-10')
+    expect(d.date).toBe('2026-10-22')
     expect(d.dayEntries.map((e) => e.nutrients.kcal)).toEqual([500])
     expect(d.weekKcal).toEqual({ '2026-10-20': 3100, '2026-10-21': 2850, '2026-10-22': 500, '2026-10-24': 1200 })
     expect(d.yesterday).toEqual({ kcal: 2850, count: 2 })

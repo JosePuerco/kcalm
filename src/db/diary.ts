@@ -9,6 +9,8 @@ import { loadGoalTrend } from './weights.ts'
 import type { Entry, LocalDate, ProfileVersion, Slot } from './types.ts'
 
 export interface DiaryData {
+  /** Tag, für den geladen wurde (beim schnellen Blättern kann die Anzeige schon weiter sein) */
+  date: LocalDate
   dayEntries: Entry[]
   weekKcal: Record<LocalDate, number>
   /** Vortag für die Karte „Noch nichts eingetragen“ */
@@ -45,6 +47,7 @@ export async function loadDiary(date: LocalDate, month: string): Promise<DiaryDa
   const yesterdayEntries = entries.filter((e) => e.date === yesterdayDate)
   const goal = goalFor(assignments, versions, date)
   return {
+    date,
     dayEntries: entries.filter((e) => e.date === date),
     weekKcal: byDay,
     yesterday: { kcal: byDay[yesterdayDate] ?? 0, count: yesterdayEntries.length },

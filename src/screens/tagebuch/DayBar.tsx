@@ -34,7 +34,8 @@ export function DayBar({ date, today, calendarOpen, complete, onToggleCalendar, 
       >
         {label.date}
         {label.relative && <span className="text-muted font-normal">· {label.relative}</span>}
-        <AnimatePresence initial={false}>
+        {/* popLayout: ein ausblendendes Häkchen belegt keinen Platz mehr und schiebt nichts zur Seite */}
+        <AnimatePresence initial={false} mode="popLayout">
           {complete && (
             <motion.span
               key={date}

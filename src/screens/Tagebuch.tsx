@@ -88,7 +88,8 @@ export function Tagebuch() {
         date={date}
         today={today}
         calendarOpen={calendarOpen}
-        complete={data?.complete ?? false}
+        // Nur den Stand des angezeigten Tags; bis er geladen ist, kein Häkchen vom vorigen Tag
+        complete={data?.date === date && data.complete}
         onToggleCalendar={toggleCalendar}
         onStep={(by) => goTo(addDays(date, by))}
       />
