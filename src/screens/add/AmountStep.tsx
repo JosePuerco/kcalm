@@ -1,7 +1,7 @@
 // Mengen-Schritt nach Kern.dc.html: Zurück, Produktname + Quelle + kcal/100 · große Menge mit Einheit und kcal ·
 // 4 Makro-Kacheln · Portions-Chips · eigener Ziffernblock · Hauptknopf.
 import type { ReactNode } from 'react'
-import { IconBack } from '../../components/icons/icons.tsx'
+import { IconBack, IconCheck } from '../../components/icons/icons.tsx'
 import { Button } from '../../components/ui/Button.tsx'
 import { Chip } from '../../components/ui/Chip.tsx'
 import { Keypad } from '../../components/ui/Keypad.tsx'
@@ -41,8 +41,15 @@ export function AmountStep({ food, amount, onAmount, onBack, confirmLabel, onCon
         </button>
         <span className="flex min-w-0 flex-col">
           <span className="text-sheet-title truncate">{food.name}</span>
-          <span className="text-small text-muted">
+          <span className="text-small text-muted flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
             {food.source} · {per100Label(food)}
+            {/* Geprüft-Markierung (DESIGN.md), z. B. direkt nach dem Scan sichtbar (Wunsch von Jan) */}
+            {food.verified && (
+              <span className="bg-accent-soft text-accent-text rounded-small-button inline-flex items-center gap-1 px-1.5 font-medium">
+                <IconCheck size={12} strokeWidth={2.6} />
+                geprüft
+              </span>
+            )}
           </span>
         </span>
       </div>
