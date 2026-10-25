@@ -382,7 +382,7 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**22.10.2026 · Phase 9 (Verbrauchsschätzung) fertig, noch nicht gepusht** – 9a–9e erledigt. 849 Tests grün, Build und Lint sauber. Nächster Schritt: Push nach Jans OK und iPhone-Test (Kurzbefehl einrichten, Einfügen, Hell/Dunkel ansehen), danach Phase 10 (Export).
+**25.10.2026 · Phase 9 (Verbrauchsschätzung) abgeschlossen** – 9a–9e erledigt (je ein Commit), deployt und von Jan auf dem iPhone getestet (Kurzbefehl, Einfügen, Hell/Dunkel). 849 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 10 (Export).
 
 - 9e: g/kg-Makros nutzen bei aktiver Schätzung das Trendgewicht des jeweiligen Tages (Tagebuch, Statistik), sonst bzw. vor der ersten Wiegung das manuelle Gewicht. Profilformular: Vorschau mit heutigem Trendgewicht, Hinweis „g/kg nutzt dein Trendgewicht (74,6 kg). Das Feld gilt nur ohne Trend.“, Körpergewicht dann nicht Pflicht. Gewichtskarte in der Statistik (`src/logic/weightChart.ts`, `src/screens/statistik/WeightCard.tsx`): Punkte und Trend in der Tagesspalte wie die Balken, Trend nur bis zur letzten Wiegung, Achse auf 0,5 kg, mind. 1 kg; Text „+0,3 kg in 4 Wochen“ bzw. „in 39 Tagen“, wenn der Trend den Zeitraum nicht ganz abdeckt; Link „Verbrauch … ± … kcal“ bzw. „Sammelt Daten“ zum Schätz-Screen.
 - Abweichungen vom Prototyp (Gewichtskarte): Radius 18 (`card`) statt 20, Achsenzahlen 11 statt 10 px (`tiny`), „Keine Wiegungen in diesem Zeitraum“ ohne Daten.
