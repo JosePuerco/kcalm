@@ -8,6 +8,14 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 0.11.1 – 25.10.2026
+
+Nachbesserungen nach dem iPhone-Test.
+
+- Ersteinrichtung beginnt mit einem Willkommensbildschirm: „Neu einrichten“ oder „Aus Backup laden“ (direkt ins Tagebuch, ohne Slots und Profil anzulegen)
+- Mengen-Schritt markiert geprüfte Produkte mit „✓ geprüft“, z. B. direkt nach dem Scan
+- Behoben: Beim schnellen Blättern durch die Tage wanderte das Häkchen „vollständig“ kurz nach rechts
+
 ## 0.11.0 – 25.10.2026
 
 Phase 11 (Feinschliff), Stand für den Offline- und Backup-Test auf dem iPhone.

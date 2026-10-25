@@ -36,8 +36,8 @@ Vorher einmal mit Netz öffnen, damit alles im Cache liegt. Dann Flugmodus an (W
 
 - [ ] App vom Home-Bildschirm löschen (löscht alle Daten auf dem Gerät)
 - [ ] In Safari `josepuerco.github.io/kcalm/` öffnen → Teilen → „Zum Home-Bildschirm“
-- [ ] Neu installierte App zeigt Icon „Kcalm“ und startet mit der Ersteinrichtung
-- [ ] Ersteinrichtung bis zum Backup-Hinweis, „Backup importieren“ → Datei aus iCloud Drive wählen → „Ersetzen“
+- [ ] Neu installierte App zeigt Icon „Kcalm“ und startet mit dem Willkommensbildschirm (Ring zeichnet sich)
+- [ ] „Aus Backup laden“ → Datei aus iCloud Drive wählen → „Ersetzen“ → „Alles ersetzen“ → direkt ins Tagebuch
 - [ ] Tagebuch zeigt alle Tage, auch den Eintrag „Backup-Test“; Profile, Slots, Produkte, Mahlzeiten, Rezepte, Gewichte sind da
 - [ ] Darstellung, Verbrauchsschätzung an/aus und „Letztes Backup“ sind wie vorher
 - [ ] Testdaten aus Teil C wieder löschen

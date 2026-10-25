@@ -380,6 +380,8 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 | g/kg-Makros vergangener Tage | Trendgewicht an diesem Tag; ändert sich, wenn später ältere Gewichte nachgetragen werden (berechneter Wert) (Jan, 22.10.2026) |
 | Format Kurzbefehl | Kopfzeile `kcalm-gewichte 1`, je Zeile `Zeitpunkt ISO 8601;Gewicht;Einheit` (Komma oder Punkt, kg oder lb). Tag = Kalendertag laut Zeitzone im Text. Streng: eine kaputte Zeile → nichts übernommen, Fehler nennt die Zeile. 20–300 kg. Zusammenführen: früheste Messung pro Tag gewinnt, auch gegen gespeicherte; gelöschter Tag kommt mit derselben Messung nicht zurück |
 | Versionsnummern | Semantic Versioning `MAJOR.MINOR.PATCH` aus `package.json`, angezeigt unter Einstellungen › Über. Jeder Push auf `main` = eine Version mit Tag `vX.Y.Z`, Abschnitt in `CHANGELOG.md` und GitHub Release; der Deploy bricht ohne passenden Tag ab. Vor 1.0.0 `0.<Phase>.<n>`, frühere Phasen nachträglich als `v0.0.0`–`v0.10.0` getaggt (Commit „Phase N abgeschlossen/deployt“). 1.0.0 nach bestandenem iPhone-Test (Jan, 25.10.2026) |
+| Tage vor dem ersten Profil | Kein Ziel: Ring leer, „kcal gegessen“; bleibt so, kein Rückgriff aufs erste Profil (Jan nach iPhone-Test, 25.10.2026) |
+| Willkommensbildschirm | Schritt 0 der Ersteinrichtung (kein Prototyp): Icon mit sich zeichnendem Ring, „Neu einrichten“ oder „Aus Backup laden“ (direkt ins Tagebuch); Import aus Schritt 4 entfernt (Jan, 25.10.2026) |
 | Splashscreen | Startbilder aus den Tokens per `npm run splash` (eigenes Skript, keine Abhängigkeit), nur für das iPhone 16e (1170 × 2532), hell und dunkel; ob iOS die Dunkel-Variante nutzt, zeigt der iPhone-Test (25.10.2026) |
 
 Offen nur noch:
@@ -390,7 +392,7 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**25.10.2026 · Phase 11 (Feinschliff) bis auf den iPhone-Test erledigt** – 11a Abweichungen vom Prototyp, 11b Startbilder und Manifest-`id`, 11c Darstellung/Über und Vorschau nur im Entwicklungsmodus, Versionierung (Tags `v0.0.0`–`v0.10.0`, `CHANGELOG.md`, Prüfung im Workflow, Regeln in `CLAUDE.md`). Lokal als Version 0.11.0 vorbereitet, noch nicht gepusht. Nächster Schritt: nach Jans OK pushen, Jan testet mit `docs/iphone-test.md`; danach Version 1.0.0.
+**25.10.2026 · Phase 11 (Feinschliff) bis auf den iPhone-Test erledigt** – 11a Abweichungen vom Prototyp, 11b Startbilder und Manifest-`id`, 11c Darstellung/Über und Vorschau nur im Entwicklungsmodus, Versionierung (Tags `v0.0.0`–`v0.10.0`, `CHANGELOG.md`, Prüfung im Workflow, Regeln in `CLAUDE.md`). Version 0.11.0 deployt und von Jan auf dem iPhone getestet (Checkliste bestanden). Danach als 0.11.1: Häkchen „vollständig“ beim schnellen Blättern behoben, Badge „geprüft“ im Mengen-Schritt, Willkommensbildschirm mit „Aus Backup laden“. Nächster Schritt: Jan testet 0.11.1, danach Version 1.0.0 und Phase 11 abschließen.
 
 - Abgleich im Headless-Chrome bei 390 px (alle Prototypen gegen die App mit Beispieldaten). Behoben: Wochen-/Tagesbudget ohne Tausenderpunkt und „kcal“ zu weit weg (`formatInputNumber`, Feldbreite folgt dem Inhalt), „74kg“, Punkt im leeren Ring, Kalender-Legende zweizeilig, Darstellung/Über fehlten.
 - Bleibt bewusst: „Lebensmittel suchen“ (Suche umfasst BLS), kein „…“-Menü im Produktdetail, leerer Slot zeigt „0 kcal“ wie in `Kern.dc.html` (`Leer.dc.html` ohne).
