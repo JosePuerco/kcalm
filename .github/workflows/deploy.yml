@@ -23,6 +23,20 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # Jeder Deploy ist eine Version: Tag v<Version aus package.json> muss auf diesen Commit zeigen
+      - name: Version prüfen
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if ! git fetch --depth=1 origin "refs/tags/v$version:refs/tags/v$version"; then
+            echo "::error::Tag v$version fehlt. Vor dem Push Version erhöhen, CHANGELOG.md ergänzen und taggen."
+            exit 1
+          fi
+          if [ "$(git rev-list -n 1 "v$version")" != "$GITHUB_SHA" ]; then
+            echo "::error::Tag v$version zeigt nicht auf diesen Commit. Version erhöhen und neu taggen."
+            exit 1
+          fi
+          echo "Version $version"
+
       - uses: actions/setup-node@v5
         with:
           node-version: 24

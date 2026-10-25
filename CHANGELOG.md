@@ -1,0 +1,64 @@
+# Änderungen
+
+Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/lang/de/) `MAJOR.MINOR.PATCH`:
+
+- **PATCH** (1.0.0 → 1.0.1): Fehlerbehebung, Feinschliff, Texte
+- **MINOR** (1.0.1 → 1.1.0): neue Funktion oder Erweiterung, auch mit neuer Backup-Formatversion und automatischer Migration
+- **MAJOR** (1.4.2 → 2.0.0): Umbruch – alte Daten oder Backups werden nicht mehr automatisch übernommen, oder die Bedienung ändert sich grundlegend
+
+Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
+
+## 0.11.0 – 25.10.2026
+
+Phase 11 (Feinschliff), Stand für den Offline- und Backup-Test auf dem iPhone.
+
+- Einstellungen: Gruppen „Darstellung“ (System / Hell / Dunkel) und „Über“ mit Version und Quellen (Open Food Facts, ODbL; Max Rubner-Institut, BLS 4.0)
+- Startbild beim Öffnen der installierten App, hell und dunkel
+- Bausteine-Vorschau nur noch im Entwicklungsmodus
+- Wochen- und Tagesbudget mit Tausenderpunkt, „kcal“ direkt an der Zahl
+- „74 kg“ mit Abstand, leerer Ring ohne Punkt, Kalender-Legende einzeilig
+- Versionsnummer, Changelog und Prüfung im Deploy
+
+## 0.10.0 – 25.10.2026
+
+Phase 10: Export als CSV (international) und JSON, Zeitraum, Ebene und Spalten wählbar, Live-Vorschau, Vorlage „Monatsauswertung Claude“.
+
+## 0.9.0 – 25.10.2026
+
+Phase 9: Verbrauchsschätzung aus Gewichtstrend und vollständigen Tagen, Gewichte per Kurzbefehl aus Apple Health oder manuell, Gewichtskarte in der Statistik, g/kg-Makros mit Trendgewicht.
+
+## 0.8.0 – 22.10.2026
+
+Phase 8: Statistik mit Woche / 4 Wochen / 3 Monate, kcal pro Tag, Makros gegen Ziel.
+
+## 0.7.0 – 22.10.2026
+
+Phase 7 gestrichen: Wasser-Tracking komplett entfernt (Backup-Format 4, Datenbank-Version 4).
+
+## 0.6.0 – 21.10.2026
+
+Phase 6: Verifizieren mit Korrekturschicht, Original gegen „Meine Werte“, Prüf-Dialog.
+
+## 0.5.0 – 21.10.2026
+
+Phase 5: Mahlzeiten und Rezepte.
+
+## 0.4.0 – 21.10.2026
+
+Phase 4: Open Food Facts und Barcode-Scanner (offline mit selbst gehostetem Decoder), gemerkte Scans.
+
+## 0.3.0 – 21.10.2026
+
+Phase 3: Tagebuch, Ersteinrichtung, Profile und Ziele, Schnelleintrag, Tag kopieren.
+
+## 0.2.0 – 21.10.2026
+
+Phase 2: Backup sichern und importieren.
+
+## 0.1.0 – 17.10.2026
+
+Phase 1: Produkte, BLS 4.0 offline, Lebensmittel-Liste.
+
+## 0.0.0 – 17.10.2026
+
+Phase 0: Fundament – PWA unter `/kcalm/`, App-Hülle, Navigation, Bausteine, Deploy.

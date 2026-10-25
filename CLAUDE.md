@@ -53,6 +53,18 @@ Kcalm ist eine minimalistische Kalorien-Tracking-PWA fürs iPhone. Alle Daten bl
 - Nach jedem Schritt Tests laufen lassen, dann selbst lokal committen (klare Nachricht) und den Commit nennen.
 - Pushen nur nach Jans ausdrücklichem OK (jeder Push deployt). Nicht mitten in einer Phase auf `main` pushen, außer Jan braucht den Stand zum Testen auf dem iPhone.
 - Nach jedem Push das Deployment mit der GitHub-Kommandozeile prüfen (`gh run watch`, Repo `JosePuerco/kcalm`) und das Ergebnis melden.
+
+### Versionen
+
+- Semantic Versioning `MAJOR.MINOR.PATCH`, einzige Quelle ist `version` in `package.json`; die App zeigt sie unter Einstellungen › Über. Regeln stehen oben in `CHANGELOG.md` (PATCH = Fehler/Feinschliff, MINOR = neue Funktion, MAJOR = Umbruch bei Daten oder Bedienung). Vor 1.0.0: `0.<Phase>.<n>`.
+- Jeder Push auf `main` ist genau eine Version. Vorher, nach Jans OK zum Push:
+  1. `npm version X.Y.Z --no-git-tag-version` (ändert `package.json` und `package-lock.json`)
+  2. Abschnitt `## X.Y.Z – TT.MM.JJJJ` oben in `CHANGELOG.md`, kurz und auf Deutsch
+  3. Commit „Version X.Y.Z“, dann `git tag -a vX.Y.Z -m "Version X.Y.Z"`
+  4. `git push --atomic origin main vX.Y.Z` (Commit und Tag zusammen)
+  5. Nach erfolgreichem Deploy `gh release create vX.Y.Z --title "Version X.Y.Z" --notes "<Abschnitt aus CHANGELOG.md>"`
+- Der Deploy-Workflow bricht ab, wenn der Tag `v<Version>` fehlt oder nicht auf den gepushten Commit zeigt. Lokale Commits zwischen zwei Pushes bekommen keine eigene Nummer. Bestehende Tags nie verschieben.
+- Nach dem Push Jan Version und Deploy-Ergebnis nennen.
 - Erledigte Punkte in `PLAN.md` abhaken. Beim Pausieren den Zwischenstand in Abschnitt 8 von `PLAN.md` eintragen und lokal committen.
 - Befehle für Windows PowerShell angeben. Pfade mit Leerzeichen in Anführungszeichen.
 - Keine neuen Abhängigkeiten ohne kurze Begründung.

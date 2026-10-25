@@ -331,10 +331,12 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 
 ### Phase 11 – Feinschliff
 
-- [ ] Motion-Feinschliff, App-Icon, Splashscreen, Name im Manifest
-- [ ] Vorschauseite im Build ausblenden, „Über“ mit Quellenhinweisen OFF und BLS
-- [ ] Offline- und Backup-Test, alle Phasen abgehakt
-- [ ] Anleitung inkl. Kurzbefehl für Apple Health
+- [x] App-Icon (bleibt), Splashscreen, Name im Manifest; Motion-Feinschliff entfällt (Jan, 25.10.2026)
+- [x] Vorschauseite im Build ausblenden, „Über“ mit Quellenhinweisen OFF und BLS
+- [x] Abgleich aller Screens mit Prototypen und Screenshots, Abweichungen behoben
+- [x] Versionsnummern (Semantic Versioning), Changelog, Tags, Prüfung im Deploy
+- [ ] Offline- und Backup-Test auf dem iPhone (Checkliste `docs/iphone-test.md`), alle Phasen abgehakt
+- [x] Anleitung inkl. Kurzbefehl für Apple Health (`docs/kurzbefehl-gewichte.md` reicht, Jan 25.10.2026)
 
 ## 7. Entscheidungen zu früher offenen Fragen
 
@@ -377,6 +379,8 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 | Sammelt Daten: Legende | „vollständig“ statt „vollständig + gewogen“; ein Tag zählt ohne Wiegung (Jan, 22.10.2026) |
 | g/kg-Makros vergangener Tage | Trendgewicht an diesem Tag; ändert sich, wenn später ältere Gewichte nachgetragen werden (berechneter Wert) (Jan, 22.10.2026) |
 | Format Kurzbefehl | Kopfzeile `kcalm-gewichte 1`, je Zeile `Zeitpunkt ISO 8601;Gewicht;Einheit` (Komma oder Punkt, kg oder lb). Tag = Kalendertag laut Zeitzone im Text. Streng: eine kaputte Zeile → nichts übernommen, Fehler nennt die Zeile. 20–300 kg. Zusammenführen: früheste Messung pro Tag gewinnt, auch gegen gespeicherte; gelöschter Tag kommt mit derselben Messung nicht zurück |
+| Versionsnummern | Semantic Versioning `MAJOR.MINOR.PATCH` aus `package.json`, angezeigt unter Einstellungen › Über. Jeder Push auf `main` = eine Version mit Tag `vX.Y.Z`, Abschnitt in `CHANGELOG.md` und GitHub Release; der Deploy bricht ohne passenden Tag ab. Vor 1.0.0 `0.<Phase>.<n>`, frühere Phasen nachträglich als `v0.0.0`–`v0.10.0` getaggt (Commit „Phase N abgeschlossen/deployt“). 1.0.0 nach bestandenem iPhone-Test (Jan, 25.10.2026) |
+| Splashscreen | Startbilder aus den Tokens per `npm run splash` (eigenes Skript, keine Abhängigkeit), nur für das iPhone 16e (1170 × 2532), hell und dunkel; ob iOS die Dunkel-Variante nutzt, zeigt der iPhone-Test (25.10.2026) |
 
 Offen nur noch:
 
@@ -385,6 +389,12 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**25.10.2026 · Phase 11 (Feinschliff) bis auf den iPhone-Test erledigt** – 11a Abweichungen vom Prototyp, 11b Startbilder und Manifest-`id`, 11c Darstellung/Über und Vorschau nur im Entwicklungsmodus, Versionierung (Tags `v0.0.0`–`v0.10.0`, `CHANGELOG.md`, Prüfung im Workflow, Regeln in `CLAUDE.md`). Lokal als Version 0.11.0 vorbereitet, noch nicht gepusht. Nächster Schritt: nach Jans OK pushen, Jan testet mit `docs/iphone-test.md`; danach Version 1.0.0.
+
+- Abgleich im Headless-Chrome bei 390 px (alle Prototypen gegen die App mit Beispieldaten). Behoben: Wochen-/Tagesbudget ohne Tausenderpunkt und „kcal“ zu weit weg (`formatInputNumber`, Feldbreite folgt dem Inhalt), „74kg“, Punkt im leeren Ring, Kalender-Legende zweizeilig, Darstellung/Über fehlten.
+- Bleibt bewusst: „Lebensmittel suchen“ (Suche umfasst BLS), kein „…“-Menü im Produktdetail, leerer Slot zeigt „0 kcal“ wie in `Kern.dc.html` (`Leer.dc.html` ohne).
+- Nicht optisch geprüft: Kamera im Scanner, Wischen zum Löschen, Toast, Sheets „Nicht gefunden“/„Offline“ (alles in früheren Phasen auf dem iPhone getestet).
 
 **25.10.2026 · Phase 10 (Export) abgeschlossen** – deployt und von Jan auf dem iPhone getestet (Teilen, CSV, Datumsfelder, Hell/Dunkel). 10a Rechenlogik `src/logic/export.ts`, 10b `src/db/export.ts`, 10c Screen `src/screens/einstellungen/ExportScreen.tsx` (Einstellungen › Daten › Export). 893 Tests grün, Build und Lint sauber. Im Headless-Chrome bei 390 px geprüft (Hell/Dunkel, alle Ebenen, CSV/JSON, Frei). Nächster Schritt: Phase 11 (Feinschliff).
 
