@@ -335,7 +335,8 @@ Gestrichen (Jan, 22.10.2026): Wasser-Tracking macht die App unnötig kompliziert
 - [x] Vorschauseite im Build ausblenden, „Über“ mit Quellenhinweisen OFF und BLS
 - [x] Abgleich aller Screens mit Prototypen und Screenshots, Abweichungen behoben
 - [x] Versionsnummern (Semantic Versioning), Changelog, Tags, Prüfung im Deploy
-- [ ] Offline- und Backup-Test auf dem iPhone (Checkliste `docs/iphone-test.md`), alle Phasen abgehakt
+- [x] Offline- und Backup-Test auf dem iPhone (Checkliste `docs/iphone-test.md`), alle Phasen abgehakt
+- [x] Nach dem Test: Häkchen beim schnellen Blättern, „geprüft“ im Mengen-Schritt, Willkommensbildschirm mit „Aus Backup laden“
 - [x] Anleitung inkl. Kurzbefehl für Apple Health (`docs/kurzbefehl-gewichte.md` reicht, Jan 25.10.2026)
 
 ## 7. Entscheidungen zu früher offenen Fragen
@@ -392,7 +393,9 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**25.10.2026 · Phase 11 (Feinschliff) bis auf den iPhone-Test erledigt** – 11a Abweichungen vom Prototyp, 11b Startbilder und Manifest-`id`, 11c Darstellung/Über und Vorschau nur im Entwicklungsmodus, Versionierung (Tags `v0.0.0`–`v0.10.0`, `CHANGELOG.md`, Prüfung im Workflow, Regeln in `CLAUDE.md`). Version 0.11.0 deployt und von Jan auf dem iPhone getestet (Checkliste bestanden). Danach als 0.11.1: Häkchen „vollständig“ beim schnellen Blättern behoben, Badge „geprüft“ im Mengen-Schritt, Willkommensbildschirm mit „Aus Backup laden“. Nächster Schritt: Jan testet 0.11.1, danach Version 1.0.0 und Phase 11 abschließen.
+**25.10.2026 · Phase 11 (Feinschliff) abgeschlossen, Version 1.0.0** – alle Phasen erledigt, 0.11.1 von Jan auf dem iPhone bestätigt; die App ist ab jetzt in Nutzung. Weitere Änderungen als 1.0.x (Fehler) bzw. 1.x.0 (Funktionen) nach `CHANGELOG.md`.
+
+Verlauf Phase 11: 11a Abweichungen vom Prototyp, 11b Startbilder und Manifest-`id`, 11c Darstellung/Über und Vorschau nur im Entwicklungsmodus, Versionierung (Tags `v0.0.0`–`v0.10.0`, `CHANGELOG.md`, Prüfung im Workflow, Regeln in `CLAUDE.md`). Version 0.11.0 deployt und von Jan auf dem iPhone getestet (Checkliste bestanden). Danach als 0.11.1: Häkchen „vollständig“ beim schnellen Blättern behoben, Badge „geprüft“ im Mengen-Schritt, Willkommensbildschirm mit „Aus Backup laden“. Nächster Schritt: Jan testet 0.11.1, danach Version 1.0.0 und Phase 11 abschließen.
 
 - Abgleich im Headless-Chrome bei 390 px (alle Prototypen gegen die App mit Beispieldaten). Behoben: Wochen-/Tagesbudget ohne Tausenderpunkt und „kcal“ zu weit weg (`formatInputNumber`, Feldbreite folgt dem Inhalt), „74kg“, Punkt im leeren Ring, Kalender-Legende zweizeilig, Darstellung/Über fehlten.
 - Bleibt bewusst: „Lebensmittel suchen“ (Suche umfasst BLS), kein „…“-Menü im Produktdetail, leerer Slot zeigt „0 kcal“ wie in `Kern.dc.html` (`Leer.dc.html` ohne).

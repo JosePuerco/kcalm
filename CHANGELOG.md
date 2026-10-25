@@ -8,6 +8,10 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 1.0.0 – 25.10.2026
+
+Erste Version für die Nutzung: alle Phasen aus `PLAN.md` abgeschlossen, Offline- und Backup-Test auf dem iPhone bestanden. Funktionen wie 0.11.1.
+
 ## 0.11.1 – 25.10.2026
 
 Nachbesserungen nach dem iPhone-Test.
