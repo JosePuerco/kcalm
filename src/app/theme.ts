@@ -7,6 +7,13 @@ import { getSetting, setSetting } from '../db/settings.ts'
 
 export type ThemePref = 'system' | 'light' | 'dark'
 
+/** Auswahl in Einstellungen › Darstellung */
+export const THEME_OPTIONS: readonly { value: ThemePref; label: string }[] = [
+  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Hell' },
+  { value: 'dark', label: 'Dunkel' },
+]
+
 let pref: ThemePref = 'system'
 const listeners = new Set<() => void>()
 const darkQuery = () => window.matchMedia('(prefers-color-scheme: dark)')

@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react'
+import { version } from '../../package.json'
 import { href, useSubPath } from '../app/router.ts'
+import { THEME_OPTIONS, setThemePref, useThemePref } from '../app/theme.ts'
 import { IconChevronRight } from '../components/icons/icons.tsx'
 import { Card } from '../components/ui/Card.tsx'
 import { Screen } from '../components/ui/Screen.tsx'
+import { Segmented } from '../components/ui/Segmented.tsx'
 import { ToggleRow } from '../components/ui/ToggleRow.tsx'
 import { getEstimateEnabled, setEstimateEnabled } from '../db/weights.ts'
 import { useLiveQuery } from '../db/live.ts'
@@ -32,12 +35,13 @@ export function Einstellungen() {
   return <Overview />
 }
 
-// Gruppen nach Einstellungen.dc.html. Funktionen, Darstellung und Über folgen in späteren Phasen.
+// Gruppen nach Einstellungen.dc.html: Ziele, Funktionen, Daten, Darstellung, Über
 function Overview() {
   const slots = useLiveQuery(getSlots, [])
   const today = useToday()
   const profiles = useLiveQuery(loadProfiles, [])
   const estimate = useLiveQuery(getEstimateEnabled, [])
+  const theme = useThemePref()
   const activeId = profiles && profileStatus(profiles.assignments, profiles.versions, today).activeProfileId
   const activeName = profiles?.profiles.find((p) => p.id === activeId)?.name ?? ''
   const slotsMeta = slots
@@ -76,10 +80,27 @@ function Overview() {
       <Group title="Daten">
         <BackupCard />
       </Group>
-      {/* Bis Phase 11: Zugang zur Bausteine-Vorschau (in der PWA gibt es keine Adresszeile) */}
-      <Card padded={false}>
-        <LinkRow to={href('vorschau')} label="Bausteine (Vorschau)" />
-      </Card>
+      <Group title="Darstellung">
+        <Card padded={false} className="px-card-padding py-3">
+          <Segmented label="Erscheinungsbild" inCard options={THEME_OPTIONS} value={theme} onChange={setThemePref} />
+        </Card>
+      </Group>
+      <Group title="Über">
+        {/* Version aus package.json (beim Build eingesetzt); Quellenhinweise für OFF (ODbL) und BLS */}
+        <Card padded={false} className="px-card-padding text-secondary text-muted flex flex-col gap-2 py-3.5 leading-[1.45]">
+          <span>
+            <span className="text-text font-semibold">Kcalm</span> · Version {version} · alle Daten bleiben auf diesem Gerät
+          </span>
+          <span>Produktdaten: Open Food Facts, Lizenz ODbL</span>
+          <span>Grundlebensmittel: Max Rubner-Institut (2025), Bundeslebensmittelschlüssel 4.0</span>
+        </Card>
+      </Group>
+      {/* Bausteine-Vorschau nur im Entwicklungsmodus; im Build fällt der Link weg */}
+      {import.meta.env.DEV && (
+        <Card padded={false}>
+          <LinkRow to={href('vorschau')} label="Bausteine (Vorschau)" />
+        </Card>
+      )}
     </Screen>
   )
 }

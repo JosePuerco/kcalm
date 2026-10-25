@@ -1,7 +1,7 @@
 // Vorschauseite aller Bausteine aus Phase 0. Wird in Phase 11 im Build ausgeblendet.
 // Beispielwerte sind nur zur Darstellung.
 import { useState, type ReactNode } from 'react'
-import { setThemePref, useThemePref, type ThemePref } from '../app/theme.ts'
+import { THEME_OPTIONS, setThemePref, useThemePref, type ThemePref } from '../app/theme.ts'
 import { Button } from '../components/ui/Button.tsx'
 import { Card } from '../components/ui/Card.tsx'
 import { Chip } from '../components/ui/Chip.tsx'
@@ -40,12 +40,6 @@ const typeScale = [
   ['text-tiny', 'tiny 11'],
 ] as const
 
-const themeOptions = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Hell' },
-  { value: 'dark', label: 'Dunkel' },
-] as const
-
 const tabOptions = [
   { value: 'p', label: 'Produkte' },
   { value: 'm', label: 'Mahlzeiten' },
@@ -78,7 +72,7 @@ export function Vorschau() {
           <Segmented
             label="Erscheinungsbild"
             inCard
-            options={themeOptions}
+            options={THEME_OPTIONS}
             value={theme}
             onChange={(v: ThemePref) => setThemePref(v)}
           />

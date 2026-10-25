@@ -1,13 +1,12 @@
 // App-Hülle: füllt den Bildschirm, scrollt selbst nie.
 // Gescrollt wird nur im Scrollbereich des jeweiligen Screens.
-import { useEffect, type ComponentType } from 'react'
+import { Suspense, lazy, useEffect, type ComponentType } from 'react'
 import { OverlayProvider } from '../components/ui/overlay.tsx'
 import { ToastProvider } from '../components/ui/Toast.tsx'
 import { Einstellungen } from '../screens/Einstellungen.tsx'
 import { Lebensmittel } from '../screens/Lebensmittel.tsx'
 import { Statistik } from '../screens/Statistik.tsx'
 import { Tagebuch } from '../screens/Tagebuch.tsx'
-import { Vorschau } from '../screens/Vorschau.tsx'
 import { Setup } from '../screens/setup/Setup.tsx'
 import { AddSheet } from '../screens/add/AddSheet.tsx'
 import { useLiveQuery } from '../db/live.ts'
@@ -18,7 +17,11 @@ import { Navigation } from './Navigation.tsx'
 import { useRoute, useSubPath, type Route } from './router.ts'
 import { initTheme } from './theme.ts'
 
-const screens: Record<Route, ComponentType> = {
+// Bausteine-Vorschau nur im Entwicklungsmodus: Im Build ist DEV false, der Import fällt weg
+// und #/vorschau zeigt das Tagebuch.
+const Vorschau = import.meta.env.DEV ? lazy(() => import('../screens/Vorschau.tsx').then((m) => ({ default: m.Vorschau }))) : null
+
+const screens: Record<Route, ComponentType | null> = {
   tagebuch: Tagebuch,
   statistik: Statistik,
   lebensmittel: Lebensmittel,
@@ -41,7 +44,7 @@ export function App() {
   // undefined = lädt noch; live, damit nach Abschluss oder Backup-Import sofort das Tagebuch kommt
   const setupDone = useLiveQuery(isSetupDone, [])
 
-  const CurrentScreen = screens[route]
+  const CurrentScreen = screens[route] ?? Tagebuch
 
   return (
     // Referenzbreite 390, fluid bis 430 (DESIGN.md 2)
@@ -51,7 +54,9 @@ export function App() {
           {setupDone === false && <Setup />}
           {setupDone && (
             <>
-              <CurrentScreen key={route} />
+              <Suspense fallback={null}>
+                <CurrentScreen key={route} />
+              </Suspense>
               {!isSubPage && <Navigation current={route} onAdd={() => openAddSheet()} />}
               <AddSheet />
               <PendingSync />
