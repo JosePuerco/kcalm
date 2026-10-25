@@ -1,5 +1,5 @@
 // Backup importieren: Dateiauswahl + Import-Sheet (eigenes Design, mit Jan abgestimmt).
-// Genutzt in den Einstellungen (Gruppe „Daten“) und in der Ersteinrichtung (Schritt 4).
+// Genutzt in den Einstellungen (Gruppe „Daten“) und im Willkommensbildschirm der Ersteinrichtung.
 import { useRef, useState, type ReactNode } from 'react'
 import { Sheet } from '../components/ui/Sheet.tsx'
 import { useToast } from '../components/ui/toastContext.ts'

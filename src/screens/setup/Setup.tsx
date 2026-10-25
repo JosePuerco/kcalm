@@ -1,5 +1,5 @@
-// Ersteinrichtung in 4 Schritten nach Start.dc.html (Schritt 2 ist der Prototyp; 1, 3 und 4 im selben Stil,
-// mit Jan abgestimmt): 1 Slots, 2 Profil, 3 Optionen, 4 Backup-Hinweis.
+// Ersteinrichtung nach Start.dc.html (Schritt 2 ist der Prototyp; die anderen im selben Stil, mit Jan abgestimmt):
+// 0 Willkommen (neu einrichten oder aus Backup laden), dann 4 Schritte: 1 Slots, 2 Profil, 3 Optionen, 4 Backup-Hinweis.
 // Gespeichert wird erst am Ende in einem Rutsch (completeSetup), Abbrechen hinterlässt nichts.
 import { useState, type ReactNode } from 'react'
 import { IconBack } from '../../components/icons/icons.tsx'
@@ -12,6 +12,7 @@ import { emptyProfileForm, profileFieldId, validateProfileForm, type ProfileErro
 import { DEFAULT_SLOTS, validateSlots, type SlotErrors } from '../../logic/slots.ts'
 import { useBackupImport } from '../useBackupImport.tsx'
 import { ProfileFields } from './ProfileFields.tsx'
+import { Welcome } from './Welcome.tsx'
 import { SlotEditor } from './SlotEditor.tsx'
 
 const STEPS = 4
@@ -19,7 +20,8 @@ const STEPS = 4
 export function Setup() {
   const toast = useToast()
   const backupImport = useBackupImport()
-  const [step, setStep] = useState(1)
+  // 0 = Willkommen
+  const [step, setStep] = useState(0)
   const [slots, setSlots] = useState(() => DEFAULT_SLOTS.map((s) => ({ ...s })))
   const [slotErrors, setSlotErrors] = useState<{ errors: SlotErrors; general?: string }>({ errors: {} })
   const [profile, setProfile] = useState(emptyProfileForm)
@@ -89,38 +91,35 @@ export function Setup() {
       title: 'Deine Daten',
       text: 'Kcalm speichert alles nur auf diesem iPhone, ohne Konto und ohne Server.',
       body: (
-        <>
-          <Card className="text-label text-muted flex flex-col gap-2 leading-[1.45]">
-            <p>
-              Sichere regelmäßig unter Einstellungen → Backup, zum Beispiel in iCloud Drive. Ist das letzte Backup
-              älter als 14 Tage, erinnert dich Kcalm daran.
-            </p>
-            <p>Wenn du Kcalm neu installiert hast, kannst du hier dein Backup einspielen.</p>
-          </Card>
-          <Button variant="secondary" className="w-full" onClick={backupImport.pick}>
-            Backup importieren
-          </Button>
-        </>
+        <Card className="text-label text-muted leading-[1.45]">
+          Sichere regelmäßig unter Einstellungen → Backup, zum Beispiel in iCloud Drive. Ist das letzte Backup älter
+          als 14 Tage, erinnert dich Kcalm daran.
+        </Card>
       ),
     },
+  }
+  if (step === 0) {
+    // Nach dem Import zeigt die App von selbst das Tagebuch (das Backup enthält den Abschluss der Einrichtung)
+    return (
+      <>
+        <Welcome onStart={() => setStep(1)} onRestore={backupImport.pick} />
+        {backupImport.element}
+      </>
+    )
   }
   const current = content[step] ?? content[1]!
 
   return (
     <>
       <header className="pt-safe-header flex shrink-0 items-center justify-between px-2">
-        {step > 1 ? (
-          <button
-            type="button"
-            aria-label="Zurück"
-            onClick={() => setStep(step - 1)}
-            className="press text-text flex size-11 items-center justify-center"
-          >
-            <IconBack />
-          </button>
-        ) : (
-          <span className="size-11" />
-        )}
+        <button
+          type="button"
+          aria-label="Zurück"
+          onClick={() => setStep(step - 1)}
+          className="press text-text flex size-11 items-center justify-center"
+        >
+          <IconBack />
+        </button>
         <div className="flex gap-1.5" role="progressbar" aria-label={`Schritt ${step} von ${STEPS}`} aria-valuenow={step} aria-valuemin={1} aria-valuemax={STEPS}>
           {Array.from({ length: STEPS }, (_, i) => (
             <span key={i} className={`h-[5px] w-[22px] rounded-[3px] ${i < step ? 'bg-accent' : 'bg-switch-off'}`} />
