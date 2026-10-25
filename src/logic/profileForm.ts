@@ -2,7 +2,7 @@
 // Zahlen als Text mit Dezimalkomma; gerechnet wird mit goals.ts.
 
 import type { MacroMode, MacroTarget, ProfileVersion } from '../db/types.ts'
-import { formatNumber } from './format.ts'
+import { formatAmount, formatNumber } from './format.ts'
 import { GPERKG_MACROS, KCAL_PER_GRAM, MACRO_KEYS, fixedDailyTarget, macroGoals, type MacroKey } from './goals.ts'
 import { parseDecimal, toInput } from './productForm.ts'
 
@@ -132,6 +132,12 @@ export function weeklyFromDaily(dailyText: string): string {
 export function dailyFromWeekly(weeklyText: string): string {
   const v = parseDecimal(weeklyText)
   return typeof v === 'number' && v > 0 ? toInput(Math.round(fixedDailyTarget(v))) : ''
+}
+
+/** Zahl im Eingabefeld ohne Fokus im deutschen Format („19600“ → „19.600“); Unlesbares bleibt stehen */
+export function formatInputNumber(text: string): string {
+  const v = parseDecimal(text)
+  return typeof v === 'number' ? formatAmount(v) : text
 }
 
 /** Summe der Prozente, wenn alle drei Makros in % sind (muss 100 ergeben); sonst null */

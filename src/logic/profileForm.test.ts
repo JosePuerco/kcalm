@@ -3,6 +3,7 @@ import type { ProfileVersion } from '../db/types.ts'
 import {
   changeMode,
   dailyFromWeekly,
+  formatInputNumber,
   percentTotal,
   weeklyFromDaily,
   emptyProfileForm,
@@ -109,6 +110,15 @@ describe('Tagesbudget', () => {
     expect(weeklyFromDaily('2142,5')).toBe('14997,5')
     expect(weeklyFromDaily('')).toBe('')
     expect(weeklyFromDaily('abc')).toBe('')
+  })
+
+  it('formatInputNumber: deutsches Format ohne Fokus, Rest unverändert', () => {
+    expect(formatInputNumber('19600')).toBe('19.600')
+    expect(formatInputNumber('14997,5')).toBe('14.997,5')
+    expect(formatInputNumber('2800')).toBe('2.800')
+    expect(formatInputNumber('950')).toBe('950')
+    expect(formatInputNumber('')).toBe('')
+    expect(formatInputNumber('abc')).toBe('abc')
   })
 
   it('dailyFromWeekly: ÷ 7 gerundet', () => {

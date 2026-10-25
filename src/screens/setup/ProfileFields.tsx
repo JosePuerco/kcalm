@@ -12,6 +12,7 @@ import {
   MODE_LABEL,
   changeMode,
   dailyFromWeekly,
+  formatInputNumber,
   nextMode,
   percentTotal,
   presetFor,
@@ -40,6 +41,10 @@ export function ProfileFields({ values, errors, onChange, trendKg = null }: Prop
   const total = percentTotal(values.macros)
   // Während der Eingabe im Tagesfeld den getippten Text zeigen, sonst den Wert aus dem Wochenbudget
   const [dailyText, setDailyText] = useState<string | null>(null)
+  // Ohne Fokus mit Tausenderpunkt („19.600“), beim Tippen nur die Ziffern
+  const [weeklyFocused, setWeeklyFocused] = useState(false)
+  const weeklyShown = weeklyFocused ? values.weeklyKcal : formatInputNumber(values.weeklyKcal)
+  const dailyShown = dailyText ?? formatInputNumber(dailyFromWeekly(values.weeklyKcal))
   const set = <K extends keyof ProfileFormValues>(key: K, value: ProfileFormValues[K]) =>
     onChange({ ...values, [key]: value })
   const setMacroValue = (key: MacroKey, value: string) =>
@@ -70,16 +75,26 @@ export function ProfileFields({ values, errors, onChange, trendKg = null }: Prop
         </label>
         <div className="mt-1 flex items-baseline justify-between gap-3">
           <span className="flex min-w-0 items-baseline">
-            <input
-              id={profileFieldId('weeklyKcal')}
-              inputMode="numeric"
-              value={values.weeklyKcal}
-              placeholder="19600"
-              aria-invalid={errors.weeklyKcal ? true : undefined}
-              onChange={(e) => set('weeklyKcal', e.target.value)}
-              className="text-ring text-text placeholder:text-chevron-muted w-[5.2ch] min-w-0 bg-transparent outline-none"
-            />
-            <span className="text-body-large text-muted font-medium"> kcal</span>
+            {/* Breite folgt dem Inhalt: unsichtbarer Text gleicher Schrift, das Feld liegt darüber,
+                damit „kcal“ direkt an der Zahl steht (Start.dc.html) */}
+            <span className="text-ring inline-grid min-w-0">
+              <span aria-hidden="true" className="invisible col-start-1 row-start-1 whitespace-pre">
+                {weeklyShown || '19.600'}
+              </span>
+              <input
+                id={profileFieldId('weeklyKcal')}
+                inputMode="numeric"
+                size={1}
+                value={weeklyShown}
+                placeholder="19.600"
+                aria-invalid={errors.weeklyKcal ? true : undefined}
+                onFocus={() => setWeeklyFocused(true)}
+                onBlur={() => setWeeklyFocused(false)}
+                onChange={(e) => set('weeklyKcal', e.target.value)}
+                className="text-text placeholder:text-chevron-muted col-start-1 row-start-1 w-full min-w-0 bg-transparent outline-none"
+              />
+            </span>
+            <span className="text-body-large text-muted ml-1 font-medium">kcal</span>
           </span>
           {/* Tagesbudget direkt eintippbar; die App rechnet × 7 (Wunsch von Jan, Ergänzung zum Prototyp) */}
           <label className="text-label text-muted flex items-baseline whitespace-nowrap">
@@ -87,15 +102,15 @@ export function ProfileFields({ values, errors, onChange, trendKg = null }: Prop
             <input
               inputMode="numeric"
               aria-label="Tagesbudget in kcal"
-              value={dailyText ?? dailyFromWeekly(values.weeklyKcal)}
-              placeholder="2800"
+              value={dailyShown}
+              placeholder="2.800"
               onFocus={() => setDailyText(dailyFromWeekly(values.weeklyKcal))}
               onBlur={() => setDailyText(null)}
               onChange={(e) => {
                 setDailyText(e.target.value)
                 set('weeklyKcal', weeklyFromDaily(e.target.value))
               }}
-              className="text-body-large text-text placeholder:text-chevron-muted border-line min-h-touch-min mx-1 w-[4.5ch] border-b bg-transparent text-right font-semibold outline-none"
+              className="text-body-large text-text placeholder:text-chevron-muted border-line min-h-touch-min mx-1 w-[5ch] border-b bg-transparent text-right font-semibold outline-none"
             />
             / Tag
           </label>
@@ -167,7 +182,7 @@ export function ProfileFields({ values, errors, onChange, trendKg = null }: Prop
               onChange={(e) => set('weightKg', e.target.value)}
               className="text-body-large text-text placeholder:text-muted min-h-touch-min w-14 bg-transparent text-right font-semibold outline-none"
             />
-            <span className="text-body-large font-semibold"> kg</span>
+            <span className="text-body-large ml-1 font-semibold">kg</span>
           </span>
         </div>
         <FieldError text={errors.weightKg} />

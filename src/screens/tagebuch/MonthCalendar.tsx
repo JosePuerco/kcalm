@@ -40,7 +40,7 @@ export function MonthCalendar({ month, selected, today, completeDates, onMonth, 
             <IconArrowRight size={16} />
           </button>
         </div>
-        <span className="text-small text-muted pr-1">Punkt = vollständig</span>
+        <span className="text-small text-muted pr-1 whitespace-nowrap">Punkt = vollständig</span>
       </div>
       <div className="grid grid-cols-7 gap-y-0.5">
         {WEEKDAYS.map((w) => (

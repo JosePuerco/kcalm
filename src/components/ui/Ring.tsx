@@ -31,6 +31,8 @@ export function Ring({ progress, value, label, over = false }: Props) {
           fill="none"
           strokeWidth={STROKE}
           strokeLinecap="round"
+          // Bei 0 zeichnet das runde Linienende sonst einen Punkt (Leer.dc.html: Ring leer)
+          strokeOpacity={frac > 0 ? 1 : 0}
           strokeDasharray={`${(CIRC * frac).toFixed(1)} ${CIRC.toFixed(1)}`}
           transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
           className={over ? 'stroke-over' : 'stroke-accent'}
