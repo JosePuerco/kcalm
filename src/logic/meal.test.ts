@@ -15,6 +15,7 @@ import {
   relabelMealItems,
   scaledAmount,
   stepLineAmount,
+  templateLines,
   validateMeal,
   type MealLine,
 } from './meal.ts'
@@ -104,6 +105,20 @@ describe('Skalierung', () => {
 
   it('fehlendes Lebensmittel → keine Nährwerte', () => {
     expect(lineNutrients({ ref: milch.ref, food: null, on: false, amount: 250 }, 1)).toBeNull()
+  })
+})
+
+describe('templateLines', () => {
+  it('Mengen zurück auf die Vorlage, Haken bleiben', () => {
+    const changed = linesWith(0, { amount: 80 }).map((l, i) => (i === 2 ? { ...l, on: false } : l))
+    const reset = templateLines(changed, meal)
+    expect(reset.map((l) => [l.on, l.amount])).toEqual([
+      [true, 60],
+      [true, 250],
+      [false, 120],
+    ])
+    // ×2 danach: genau das Doppelte der Vorlage
+    expect(scaledAmount(reset[0] as MealLine, 2)).toBe(120)
   })
 })
 

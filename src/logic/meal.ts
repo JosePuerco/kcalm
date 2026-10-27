@@ -26,6 +26,14 @@ export function initialMealLines(meal: Meal, resolve: (ref: FoodRef) => FoodChoi
   })
 }
 
+/**
+ * Tipp auf einen Faktor-Chip: alle Mengen zurück auf die Vorlage, damit ×2 immer genau das Doppelte der
+ * Vorlage ist; Handänderungen fallen weg, Haken bleiben (Jan, 27.10.2026).
+ */
+export function templateLines(lines: readonly MealLine[], meal: Pick<Meal, 'items'>): MealLine[] {
+  return lines.map((l, i) => ({ ...l, amount: meal.items[i]?.amount ?? l.amount }))
+}
+
 /** Angezeigte Menge: 60 g bei ×1,5 → 90 g */
 export function scaledAmount(line: MealLine, scale: number): number {
   return line.amount * scale

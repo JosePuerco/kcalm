@@ -3,6 +3,7 @@
 // Tipp auf eine Menge: Zeile blau umrandet, unten der Ziffernblock statt des Knopfs (mit Jan abgestimmt).
 // Name und Zurück stehen im Sheet-Kopf; „Vorlage bearbeiten“ unter der Liste statt oben rechts.
 // −/+ 44 statt 40 px (Touch-Ziel, CLAUDE.md).
+// Faktor-Chips setzen alle Mengen auf Vorlage × Faktor; nach einer Handänderung ist kein Chip aktiv (Jan, 27.10.2026).
 import { useState } from 'react'
 import { IconCheck, IconMinus, IconPlus } from '../../components/icons/icons.tsx'
 import { Button } from '../../components/ui/Button.tsx'
@@ -22,6 +23,7 @@ import {
   mealTotals,
   scaledAmount,
   stepLineAmount,
+  templateLines,
   type MealLine,
   type MealScale,
 } from '../../logic/meal.ts'
@@ -38,6 +40,8 @@ type Props = {
 export function MealStep({ meal, resolve, slotName, busy, onAdd, onEditTemplate }: Props) {
   const [lines, setLines] = useState(() => initialMealLines(meal, resolve))
   const [scale, setScale] = useState<MealScale>(1)
+  // Mengen von Hand geändert: dann ist kein Faktor-Chip aktiv
+  const [custom, setCustom] = useState(false)
   // Zeile, deren Menge gerade über den Ziffernblock eingegeben wird
   const [typing, setTyping] = useState<number | null>(null)
   const [text, setText] = useState('')
@@ -53,11 +57,21 @@ export function MealStep({ meal, resolve, slotName, busy, onAdd, onEditTemplate 
 
   const update = (index: number, changes: Partial<MealLine>) =>
     setLines((ls) => ls.map((l, i) => (i === index ? { ...l, ...changes } : l)))
+  const changeAmount = (index: number, amount: number) => {
+    update(index, { amount })
+    setCustom(true)
+  }
+  const chooseScale = (s: MealScale) => {
+    setLines((ls) => templateLines(ls, meal))
+    setScale(s)
+    setCustom(false)
+    setTyping(null)
+  }
 
   const typed = parseKeypadValue(text)
   const confirmTyping = () => {
     if (typing === null || typed === null || typed <= 0) return
-    update(typing, { amount: amountFromKeypad(typed, scale) })
+    changeAmount(typing, amountFromKeypad(typed, scale))
     setTyping(null)
   }
 
@@ -84,7 +98,7 @@ export function MealStep({ meal, resolve, slotName, busy, onAdd, onEditTemplate 
       <div className="flex items-center gap-1.5 px-4 pb-2.5" role="group" aria-label="Menge skalieren">
         <span className="text-secondary text-muted mr-1">Menge</span>
         {MEAL_SCALES.map((s) => (
-          <Chip key={s} variant="scale" active={scale === s} onClick={() => setScale(s)}>
+          <Chip key={s} variant="scale" active={!custom && scale === s} onClick={() => chooseScale(s)}>
             ×{formatAmount(s)}
           </Chip>
         ))}
@@ -100,7 +114,7 @@ export function MealStep({ meal, resolve, slotName, busy, onAdd, onEditTemplate 
               first={i === 0}
               typing={typing === i ? text : null}
               onToggle={() => update(i, { on: !line.on })}
-              onStep={(direction) => update(i, { amount: stepLineAmount(line, scale, direction) })}
+              onStep={(direction) => changeAmount(i, stepLineAmount(line, scale, direction))}
               onType={() => {
                 setText('')
                 setTyping(typing === i ? null : i)
