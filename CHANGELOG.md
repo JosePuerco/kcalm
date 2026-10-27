@@ -8,6 +8,15 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 1.2.0 – 27.10.2026
+
+Rückmeldungen zum iPhone-Test von 1.1.0.
+
+- Einheit g/ml gilt jetzt auch für alte Einträge und Mahlzeiten; es ändert sich nur die Bezeichnung, nie Menge oder kcal
+- Einheit g/ml direkt im Prüf-Dialog umstellbar
+- Mahlzeit: Faktor-Chips setzen die Mengen immer auf Vorlage × Faktor; nach einer Handänderung ist kein Chip aktiv
+- Behoben: Nach dem Schließen der Tastatur blieb das Sheet auf dem iPhone manchmal hochgeschoben, unten leer
+
 ## 1.1.0 – 27.10.2026
 
 Wünsche nach 1.0 (Phase 12).
