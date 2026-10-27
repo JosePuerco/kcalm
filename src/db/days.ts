@@ -12,6 +12,12 @@ export async function setDayComplete(date: LocalDate, complete: boolean, now = n
   })
 }
 
+/** Alle als vollständig markierten Tage (Punkte im Kalender) */
+export async function getCompleteDates(): Promise<Set<LocalDate>> {
+  const days = await db.days.filter((d) => d.deletedAt === null && d.complete).toArray()
+  return new Set(days.map((d) => d.date))
+}
+
 export async function isDayComplete(date: LocalDate): Promise<boolean> {
   const day = await db.days.where('date').equals(date).first()
   return day?.deletedAt === null && day.complete

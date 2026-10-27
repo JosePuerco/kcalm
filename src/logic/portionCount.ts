@@ -10,6 +10,8 @@ import { parseKeypadValue } from './keypad.ts'
 export interface AmountInput {
   text: string
   portion: Portion | null
+  /** vorbelegt (nach Tipp auf einen Chip): die erste Taste ersetzt den Text statt anzuhängen */
+  fresh?: boolean
 }
 
 export const EMPTY_INPUT: AmountInput = { text: '', portion: null }
@@ -46,16 +48,26 @@ export function inputPortionLabel(food: FoodChoice, input: AmountInput): string 
   return portionLabelFor(food, amount)
 }
 
-/** Tipp auf einen Portions-Chip: Anzahl 1 dieser Portion */
+/** Tipp auf einen Portions-Chip: Anzahl 1 dieser Portion; die erste Taste ersetzt die 1 („4“ statt „14“) */
 export function selectPortion(portion: Portion): AmountInput {
-  return { text: '1', portion }
+  return { text: '1', portion, fresh: true }
+}
+
+/** Wert, von dem der Ziffernblock ausgeht: vorbelegter Text zählt als leer */
+export function keypadText(input: AmountInput): string {
+  return input.fresh ? '' : input.text
+}
+
+/** Neuer Text vom Ziffernblock; danach ist nichts mehr vorbelegt */
+export function withText(input: AmountInput, text: string): AmountInput {
+  return { text, portion: input.portion }
 }
 
 /** Chip „g“: zurück zur Menge in g/ml, die bisherige Menge bleibt (auf eine Nachkommastelle für den Ziffernblock) */
 export function selectGrams(input: AmountInput): AmountInput {
   if (!input.portion) return input
   const amount = inputAmount(input)
-  return amount === null ? EMPTY_INPUT : gramsInput(Math.round(amount * 10) / 10)
+  return amount === null ? EMPTY_INPUT : { ...gramsInput(Math.round(amount * 10) / 10), fresh: true }
 }
 
 /** Ist dieser Chip gerade aktiv? Vergleich über Name und Menge (beim Bearbeiten ist die Portion nachgebaut) */

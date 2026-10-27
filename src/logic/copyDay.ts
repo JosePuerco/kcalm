@@ -4,15 +4,20 @@
 import type { Entry, LocalDate } from '../db/types.ts'
 import type { NewEntryFields } from './addFood.ts'
 
+export interface CopyOptions {
+  slotId?: string
+  targetSlotId?: string
+}
+
 /**
  * Felder der Kopien für den Zieltag, in der Reihenfolge der Anlage.
- * slotId: nur diesen Slot kopieren. Mahlzeiten-Gruppen bekommen neue Gruppen-ids,
- * damit Kopie und Original getrennt bearbeitet werden können.
+ * slotId: nur diesen Slot kopieren. targetSlotId: alles in diesen Slot statt in den gleichen (Phase 12d).
+ * Mahlzeiten-Gruppen bekommen neue Gruppen-ids, damit Kopie und Original getrennt bearbeitet werden können.
  */
 export function copiedEntries(
   source: readonly Entry[],
   targetDate: LocalDate,
-  options: { slotId?: string; newId?: () => string } = {},
+  options: CopyOptions & { newId?: () => string } = {},
 ): NewEntryFields[] {
   const newId = options.newId ?? (() => crypto.randomUUID())
   const groups = new Map<string, string>()
@@ -27,7 +32,7 @@ export function copiedEntries(
       }
       return {
         date: targetDate,
-        slotId: e.slotId,
+        slotId: options.targetSlotId ?? e.slotId,
         kind: e.kind,
         ref: e.ref,
         nameSnapshot: e.nameSnapshot,

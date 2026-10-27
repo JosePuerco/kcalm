@@ -12,9 +12,11 @@ import { nutrientsForAmount } from '../../logic/nutrients.ts'
 import {
   inputAmount,
   isActivePortion,
+  keypadText,
   portionName,
   selectGrams,
   selectPortion,
+  withText,
   type AmountInput,
 } from '../../logic/portionCount.ts'
 
@@ -67,7 +69,7 @@ export function AmountStep({ food, input, onInput, onBack, confirmLabel, onConfi
           <span className="text-hero flex min-w-0 items-baseline">
             {input.text || '0'}
             {/* Abstand per Rand statt Leerzeichen: am Anfang eines Flex-Kinds fiele es weg */}
-            <span className="text-unit text-muted ml-1 truncate">
+            <span className="text-unit text-muted ml-1 truncate tracking-normal">
               {input.portion ? `× ${portionName(input.portion)}` : food.unit}
             </span>
           </span>
@@ -114,7 +116,7 @@ export function AmountStep({ food, input, onInput, onBack, confirmLabel, onConfi
       )}
 
       <div className="mt-auto">
-        <Keypad value={input.text} onChange={(text) => onInput({ ...input, text })} />
+        <Keypad value={keypadText(input)} onChange={(text) => onInput(withText(input, text))} />
       </div>
       <div className="mt-2.5 flex gap-2">
         {secondary}

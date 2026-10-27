@@ -1,5 +1,5 @@
 // Such-Schritt im Hinzufügen-Sheet nach Kern.dc.html: Suchfeld, Liste „Zuletzt gegessen“ bzw. „Treffer lokal“
-// (Name, Quelle, geprüft-Häkchen, kcal/100), darüber „Schnelleintrag“ / „Mahlzeiten“ / „Rezepte“, neben dem Suchfeld
+// (Name, Quelle, geprüft-Häkchen, kcal/100), darüber „Schnelleintrag“ / „Mahlzeiten“ / „Rezepte“ / „Kopieren“, neben dem Suchfeld
 // der Scan-Knopf, beim Suchen darunter „In Open Food Facts suchen“. Passende Mahlzeiten stehen oben in den Treffern.
 // Auch als Auswahl im Rezept und in der Mahlzeit (ohne diese Knöpfe und ohne Scan).
 import { useMemo } from 'react'
@@ -34,6 +34,8 @@ type Props = {
   /** fehlt = keine Knöpfe „Mahlzeiten“ / „Rezepte“ und keine Mahlzeiten in den Treffern */
   onMeals?: () => void
   onRecipes?: () => void
+  /** fehlt = kein Knopf „Kopieren“ (von einem anderen Tag, Phase 12d) */
+  onCopy?: () => void
   onPickMeal?: (meal: Meal) => void
 }
 
@@ -50,6 +52,7 @@ export function SearchStep({
   exclude,
   onMeals,
   onRecipes,
+  onCopy,
   onPickMeal,
 }: Props) {
   const { resolve, productIndex } = resolver
@@ -95,12 +98,13 @@ export function SearchStep({
         )}
       </div>
 
-      {onQuick || onMeals || onRecipes ? (
-        <div className="flex gap-2 px-4 pt-2.5 pb-1.5">
+      {onQuick || onMeals || onRecipes || onCopy ? (
+        <div className="flex shrink-0 gap-2 overflow-x-auto px-4 pt-2.5 pb-1.5 [scrollbar-width:none]">
           {[
             { label: 'Schnelleintrag', onClick: onQuick },
             { label: 'Mahlzeiten', onClick: onMeals },
             { label: 'Rezepte', onClick: onRecipes },
+            { label: 'Kopieren', onClick: onCopy },
           ].map(
             (b) =>
               b.onClick && (
@@ -108,7 +112,7 @@ export function SearchStep({
                   key={b.label}
                   type="button"
                   onClick={b.onClick}
-                  className="press bg-card text-text rounded-small-button text-secondary flex min-h-9 items-center px-3 font-medium"
+                  className="press bg-card text-text rounded-small-button text-secondary flex min-h-9 shrink-0 items-center px-3 font-medium whitespace-nowrap"
                 >
                   {b.label}
                 </button>

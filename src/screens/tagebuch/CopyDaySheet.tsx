@@ -1,7 +1,10 @@
 // „Tag kopieren…“ aus Leer.dc.html. Eigenes Design (kein Prototyp, mit Jan abgestimmt): Quelltag im
 // Monatskalender wählen, dann „Ganzer Tag“ oder einen einzelnen Slot in den angezeigten Tag übernehmen.
+// „Einfügen in“: gleicher Slot oder alles in einen festen Slot, z. B. Abend von gestern ins Mittag (Phase 12d).
+// Im Hinzufügen-Sheet („Kopieren“) ist der Ziel-Slot der dort gewählte; die Chip-Reihe fällt dann weg.
 import { useState } from 'react'
 import { useToday } from '../../app/diaryState.ts'
+import { Chip } from '../../components/ui/Chip.tsx'
 import { Sheet } from '../../components/ui/Sheet.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { copyEntries, getDayEntries } from '../../db/entries.ts'
@@ -25,24 +28,33 @@ type Props = {
 export function CopyDaySheet({ open, onClose, target, slots, completeDates }: Props) {
   return (
     <Sheet open={open} onClose={onClose} title="Tag kopieren" doneLabel="Abbrechen">
-      <CopyBody key={target} target={target} slots={slots} completeDates={completeDates} onDone={onClose} />
+      <CopyDayBody key={target} target={target} slots={slots} completeDates={completeDates} onDone={onClose} />
     </Sheet>
   )
 }
 
-function CopyBody({ target, slots, completeDates, onDone }: Omit<Props, 'open' | 'onClose'> & { onDone: () => void }) {
+type BodyProps = Omit<Props, 'open' | 'onClose'> & {
+  onDone: () => void
+  /** fest vorgegebener Ziel-Slot (Hinzufügen-Sheet); fehlt = Auswahl „Einfügen in“ */
+  fixedSlotId?: string
+}
+
+export function CopyDayBody({ target, slots, completeDates, onDone, fixedSlotId }: BodyProps) {
   const toast = useToast()
   const today = useToday()
   const [source, setSource] = useState(addDays(target, -1))
   const [month, setMonth] = useState(source.slice(0, 7))
   const [busy, setBusy] = useState(false)
+  // undefined = gleicher Slot
+  const [chosenSlotId, setTargetSlotId] = useState<string | undefined>(undefined)
+  const targetSlotId = fixedSlotId ?? chosenSlotId
   const entries = useLiveQuery(() => getDayEntries(source), [source])
   const label = dayLabel(source, today)
 
   const copy = async (slotId?: string) => {
     setBusy(true)
     try {
-      const copies = await copyEntries(source, target, slotId)
+      const copies = await copyEntries(source, target, { slotId, targetSlotId })
       toast(copiedMessage(copies.length))
       onDone()
     } catch (error) {
@@ -54,6 +66,7 @@ function CopyBody({ target, slots, completeDates, onDone }: Omit<Props, 'open' |
 
   const bySlot = entries ? slotsForDay(slots, entries).filter((s) => s.entries.length > 0) : []
   const total = entries ? sumNutrients(entries.map((e) => e.nutrients)).kcal : null
+  const targets = slots.filter((s) => s.deletedAt === null && !s.archived).sort((a, b) => a.order - b.order)
 
   return (
     <div className="scroll-area px-screen-x gap-card-gap flex flex-col pt-1 pb-[calc(24px+env(safe-area-inset-bottom))]">
@@ -65,6 +78,22 @@ function CopyBody({ target, slots, completeDates, onDone }: Omit<Props, 'open' |
         onMonth={setMonth}
         onPick={setSource}
       />
+      {fixedSlotId === undefined && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-small text-muted px-1 tracking-[0.6px] uppercase">Einfügen in</span>
+          {/* Reihe läuft bis zum Rand, wie die Slot-Chips im Hinzufügen-Sheet */}
+          <div className="-mx-screen-x px-screen-x flex gap-1.5 overflow-x-auto [scrollbar-width:none]">
+            <Chip active={targetSlotId === undefined} onClick={() => setTargetSlotId(undefined)}>
+              Gleicher Slot
+            </Chip>
+            {targets.map((s) => (
+              <Chip key={s.id} active={targetSlotId === s.id} onClick={() => setTargetSlotId(s.id)}>
+                {s.name}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      )}
       <span className="text-small text-muted px-1 pt-1 tracking-[0.6px] uppercase">
         Von {label.date}
         {label.relative ? ` · ${label.relative}` : ''}

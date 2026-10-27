@@ -21,6 +21,7 @@ import { Overlay } from '../../components/ui/overlay.tsx'
 import { Sheet } from '../../components/ui/Sheet.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { useBls } from '../../data/bls.ts'
+import { getCompleteDates } from '../../db/days.ts'
 import { addEntries, addEntry, deleteEntry, getEntry, loadFoodSources, updateEntry } from '../../db/entries.ts'
 import { saveOffProduct } from '../../db/off.ts'
 import { resolvePendingScan } from '../../db/pendingScans.ts'
@@ -62,6 +63,7 @@ import { productToForm, type ProductFormValues } from '../../logic/productForm.t
 import { slotForTime } from '../../logic/slots.ts'
 import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
 import { ProductForm } from '../lebensmittel/ProductForm.tsx'
+import { CopyDayBody } from '../tagebuch/CopyDaySheet.tsx'
 import { MonthCalendar } from '../tagebuch/MonthCalendar.tsx'
 import { AmountStep } from './AmountStep.tsx'
 import { CheckStep } from './CheckStep.tsx'
@@ -124,6 +126,8 @@ type Step =
   | { kind: 'quick' }
   | { kind: 'meals' }
   | { kind: 'recipes' }
+  /** Von einem anderen Tag in den gewählten Slot kopieren (Phase 12d) */
+  | { kind: 'copy' }
   /** from: wohin Zurück führt */
   | { kind: 'meal'; meal: Meal; from: 'search' | 'meals' }
   | { kind: 'edit'; entry: Entry }
@@ -143,6 +147,7 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
   const today = useToday()
   const viewed = useDiaryState().date ?? today
   const sources = useLiveQuery(loadFoodSources, [])
+  const completeDates = useLiveQuery(getCompleteDates, [])
   const bls = useBls()
   const blsData = bls.status === 'ready' ? bls.data : null
   const resolver = useFoodResolver(sources, blsData)
@@ -179,6 +184,7 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
     if (step.kind === 'quick') return { title: 'Schnelleintrag', onBack: toSearch }
     if (step.kind === 'meals') return { title: 'Mahlzeiten', onBack: toSearch }
     if (step.kind === 'recipes') return { title: 'Rezepte', onBack: toSearch }
+    if (step.kind === 'copy') return { title: 'Kopieren', onBack: toSearch }
     if (step.kind === 'meal') {
       const back = step.from
       return { title: step.meal.name, onBack: () => setStep(back === 'meals' ? { kind: 'meals' } : { kind: 'search' }) }
@@ -346,9 +352,20 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
               onPickOff={pickOff}
               onMeals={() => setStep({ kind: 'meals' })}
               onRecipes={() => setStep({ kind: 'recipes' })}
+              onCopy={() => setStep({ kind: 'copy' })}
               onPickMeal={(meal) => setStep({ kind: 'meal', meal, from: 'search' })}
             />
           )}
+
+        {step.kind === 'copy' && slot && completeDates && (
+          <CopyDayBody
+            target={viewed}
+            slots={slots}
+            completeDates={completeDates}
+            fixedSlotId={slot.id}
+            onDone={closeAddSheet}
+          />
+        )}
 
         {step.kind === 'meals' && sources && (
           <GroupListStep

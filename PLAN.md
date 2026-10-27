@@ -346,7 +346,7 @@ Mit Jan abgestimmt am 27.10.2026.
 - [x] 12a Mengen-Schritt startet bei neuen Einträgen leer (statt erste Portion bzw. 100); beim Bearbeiten bleibt die gespeicherte Menge
 - [x] 12b Mehrere Portionen: Tipp auf Portions-Chip schaltet den Ziffernblock auf Anzahl („4 × Reiswaffel“, klein „= 27,2 g“), Chip „g“ zurück; gespeichert wird die Menge in g plus `portionLabel`
 - [x] 12c Makros pro Slot: aufgeklappt eine graue Zeile „E 32 g · K 80 g · F 20 g · B 5 g“ unter dem Slot-Namen
-- [ ] 12d Tag kopieren: Chip-Reihe „Einfügen in“ (Gleicher Slot oder ein fester Slot), gilt für Slot-Zeilen und „Ganzer Tag“
+- [x] 12d Tag kopieren: Chip-Reihe „Einfügen in“ (Gleicher Slot oder ein fester Slot), gilt für Slot-Zeilen und „Ganzer Tag“; zusätzlich Knopf „Kopieren“ im Hinzufügen-Sheet, Ziel = dort gewählter Slot (Jan, 27.10.2026: Tag kopieren gab es sonst nur an leeren Tagen)
 - [ ] 12e Einheit g/ml bei OFF- und BLS-Lebensmitteln umstellbar: `productOverrides.unit` (null = Original), Backup-Format und Datenbank-Version 5 mit Migration; alte Einträge bleiben (Snapshot)
 
 ## 7. Entscheidungen zu früher offenen Fragen

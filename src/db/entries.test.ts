@@ -107,7 +107,7 @@ describe('copyEntries', () => {
     // Produkt ändert sich danach: Kopie übernimmt trotzdem den gespeicherten Wert
     await updateProduct(product.id, { ...skyr, per100: { ...skyr.per100, kcal: 80 } }, t0)
 
-    const all = await copyEntries('2026-10-20', '2026-10-21', undefined, t1)
+    const all = await copyEntries('2026-10-20', '2026-10-21', {}, t1)
     expect(all.map((e) => [e.date, e.slotId, e.nutrients.kcal])).toEqual([
       ['2026-10-21', 'frueh', 157.5],
       ['2026-10-21', 'abend', 63],
@@ -115,8 +115,11 @@ describe('copyEntries', () => {
     expect(all[0]?.createdAt).toBe(t1.toISOString())
     expect(await getDayEntries('2026-10-20')).toHaveLength(2)
 
-    const one = await copyEntries('2026-10-20', '2026-10-22', 'abend', t1)
+    const one = await copyEntries('2026-10-20', '2026-10-22', { slotId: 'abend' }, t1)
     expect(one).toHaveLength(1)
+
+    const moved = await copyEntries('2026-10-20', '2026-10-23', { slotId: 'abend', targetSlotId: 'mittag' }, t1)
+    expect(moved.map((e) => [e.date, e.slotId, e.nutrients.kcal])).toEqual([['2026-10-23', 'mittag', 63]])
   })
 
   it('Kopien behalten die Reihenfolge (createdAt steigt), auch innerhalb einer Mahlzeit', async () => {
@@ -124,7 +127,7 @@ describe('copyEntries', () => {
     const fields = foodEntry(choiceFromProduct(product), 100, '2026-10-20', 's')
     const group = { mealGroupId: crypto.randomUUID(), mealName: 'Frühstück' }
     await addEntries([1, 2, 3, 4].map((n) => ({ ...fields, amount: n, ...group })), t0)
-    const copies = await copyEntries('2026-10-20', '2026-10-21', undefined, t1)
+    const copies = await copyEntries('2026-10-20', '2026-10-21', {}, t1)
     const sorted = [...copies].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     expect(sorted.map((e) => e.amount)).toEqual([1, 2, 3, 4])
   })

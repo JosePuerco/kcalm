@@ -8,10 +8,12 @@ import {
   inputFromEntry,
   inputPortionLabel,
   isActivePortion,
+  keypadText,
   portionCountLabel,
   portionName,
   selectGrams,
   selectPortion,
+  withText,
 } from './portionCount.ts'
 
 const waffel = { label: '1 Reiswaffel', amount: 6.8 }
@@ -71,12 +73,21 @@ describe('inputPortionLabel', () => {
 
 describe('selectPortion / selectGrams', () => {
   it('Chip startet mit Anzahl 1', () => {
-    expect(selectPortion(waffel)).toEqual({ text: '1', portion: waffel })
+    expect(selectPortion(waffel)).toEqual({ text: '1', portion: waffel, fresh: true })
+  })
+
+  it('vorbelegter Text: erste Taste ersetzt, danach wird angehängt', () => {
+    const chosen = selectPortion(waffel)
+    expect(keypadText(chosen)).toBe('')
+    const typed = withText(chosen, '4')
+    expect(typed).toEqual({ text: '4', portion: waffel })
+    expect(keypadText(typed)).toBe('4')
+    expect(keypadText(gramsInput(250))).toBe('250')
   })
 
   it('zurück zu g behält die Menge, eine Nachkommastelle', () => {
-    expect(selectGrams({ text: '4', portion: waffel })).toEqual({ text: '27,2', portion: null })
-    expect(selectGrams({ text: '3', portion: waffel })).toEqual({ text: '20,4', portion: null })
+    expect(selectGrams({ text: '4', portion: waffel })).toEqual({ text: '27,2', portion: null, fresh: true })
+    expect(selectGrams({ text: '3', portion: waffel })).toEqual({ text: '20,4', portion: null, fresh: true })
     expect(selectGrams({ text: '', portion: waffel })).toEqual(EMPTY_INPUT)
     const grams = gramsInput(50)
     expect(selectGrams(grams)).toBe(grams)
@@ -105,6 +116,7 @@ describe('inputFromEntry', () => {
   it('Dezimal-Anzahl und „1 …“', () => {
     expect(inputFromEntry(3.4, '0,5 × Reiswaffel').text).toBe('0,5')
     expect(inputFromEntry(6.8, '1 Reiswaffel')).toEqual({ text: '1', portion: waffel })
+    expect(keypadText(inputFromEntry(6.8, '1 Reiswaffel'))).toBe('1')
   })
 
   it('sonst Menge in g/ml', () => {

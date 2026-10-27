@@ -47,6 +47,16 @@ describe('copiedEntries', () => {
     expect(copiedEntries(source, '2026-10-21', { slotId: 'mittag' })).toHaveLength(1)
   })
 
+  it('in einen anderen Slot: Abend von gestern ins heutige Mittag', () => {
+    const r = copiedEntries(source, '2026-10-21', { slotId: 'mittag', targetSlotId: 'abend' })
+    expect(r.map((e) => [e.slotId, e.nutrients.kcal])).toEqual([['abend', 500]])
+  })
+
+  it('ganzer Tag in einen Slot', () => {
+    const r = copiedEntries(source, '2026-10-21', { targetSlotId: 'snacks' })
+    expect(r.map((e) => e.slotId)).toEqual(['snacks', 'snacks', 'snacks'])
+  })
+
   it('Nährwerte sind eine Kopie, kein geteiltes Objekt', () => {
     const r = copiedEntries(source, '2026-10-21')
     r[0]!.nutrients.kcal = 1
