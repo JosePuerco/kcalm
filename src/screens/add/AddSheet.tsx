@@ -199,6 +199,8 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
 
   // Scan und Auswahl aus der Suche: ungeprüfte OFF-Produkte erst prüfen, dann Menge
   const pick = (food: FoodChoice) => {
+    // Suchfeld sauber verlassen, bevor es verschwindet: sonst schiebt iOS die Seite evtl. nicht zurück
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
     setInput(EMPTY_INPUT)
     setStep(needsCheck(food) ? { kind: 'check', food } : { kind: 'amount', food })
   }
