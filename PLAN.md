@@ -347,7 +347,14 @@ Mit Jan abgestimmt am 27.10.2026.
 - [x] 12b Mehrere Portionen: Tipp auf Portions-Chip schaltet den Ziffernblock auf Anzahl („4 × Reiswaffel“, klein „= 27,2 g“), Chip „g“ zurück; gespeichert wird die Menge in g plus `portionLabel`
 - [x] 12c Makros pro Slot: aufgeklappt eine graue Zeile „E 32 g · K 80 g · F 20 g · B 5 g“ unter dem Slot-Namen
 - [x] 12d Tag kopieren: Chip-Reihe „Einfügen in“ (Gleicher Slot oder ein fester Slot), gilt für Slot-Zeilen und „Ganzer Tag“; zusätzlich Knopf „Kopieren“ im Hinzufügen-Sheet, Ziel = dort gewählter Slot (Jan, 27.10.2026: Tag kopieren gab es sonst nur an leeren Tagen)
-- [x] 12e Einheit g/ml bei OFF- und BLS-Lebensmitteln umstellbar: `productOverrides.unit` (null = Original), Backup-Format und Datenbank-Version 5 mit Migration; alte Einträge bleiben (Snapshot)
+- [x] 12e Einheit g/ml bei OFF- und BLS-Lebensmitteln umstellbar: `productOverrides.unit` (null = Original), Backup-Format und Datenbank-Version 5 mit Migration; alte Einträge bleiben (Snapshot; seit 12f anders)
+
+Nach dem iPhone-Test von 1.1.0 (Jan, 27.10.2026; Version 1.2.0):
+
+- [x] 12f Einheit g/ml gilt auch für alte Einträge und Mahlzeiten-Bestandteile. Nur die Bezeichnung, Menge und Nährwerte bleiben (es wird nie umgerechnet); gilt auch beim Ändern der Einheit eines eigenen Produkts
+- [x] 12g Prüf-Dialog: Einheit g/ml direkt beim Prüfen umstellbar
+- [x] 12h Mahlzeit: Faktor-Chip setzt alle Mengen auf Vorlage × Faktor; nach einer Handänderung ist kein Chip aktiv (Variante 1, mit Jan abgestimmt)
+- [x] 12i iOS: Seite nach dem Schließen der Tastatur auf den Anfang zurücksetzen (Sheet war hochgeschoben, unten leer); Suchfeld vor dem Wechsel zur Menge verlassen
 
 ## 7. Entscheidungen zu früher offenen Fragen
 
@@ -402,6 +409,8 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**27.10.2026 · Rückmeldungen zu 1.1.0 umgesetzt (12f–12i)** – je ein Commit, 936 Tests grün, Build und Lint sauber; Prüf-Dialog mit Einheit und Mahlzeit-Faktoren im Headless-Chrome geprüft. Der Tastatur-Fehler (12i) lässt sich nur auf dem iPhone prüfen. Nächster Schritt: nach Jans OK als 1.2.0 pushen.
 
 **27.10.2026 · Phase 12 (Wünsche nach 1.0) als Version 1.1.0 deployt** – 12a–12e je ein Commit, 931 Tests grün, Build und Lint sauber. Im Headless-Chrome bei 390 px geprüft (Hell/Dunkel): leere Startmenge, „4 × Reiswaffel“ inkl. Bearbeiten, Makros pro Slot, „Einfügen in“, „Kopieren“ im Hinzufügen-Sheet, BLS-Milch in ml. Nächster Schritt: Jan testet 1.1.0 auf dem iPhone (vor allem Datenbank-Update auf Version 5 und Backup-Import).
 
