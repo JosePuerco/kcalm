@@ -1,7 +1,7 @@
 // Prüf-Dialog vor dem Mengen-Schritt (PLAN.md Phase 6): ungeprüftes OFF-Produkt einmal mit dem Etikett
 // vergleichen. „Stimmt so“ = geprüft, „Werte korrigieren“ = Korrekturschicht, „Später prüfen“ fragt beim
 // nächsten Mal wieder. Danach direkt zur Menge. Kein Prototyp: Kopf wie der Mengen-Schritt, Tabelle wie
-// die Nährwert-Karte im Produktdetail.
+// die Nährwert-Karte im Produktdetail. Darüber die Einheit g/ml, weil sie auch auf dem Etikett steht (Jan, 27.10.2026).
 import { useEffect, useState } from 'react'
 import { IconBack } from '../../components/icons/icons.tsx'
 import { Button } from '../../components/ui/Button.tsx'
@@ -16,6 +16,7 @@ import type { FoodChoice } from '../../logic/addFood.ts'
 import { formatNutrient, MAIN_NUTRIENTS, NUTRIENT_INFO } from '../../logic/nutrientInfo.ts'
 import { canVerify, effectiveUnit, mergeNutrients, missingForVerify } from '../../logic/verify.ts'
 import { CorrectionForm } from '../lebensmittel/CorrectionForm.tsx'
+import { UnitCard } from '../lebensmittel/UnitCard.tsx'
 
 type Props = {
   food: FoodChoice
@@ -43,6 +44,7 @@ export function CheckStep({ food, onBack, onDone }: Props) {
   if (!data?.product) return null
   const { product, override } = data
   const mine = mergeNutrients(product.per100, override)
+  const unit = effectiveUnit(product.unit, override)
   const missing = missingForVerify(mine)
 
   const confirm = async () => {
@@ -73,8 +75,9 @@ export function CheckStep({ food, onBack, onDone }: Props) {
         <p className="text-label text-muted px-1 leading-[1.45]">
           Stimmen die Werte mit dem Etikett überein? Einmal prüfen reicht.
         </p>
+        <UnitCard foodRef={ref} original={product.unit} unit={unit} />
         <Card className="pt-3.5 pb-1.5">
-          <h2 className="text-body pb-2 font-semibold">Nährwerte pro 100 {food.unit}</h2>
+          <h2 className="text-body pb-2 font-semibold">Nährwerte pro 100 {unit}</h2>
           {MAIN_NUTRIENTS.map((key) => {
             const info = NUTRIENT_INFO[key]
             return (
@@ -112,7 +115,7 @@ export function CheckStep({ food, onBack, onDone }: Props) {
             <CorrectionForm
               foodRef={ref}
               name={product.name}
-              unit={effectiveUnit(product.unit, override)}
+              unit={unit}
               original={product.per100}
               override={override}
               back={() => setCorrecting(false)}
