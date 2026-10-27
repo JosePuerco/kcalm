@@ -7,11 +7,13 @@ import {
   correctionFromValues,
   countCorrected,
   effectiveNutrients,
+  effectiveUnit,
   isEmptyOverride,
   isVerified,
   mergeNutrients,
   missingForVerify,
   rebaseOnOffUpdate,
+  unitOverride,
   type Correction,
 } from './verify.ts'
 
@@ -28,7 +30,7 @@ const original: Nutrients = {
 }
 
 const override = (per100: Correction, verifiedAt: string | null = null) =>
-  newRecord<ProductOverride>({ productRef: 'product:skyr', per100, verifiedAt, note: null })
+  newRecord<ProductOverride>({ productRef: 'product:skyr', per100, verifiedAt, note: null, unit: null })
 
 describe('mergeNutrients', () => {
   it('ohne Korrektur gilt das Original', () => {
@@ -130,6 +132,31 @@ describe('correctionFromValues / isEmptyOverride', () => {
     expect(isEmptyOverride(c, null)).toBe(true)
     expect(isEmptyOverride(c, '2026-10-21T08:00:00.000Z')).toBe(false)
     expect(isEmptyOverride({ kcal: 65 }, null)).toBe(false)
+  })
+
+  it('eigene Einheit allein braucht einen Datensatz', () => {
+    expect(isEmptyOverride({}, null, 'ml')).toBe(false)
+    expect(isEmptyOverride({}, null, null)).toBe(true)
+  })
+})
+
+describe('effectiveUnit / unitOverride', () => {
+  it('gewählte Einheit, sonst Original', () => {
+    expect(effectiveUnit('g', undefined)).toBe('g')
+    expect(effectiveUnit('g', override({}))).toBe('g')
+    expect(effectiveUnit('g', { ...override({}), unit: 'ml' })).toBe('ml')
+    expect(effectiveUnit('ml', { ...override({}), unit: 'g' })).toBe('g')
+  })
+
+  it('gelöschte Korrektur zählt nicht', () => {
+    const gone = softDelete({ ...override({}), unit: 'ml' as const }, new Date('2026-10-21T00:00:00.000Z'))
+    expect(effectiveUnit('g', gone)).toBe('g')
+  })
+
+  it('gleich dem Original wird null gespeichert', () => {
+    expect(unitOverride('g', 'ml')).toBe('ml')
+    expect(unitOverride('g', 'g')).toBeNull()
+    expect(unitOverride('ml', 'g')).toBe('g')
   })
 })
 

@@ -3,7 +3,7 @@
 
 import type { BlsPref, FoodRef, Product, ProductOverride, Unit } from '../db/types.ts'
 import type { BlsFood } from './blsFoods.ts'
-import { effectiveNutrients, isVerified } from './verify.ts'
+import { effectiveNutrients, effectiveUnit, isVerified } from './verify.ts'
 
 export type FoodFilter = 'all' | 'verified' | 'own' | 'bls'
 
@@ -44,7 +44,7 @@ export function buildFoodRows({ products, blsPrefs, overrides, bls }: Input): Fo
       brand: p.brand,
       meta: [p.brand, SOURCE_LABEL[p.source]].filter(Boolean).join(' · '),
       kcalPer100: effectiveNutrients(p.per100, byRef.get(ref), p.useOverride).kcal,
-      unit: p.unit,
+      unit: effectiveUnit(p.unit, byRef.get(ref)),
       verified: isVerified(p.source, byRef.get(ref)),
       archived: p.archived,
     })
@@ -67,7 +67,7 @@ export function buildFoodRows({ products, blsPrefs, overrides, bls }: Input): Fo
       brand: null,
       meta: withPortion.has(code) ? 'BLS · eigene Portion' : 'BLS',
       kcalPer100: effectiveNutrients(food.per100, byRef.get(ref), activePrefs.get(code)?.useOverride ?? true).kcal,
-      unit: 'g',
+      unit: effectiveUnit('g', byRef.get(ref)),
       verified: verified.has(ref),
       archived: false,
     })

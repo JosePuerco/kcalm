@@ -14,7 +14,7 @@ import type { FoodRef, Nutrients, Product, ProductOverride, Unit } from '../../d
 import { getOverride, saveCorrection, setVerified } from '../../db/verify.ts'
 import { formatNutrient } from '../../logic/nutrientInfo.ts'
 import { fieldId, nutrientsToForm, parseDecimal, validateCorrectionForm, type FormErrors } from '../../logic/productForm.ts'
-import { canVerify, mergeNutrients } from '../../logic/verify.ts'
+import { canVerify, effectiveUnit, mergeNutrients } from '../../logic/verify.ts'
 import { NutrientInput } from './NutrientInput.tsx'
 
 /** null = keine Korrektur, undefined = lädt */
@@ -29,7 +29,7 @@ export function ProductCorrection({ product }: { product: Product }) {
     <CorrectionForm
       foodRef={ref}
       name={product.name}
-      unit={product.unit}
+      unit={effectiveUnit(product.unit, override ?? undefined)}
       original={product.per100}
       override={override ?? undefined}
       back={back}
@@ -52,7 +52,14 @@ export function BlsCorrection({ code }: { code: string }) {
     )
   }
   return (
-    <CorrectionForm foodRef={ref} name={food.name} unit="g" original={food.per100} override={override ?? undefined} back={back} />
+    <CorrectionForm
+      foodRef={ref}
+      name={food.name}
+      unit={effectiveUnit('g', override ?? undefined)}
+      original={food.per100}
+      override={override ?? undefined}
+      back={back}
+    />
   )
 }
 

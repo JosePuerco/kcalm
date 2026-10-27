@@ -19,8 +19,10 @@ import {
 import { getOverride } from '../../db/verify.ts'
 import { SOURCE_LABEL } from '../../logic/foodList.ts'
 import { formatDate } from '../../logic/format.ts'
+import { effectiveUnit } from '../../logic/verify.ts'
 import { NutrientTable } from './NutrientTable.tsx'
 import { PortionsCard } from './PortionsCard.tsx'
+import { UnitCard } from './UnitCard.tsx'
 import { VerifiedBadge, VerifySection } from './VerifySection.tsx'
 
 const REFRESH_MESSAGE: Record<OffRefresh['kind'], string> = {
@@ -67,6 +69,8 @@ export function ProductDetail({ id }: { id: string }) {
 
   const meta = [product.brand, product.barcode && `EAN ${product.barcode}`].filter(Boolean).join(' · ')
   const isOff = product.source === 'off'
+  // OFF: Einheit aus der Korrekturschicht, falls gewählt (Phase 12e)
+  const unit = effectiveUnit(product.unit, override ?? undefined)
 
   const refresh = async () => {
     setRefreshing(true)
@@ -94,7 +98,7 @@ export function ProductDetail({ id }: { id: string }) {
           original={product.per100}
           override={override ?? undefined}
           useOverride={product.useOverride}
-          unit={product.unit}
+          unit={unit}
           editHref={href('lebensmittel', 'produkt', id, 'bearbeiten')}
           note="Ein Update aus Open Food Facts ändert nur die Original-Spalte."
         />
@@ -111,9 +115,11 @@ export function ProductDetail({ id }: { id: string }) {
         </a>
       )}
 
+      {isOff && <UnitCard foodRef={`product:${id}`} original={product.unit} unit={unit} />}
+
       <PortionsCard
         portions={product.portions}
-        unit={product.unit}
+        unit={unit}
         onSave={(portions) => saveProductPortions(id, portions)}
       />
 

@@ -62,6 +62,8 @@ export interface ProductOverride extends SyncFields {
   per100: Partial<Nutrients>
   verifiedAt: Timestamp | null
   note: string | null
+  /** Einheit für neue Einträge, z. B. ml bei Milch; null = Original gilt (Phase 12e) */
+  unit: Unit | null
 }
 
 /** Eigene Portionen und Umschalter Meine/Original für BLS-Lebensmittel */

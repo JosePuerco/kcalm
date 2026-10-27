@@ -55,7 +55,7 @@ describe('Datenbank-Version 2', () => {
     defineVersions(db)
     await db.open()
 
-    expect(db.verno).toBe(4)
+    expect(db.verno).toBe(5)
     expect(await db.table('products').get('p1')).toMatchObject({ per100: { kcal: 42 } })
     expect((await db.table('products').get('p1')).per100).not.toHaveProperty('alcohol')
     expect((await db.table('productOverrides').get('o1')).per100).toEqual({})
@@ -78,7 +78,7 @@ describe('Datenbank-Version 2', () => {
     const db = new Dexie(NAME)
     defineVersions(db)
     await db.open()
-    expect(db.verno).toBe(4)
+    expect(db.verno).toBe(5)
     db.close()
   })
 })
@@ -119,6 +119,28 @@ describe('Datenbank-Version 4', () => {
     expect(water.deletedAt).not.toBeNull()
     expect(water.updatedAt).toBe(water.deletedAt)
     expect(await db.table('settings').get('s2')).toMatchObject({ deletedAt: null, updatedAt: T0 })
+    db.close()
+  })
+})
+
+describe('Datenbank-Version 5', () => {
+  it('Korrekturen bekommen unit = null, updatedAt und andere Felder bleiben', async () => {
+    const old = new Dexie(NAME)
+    old.version(4).stores(SCHEMA_V1)
+    await old.table('productOverrides').add({ id: 'o1', ...sync, productRef: 'bls:N110000', per100: { kcal: 64 }, verifiedAt: null, note: null })
+    await old.table('productOverrides').add({ id: 'o2', ...sync, productRef: 'product:p1', per100: {}, verifiedAt: T0, note: null, unit: 'ml' })
+    old.close()
+    const db = await openCurrent()
+    expect(await db.table('productOverrides').get('o1')).toEqual({
+      id: 'o1',
+      ...sync,
+      productRef: 'bls:N110000',
+      per100: { kcal: 64 },
+      verifiedAt: null,
+      note: null,
+      unit: null,
+    })
+    expect((await db.table('productOverrides').get('o2')).unit).toBe('ml')
     db.close()
   })
 })

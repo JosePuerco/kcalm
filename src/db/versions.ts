@@ -2,7 +2,14 @@
 // einem App-Update genau einmal. Eigene Datei, damit Tests eine alte Datenbank hochziehen können.
 
 import type { Dexie } from 'dexie'
-import { addBlsUseOverride, NUTRIENT_FIELDS, removeAlcohol, removeWater, WATER_SETTING_KEY } from '../logic/backup.ts'
+import {
+  addBlsUseOverride,
+  addOverrideUnit,
+  NUTRIENT_FIELDS,
+  removeAlcohol,
+  removeWater,
+  WATER_SETTING_KEY,
+} from '../logic/backup.ts'
 import { SCHEMA_V1 } from './schema.ts'
 
 export function defineVersions(db: Dexie): void {
@@ -51,5 +58,15 @@ export function defineVersions(db: Dexie): void {
           record.deletedAt = stamp
           record.updatedAt = stamp
         })
+    })
+
+  // Einheit g/ml in der Korrekturschicht (Jan, 27.10.2026); null = Original gilt, updatedAt bleibt
+  db.version(5)
+    .stores(SCHEMA_V1)
+    .upgrade(async (tx) => {
+      await tx
+        .table('productOverrides')
+        .toCollection()
+        .modify((record: unknown) => addOverrideUnit(record))
     })
 }

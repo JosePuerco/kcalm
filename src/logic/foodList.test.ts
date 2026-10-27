@@ -37,7 +37,7 @@ const prefs = (code: string, portions = [{ label: '1 Stück', amount: 120 }]) =>
   newRecord<BlsPref>({ blsCode: code, portions, useOverride: true })
 
 const verifiedOverride = (ref: ProductOverride['productRef'], verifiedAt: string | null = '2026-10-12T10:00:00.000Z') =>
-  newRecord<ProductOverride>({ productRef: ref, per100: {}, verifiedAt, note: null })
+  newRecord<ProductOverride>({ productRef: ref, per100: {}, verifiedAt, note: null, unit: null })
 
 describe('buildFoodRows', () => {
   const skyr = product('Skyr natur', { source: 'off', brand: 'Arla', per100: { ...unknownNutrients(), kcal: 63 } })
@@ -101,7 +101,7 @@ describe('buildFoodRows', () => {
   })
 
   it('kcal /100 aus den genutzten Werten (Korrektur bzw. Original)', () => {
-    const corrected = newRecord<ProductOverride>({ productRef: `product:${skyr.id}`, per100: { kcal: 65 }, verifiedAt: null, note: null })
+    const corrected = newRecord<ProductOverride>({ productRef: `product:${skyr.id}`, per100: { kcal: 65 }, verifiedAt: null, note: null, unit: null })
     const kcal = (p: typeof skyr) =>
       buildFoodRows({ products: [p], blsPrefs: [], overrides: [corrected], bls })[0]!.kcalPer100
     expect(kcal(skyr)).toBe(65)

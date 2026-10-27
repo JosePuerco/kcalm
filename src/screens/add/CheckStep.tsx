@@ -14,7 +14,7 @@ import type { FoodRef } from '../../db/types.ts'
 import { getOverride, setVerified } from '../../db/verify.ts'
 import type { FoodChoice } from '../../logic/addFood.ts'
 import { formatNutrient, MAIN_NUTRIENTS, NUTRIENT_INFO } from '../../logic/nutrientInfo.ts'
-import { canVerify, mergeNutrients, missingForVerify } from '../../logic/verify.ts'
+import { canVerify, effectiveUnit, mergeNutrients, missingForVerify } from '../../logic/verify.ts'
 import { CorrectionForm } from '../lebensmittel/CorrectionForm.tsx'
 
 type Props = {
@@ -112,7 +112,7 @@ export function CheckStep({ food, onBack, onDone }: Props) {
             <CorrectionForm
               foodRef={ref}
               name={product.name}
-              unit={product.unit}
+              unit={effectiveUnit(product.unit, override)}
               original={product.per100}
               override={override}
               back={() => setCorrecting(false)}

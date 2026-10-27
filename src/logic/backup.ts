@@ -26,7 +26,7 @@ import type {
 import { formatTime } from './format.ts'
 
 export const BACKUP_APP = 'kcalm'
-export const BACKUP_FORMAT_VERSION = 4
+export const BACKUP_FORMAT_VERSION = 5
 /** Ab so vielen Tagen ohne Backup warnt die Einstellungsseite */
 export const BACKUP_REMINDER_DAYS = 14
 
@@ -117,6 +117,7 @@ const productOverride = z.object({
   per100: nutrients.partial(),
   verifiedAt: timestamp.nullable(),
   note: z.string().nullable(),
+  unit: unit.nullable(),
 })
 
 const blsPref = z.object({
@@ -295,6 +296,17 @@ export const MIGRATIONS: Record<number, (data: Record<string, unknown>) => Recor
     }
     return { ...data, formatVersion: 4 }
   },
+  4: (data) => {
+    // Format 5: Einheit g/ml in der Korrekturschicht (Jan, 27.10.2026)
+    const tables = isObject(data.tables) ? data.tables : {}
+    if (Array.isArray(tables.productOverrides)) tables.productOverrides.forEach(addOverrideUnit)
+    return { ...data, formatVersion: 5 }
+  },
+}
+
+/** Ergänzt productOverrides.unit = null (Original gilt), falls es fehlt (verändert record). Auch für das Datenbank-Update. */
+export function addOverrideUnit(record: unknown): void {
+  if (isObject(record) && !('unit' in record)) record.unit = null
 }
 
 /** Ergänzt blsPrefs.useOverride = true, falls es fehlt (verändert record). Auch für das Datenbank-Update. */

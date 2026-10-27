@@ -6,12 +6,13 @@ import {
   correctionFromValues,
   isEmptyOverride,
   mergeNutrients,
+  unitOverride,
   type Correction,
 } from '../logic/verify.ts'
 import { db } from './db.ts'
 import { setBlsUseOverride } from './products.ts'
 import { softDelete, touch, upsertByKey } from './records.ts'
-import type { FoodRef, Nutrients, ProductOverride } from './types.ts'
+import type { FoodRef, Nutrients, ProductOverride, Unit } from './types.ts'
 
 const findOverride = (ref: FoodRef) => db.productOverrides.where('productRef').equals(ref).first()
 
@@ -21,17 +22,27 @@ export async function getOverride(ref: FoodRef): Promise<ProductOverride | undef
 }
 
 /**
- * Korrektur schreiben; ohne Felder und ohne Prüfung bekommt sie den Löschmarker.
- * Muss in einer Transaktion mit productOverrides laufen.
+ * Korrektur schreiben; ohne Felder, Prüfung und Einheit bekommt sie den Löschmarker.
+ * unit fehlt = gespeicherte Einheit bleibt. Muss in einer Transaktion mit productOverrides laufen.
  */
-export async function putOverride(ref: FoodRef, per100: Correction, verifiedAt: string | null, now: Date): Promise<void> {
+export async function putOverride(
+  ref: FoodRef,
+  per100: Correction,
+  verifiedAt: string | null,
+  now: Date,
+  unit?: Unit | null,
+): Promise<void> {
   const existing = await findOverride(ref)
-  if (isEmptyOverride(per100, verifiedAt)) {
-    if (existing && existing.deletedAt === null) await db.productOverrides.put(softDelete(existing, now))
+  const live = existing?.deletedAt === null ? existing : undefined
+  const keptUnit = unit === undefined ? (live?.unit ?? null) : unit
+  if (isEmptyOverride(per100, verifiedAt, keptUnit)) {
+    if (live) await db.productOverrides.put(softDelete(live, now))
     return
   }
-  const note = existing?.deletedAt === null ? existing.note : null
-  await db.productOverrides.put(upsertByKey<ProductOverride>(existing, { productRef: ref, per100, verifiedAt, note }, now))
+  const note = live?.note ?? null
+  await db.productOverrides.put(
+    upsertByKey<ProductOverride>(existing, { productRef: ref, per100, verifiedAt, note, unit: keptUnit }, now),
+  )
 }
 
 /** „Werte bearbeiten“: nur Abweichungen vom Original speichern; eine Prüfung bleibt bestehen */
@@ -50,6 +61,14 @@ export async function setVerified(ref: FoodRef, original: Nutrients, verified: b
       throw new Error('Pflichtangaben fehlen, Prüfen nicht möglich')
     }
     await putOverride(ref, existing?.per100 ?? {}, verified ? now.toISOString() : null, now)
+  })
+}
+
+/** Einheit g/ml für Anzeige und neue Einträge (Phase 12e); alte Einträge behalten ihre Einheit (Snapshot) */
+export async function setUnit(ref: FoodRef, original: Unit, unit: Unit, now = new Date()) {
+  await db.transaction('rw', db.productOverrides, async () => {
+    const existing = await getOverride(ref)
+    await putOverride(ref, existing?.per100 ?? {}, existing?.verifiedAt ?? null, now, unitOverride(original, unit))
   })
 }
 

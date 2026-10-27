@@ -35,7 +35,7 @@ const skyr: Product = newRecord<Product>({
 })
 
 const override = (fields: Partial<ProductOverride>) =>
-  newRecord<ProductOverride>({ productRef: `product:${skyr.id}`, per100: {}, verifiedAt: null, note: null, ...fields })
+  newRecord<ProductOverride>({ productRef: `product:${skyr.id}`, per100: {}, verifiedAt: null, note: null, unit: null, ...fields })
 
 describe('choiceFromProduct / choiceFromBls', () => {
   it('Produkt mit Quelle, Portionen, Einheit', () => {
@@ -74,6 +74,13 @@ describe('choiceFromProduct / choiceFromBls', () => {
     const pref = newRecord<BlsPref>({ blsCode: 'F110100', portions: [{ label: '1 Stück', amount: 150 }], useOverride: true })
     expect(choiceFromBls(food, pref)).toMatchObject({ ref: 'bls:F110100', source: 'BLS', unit: 'g', portions: [{ amount: 150 }] })
     expect(choiceFromBls(food).portions).toEqual([])
+  })
+
+  it('Einheit aus der Korrekturschicht (z. B. Milch in ml), auch bei „Original nutzen“', () => {
+    expect(choiceFromProduct(skyr, override({ unit: 'ml' })).unit).toBe('ml')
+    expect(choiceFromProduct({ ...skyr, useOverride: false }, override({ unit: 'ml' })).unit).toBe('ml')
+    const milk = { code: 'M111100', name: 'Vollmilch', per100: { ...unknownNutrients(), kcal: 64 } }
+    expect(choiceFromBls(milk, undefined, override({ productRef: 'bls:M111100', unit: 'ml' })).unit).toBe('ml')
   })
 })
 

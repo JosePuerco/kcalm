@@ -347,7 +347,7 @@ Mit Jan abgestimmt am 27.10.2026.
 - [x] 12b Mehrere Portionen: Tipp auf Portions-Chip schaltet den Ziffernblock auf Anzahl („4 × Reiswaffel“, klein „= 27,2 g“), Chip „g“ zurück; gespeichert wird die Menge in g plus `portionLabel`
 - [x] 12c Makros pro Slot: aufgeklappt eine graue Zeile „E 32 g · K 80 g · F 20 g · B 5 g“ unter dem Slot-Namen
 - [x] 12d Tag kopieren: Chip-Reihe „Einfügen in“ (Gleicher Slot oder ein fester Slot), gilt für Slot-Zeilen und „Ganzer Tag“; zusätzlich Knopf „Kopieren“ im Hinzufügen-Sheet, Ziel = dort gewählter Slot (Jan, 27.10.2026: Tag kopieren gab es sonst nur an leeren Tagen)
-- [ ] 12e Einheit g/ml bei OFF- und BLS-Lebensmitteln umstellbar: `productOverrides.unit` (null = Original), Backup-Format und Datenbank-Version 5 mit Migration; alte Einträge bleiben (Snapshot)
+- [x] 12e Einheit g/ml bei OFF- und BLS-Lebensmitteln umstellbar: `productOverrides.unit` (null = Original), Backup-Format und Datenbank-Version 5 mit Migration; alte Einträge bleiben (Snapshot)
 
 ## 7. Entscheidungen zu früher offenen Fragen
 
@@ -402,6 +402,11 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**27.10.2026 · Phase 12 (Wünsche nach 1.0) umgesetzt, noch nicht gepusht** – 12a–12e je ein Commit, 931 Tests grün, Build und Lint sauber. Im Headless-Chrome bei 390 px geprüft (Hell/Dunkel): leere Startmenge, „4 × Reiswaffel“ inkl. Bearbeiten, Makros pro Slot, „Einfügen in“, „Kopieren“ im Hinzufügen-Sheet, BLS-Milch in ml. Nächster Schritt: Jans OK, dann Version 1.1.0 pushen und auf dem iPhone testen.
+
+- Mit Jan abgestimmt: „Kopieren“ zusätzlich im Hinzufügen-Sheet (Ziel = dort gewählter Slot, ohne zweite Chip-Reihe), weil „Tag kopieren“ sonst nur an leeren Tagen erreichbar ist.
+- Eigene Entscheidungen: Nach Tipp auf einen Portions-Chip ersetzt die erste Taste die vorbelegte 1; Einheit g/ml gilt unabhängig vom Umschalter Meine/Original; Tagebuch zeigt weiter die Menge in g/ml (nicht „4 × …“); „Tag kopieren“ bleibt nur auf andere Tage.
 
 **25.10.2026 · Phase 11 (Feinschliff) abgeschlossen, Version 1.0.0** – alle Phasen erledigt, 0.11.1 von Jan auf dem iPhone bestätigt; die App ist ab jetzt in Nutzung. Weitere Änderungen als 1.0.x (Fehler) bzw. 1.x.0 (Funktionen) nach `CHANGELOG.md`.
 

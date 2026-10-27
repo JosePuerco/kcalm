@@ -7,7 +7,9 @@ import { useBls } from '../../data/bls.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { getBlsPref, saveBlsPortions } from '../../db/products.ts'
 import { getOverride } from '../../db/verify.ts'
+import { effectiveUnit } from '../../logic/verify.ts'
 import { PortionsCard } from './PortionsCard.tsx'
+import { UnitCard } from './UnitCard.tsx'
 import { VerifiedBadge, VerifySection } from './VerifySection.tsx'
 
 const LIST = href('lebensmittel')
@@ -33,6 +35,9 @@ export function BlsDetail({ code }: { code: string }) {
     )
   }
 
+  // BLS gilt pro 100 g; ml nur, wenn selbst gewählt (Phase 12e)
+  const unit = effectiveUnit('g', override ?? undefined)
+
   return (
     <SubScreen back={LIST}>
       <SubScreenTitle title={food.name} meta={`BLS-Code ${food.code}`}>
@@ -45,14 +50,16 @@ export function BlsDetail({ code }: { code: string }) {
         original={food.per100}
         override={override ?? undefined}
         useOverride={pref?.useOverride ?? true}
-        unit="g"
+        unit={unit}
         editHref={href('lebensmittel', 'bls', code, 'bearbeiten')}
         note="Quelle: Max Rubner-Institut, BLS 4.0."
       />
 
+      <UnitCard foodRef={`bls:${code}`} original="g" unit={unit} />
+
       <PortionsCard
         portions={pref?.portions ?? []}
-        unit="g"
+        unit={unit}
         onSave={async (portions) => {
           await saveBlsPortions(code, portions)
           if (portions.length > 0 && (pref?.portions.length ?? 0) === 0) toast('Steht jetzt in deinen Lebensmitteln')

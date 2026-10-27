@@ -92,7 +92,7 @@ describe('buildBackup / serializeBackup', () => {
   it('erzeugt app, formatVersion, exportedAt und alle Tabellen', () => {
     const backup = buildBackup(sampleTables(), T2)
     expect(backup.app).toBe('kcalm')
-    expect(backup.formatVersion).toBe(4)
+    expect(backup.formatVersion).toBe(5)
     expect(backup.exportedAt).toBe('2026-10-09T10:00:00.000Z')
     expect(Object.keys(backup.tables).sort()).toEqual([...TABLE_NAMES].sort())
   })
@@ -144,7 +144,7 @@ describe('parseBackup – Ablehnung', () => {
   })
 
   it('neuere formatVersion als die App', () => {
-    expect(parse({ ...valid(), formatVersion: 5 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
+    expect(parse({ ...valid(), formatVersion: 6 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
   })
 
   it('fehlende Tabelle', () => {
@@ -236,7 +236,7 @@ describe('parseBackup – Migration Format 1 → 2', () => {
     data.tables.products!.forEach((p) => (p.per100!.alcohol = 0))
     data.tables.entries!.forEach((e) => (e.nutrients!.alcohol = null))
     const override = newRecord<ProductOverride>(
-      { productRef: 'bls:P355000', per100: { kcal: 40 }, verifiedAt: null, note: null },
+      { productRef: 'bls:P355000', per100: { kcal: 40 }, verifiedAt: null, note: null, unit: null },
       T0,
     )
     data.tables.productOverrides = [{ ...override, per100: { kcal: 40, alcohol: 4.2 } }]
@@ -248,7 +248,7 @@ describe('parseBackup – Migration Format 1 → 2', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     const { tables } = result.backup
-    expect(result.backup.formatVersion).toBe(4)
+    expect(result.backup.formatVersion).toBe(5)
     expect(tables.products.every((p) => !('alcohol' in p.per100))).toBe(true)
     expect(tables.entries.every((e) => !('alcohol' in e.nutrients))).toBe(true)
     expect(tables.productOverrides[0]!.per100).toEqual({ kcal: 40 })
@@ -334,7 +334,7 @@ describe('parseBackup – Migration Format 3 → 4', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     const { tables } = result.backup
-    expect(result.backup.formatVersion).toBe(4)
+    expect(result.backup.formatVersion).toBe(5)
     expect(tables.products[0]).not.toHaveProperty('isDrink')
     expect(tables.products[0]).not.toHaveProperty('countsAsWater')
     expect(tables.products[0]!.per100).not.toHaveProperty('water')
@@ -350,6 +350,51 @@ describe('parseBackup – Migration Format 3 → 4', () => {
     expect(result.ok && result.backup.tables.products[0]!.per100).toEqual(current.tables.products[0]!.per100)
     expect(result.ok && result.backup.tables.entries[0]!.nutrients.kcal).toBe(148.8)
     expect(result.ok && result.backup.tables.blsPrefs[0]!.useOverride).toBe(true)
+  })
+})
+
+describe('parseBackup – Migration Format 4 → 5', () => {
+  // Backup aus der Zeit vor der Einheit in der Korrekturschicht
+  function v4Backup(overrides: unknown[]) {
+    const data = JSON.parse(serializeBackup(buildBackup(sampleTables(), T2))) as {
+      formatVersion: number
+      tables: Record<string, unknown[]>
+    }
+    data.formatVersion = 4
+    data.tables.productOverrides = overrides
+    return data
+  }
+  const override = newRecord<ProductOverride>(
+    { productRef: 'bls:N110000', per100: { kcal: 64 }, verifiedAt: null, note: null, unit: 'ml' },
+    T0,
+  )
+  function withoutUnit() {
+    const old: Record<string, unknown> = { ...override }
+    delete old.unit
+    return old
+  }
+
+  it('Korrekturen bekommen unit = null (Original gilt), updatedAt bleibt', () => {
+    const result = parseBackup(JSON.stringify(v4Backup([withoutUnit()])))
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.backup.formatVersion).toBe(5)
+    expect(result.backup.tables.productOverrides[0]).toMatchObject({ unit: null, per100: { kcal: 64 }, updatedAt: T0.toISOString() })
+  })
+
+  it('vorhandene Einheit bleibt', () => {
+    const result = parseBackup(JSON.stringify(v4Backup([override])))
+    expect(result.ok && result.backup.tables.productOverrides[0]!.unit).toBe('ml')
+  })
+
+  it('Format 5 ohne unit ist beschädigt', () => {
+    const data = { ...v4Backup([withoutUnit()]), formatVersion: 5 }
+    expect(parseBackup(JSON.stringify(data))).toEqual({ ok: false, error: 'Backup ist beschädigt (productOverrides[0].unit)' })
+  })
+
+  it('unbekannte Einheit ist beschädigt', () => {
+    const data = { ...v4Backup([{ ...override, unit: 'l' }]), formatVersion: 5 }
+    expect(parseBackup(JSON.stringify(data))).toEqual({ ok: false, error: 'Backup ist beschädigt (productOverrides[0].unit)' })
   })
 })
 

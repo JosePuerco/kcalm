@@ -17,7 +17,7 @@ import type { BlsFood } from './blsFoods.ts'
 import { SOURCE_LABEL } from './foodList.ts'
 import { formatAmount, formatNumber } from './format.ts'
 import { nutrientsForAmount } from './nutrients.ts'
-import { effectiveNutrients, isVerified } from './verify.ts'
+import { effectiveNutrients, effectiveUnit, isVerified } from './verify.ts'
 
 /** Ein Lebensmittel, wie es Suche und Mengen-Schritt brauchen */
 export interface FoodChoice {
@@ -39,7 +39,7 @@ export function choiceFromProduct(p: Product, override?: ProductOverride): FoodC
     name: p.name,
     source: SOURCE_LABEL[p.source],
     verified: isVerified(p.source, override),
-    unit: p.unit,
+    unit: effectiveUnit(p.unit, override),
     per100: effectiveNutrients(p.per100, override, p.useOverride),
     portions: p.portions,
     archived: p.archived,
@@ -53,8 +53,8 @@ export function choiceFromBls(food: BlsFood, pref?: BlsPref, override?: ProductO
     name: food.name,
     source: SOURCE_LABEL.bls,
     verified: isVerified('bls', override),
-    // BLS-Werte gelten pro 100 g essbaren Anteil
-    unit: 'g',
+    // BLS-Werte gelten pro 100 g essbaren Anteil; ml nur, wenn selbst gewählt (z. B. Milch)
+    unit: effectiveUnit('g', override),
     per100: effectiveNutrients(food.per100, override, activePref?.useOverride ?? true),
     portions: activePref?.portions ?? [],
     archived: false,

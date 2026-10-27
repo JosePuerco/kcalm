@@ -3,7 +3,7 @@
 // Feld fehlt = Original gilt, Zahl = eigener Wert, null = bewusst unbekannt.
 
 import { NUTRIENT_KEYS } from '../db/records.ts'
-import type { NutrientKey, Nutrients, NutrientValue, ProductOverride } from '../db/types.ts'
+import type { NutrientKey, Nutrients, NutrientValue, ProductOverride, Unit } from '../db/types.ts'
 import { REQUIRED_NUTRIENTS } from './nutrientInfo.ts'
 
 export type Correction = Partial<Nutrients>
@@ -28,6 +28,19 @@ export function effectiveNutrients(
   useOverride: boolean,
 ): Nutrients {
   return useOverride ? mergeNutrients(original, override) : original
+}
+
+/**
+ * Einheit für Anzeige und neue Einträge (Phase 12e): die gewählte, sonst das Original.
+ * Gilt unabhängig vom Umschalter Meine/Original; die Nährwerte bleiben pro 100 g bzw. ml.
+ */
+export function effectiveUnit(original: Unit, override: ProductOverride | undefined): Unit {
+  return (active(override) && override.unit) || original
+}
+
+/** Gespeicherter Wert: gleich dem Original → null (keine Korrektur nötig) */
+export function unitOverride(original: Unit, chosen: Unit): Unit | null {
+  return chosen === original ? null : chosen
 }
 
 export interface CompareRow {
@@ -72,9 +85,9 @@ export function correctionFromValues(original: Nutrients, edited: Nutrients): Co
   return result
 }
 
-/** Ohne Korrekturfelder und ohne Prüfung braucht es keinen Datensatz (→ Löschmarker) */
-export function isEmptyOverride(per100: Correction, verifiedAt: string | null): boolean {
-  return verifiedAt === null && Object.keys(per100).length === 0
+/** Ohne Korrekturfelder, Prüfung und eigene Einheit braucht es keinen Datensatz (→ Löschmarker) */
+export function isEmptyOverride(per100: Correction, verifiedAt: string | null, unit: Unit | null = null): boolean {
+  return verifiedAt === null && unit === null && Object.keys(per100).length === 0
 }
 
 /**

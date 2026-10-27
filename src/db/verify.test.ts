@@ -7,7 +7,7 @@ import { addEntry, getEntry } from './entries.ts'
 import { lookupBarcode, refreshOffProduct, type Network } from './off.ts'
 import { getBlsPref, getProduct } from './products.ts'
 import type { FoodRef, Product } from './types.ts'
-import { getOverride, saveCorrection, setUseOverride, setVerified } from './verify.ts'
+import { getOverride, saveCorrection, setUnit, setUseOverride, setVerified } from './verify.ts'
 
 const T0 = new Date('2026-10-12T08:00:00.000Z')
 const T1 = new Date('2026-10-21T12:00:00.000Z')
@@ -70,6 +70,36 @@ describe('saveCorrection', () => {
     await setVerified(refOf(skyr), skyr.per100, true, T0)
     await saveCorrection(refOf(skyr), skyr.per100, { ...skyr.per100, salt: 0.13 }, T1)
     expect(await getOverride(refOf(skyr))).toMatchObject({ per100: { salt: 0.13 }, verifiedAt: T0.toISOString() })
+  })
+})
+
+describe('setUnit', () => {
+  it('ml bei Milch: eigener Datensatz, Original bleibt; zurück auf das Original → Löschmarker', async () => {
+    const ref: FoodRef = 'bls:M111100'
+    await setUnit(ref, 'g', 'ml', T0)
+    expect(await getOverride(ref)).toMatchObject({ unit: 'ml', per100: {}, verifiedAt: null })
+    await setUnit(ref, 'g', 'g', T1)
+    expect(await getOverride(ref)).toBeUndefined()
+  })
+
+  it('Korrektur und Prüfung bleiben beim Umstellen, Einheit bleibt beim Korrigieren und Prüfen', async () => {
+    const skyr = await scannedSkyr()
+    await saveCorrection(refOf(skyr), skyr.per100, { ...skyr.per100, salt: 0.13 }, T0)
+    await setVerified(refOf(skyr), skyr.per100, true, T0)
+    await setUnit(refOf(skyr), skyr.unit, 'ml', T1)
+    expect(await getOverride(refOf(skyr))).toMatchObject({ unit: 'ml', per100: { salt: 0.13 }, verifiedAt: T0.toISOString() })
+    await saveCorrection(refOf(skyr), skyr.per100, { ...skyr.per100, salt: 0.12 }, T1)
+    await setVerified(refOf(skyr), skyr.per100, false, T1)
+    expect(await getOverride(refOf(skyr))).toMatchObject({ unit: 'ml', per100: { salt: 0.12 }, verifiedAt: null })
+    expect((await getProduct(skyr.id)).unit).toBe('g')
+  })
+
+  it('nur Einheit: Prüfung entfernen löscht den Datensatz nicht', async () => {
+    const skyr = await scannedSkyr()
+    await setUnit(refOf(skyr), skyr.unit, 'ml', T0)
+    await setVerified(refOf(skyr), skyr.per100, true, T0)
+    await setVerified(refOf(skyr), skyr.per100, false, T1)
+    expect((await getOverride(refOf(skyr)))?.unit).toBe('ml')
   })
 })
 
