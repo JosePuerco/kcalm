@@ -8,6 +8,17 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 1.1.0 – 27.10.2026
+
+Wünsche nach 1.0 (Phase 12).
+
+- Mengen-Schritt startet bei neuen Einträgen leer statt mit 100 bzw. der ersten Portion
+- Mehrere Portionen: Tipp auf einen Portions-Chip schaltet auf Anzahl („4 × Reiswaffel = 27,2 g“), Chip „g“ zurück; Bearbeiten öffnet wieder mit der Anzahl
+- Aufgeklappte Slots zeigen ihre Makros („E 32 g · K 80 g · F 20 g · B 5 g“)
+- Tag kopieren: Auswahl „Einfügen in“ (gleicher Slot oder ein bestimmter); neuer Knopf „Kopieren“ im Hinzufügen-Sheet, z. B. Abendessen von gestern ins heutige Mittag
+- Einheit g/ml bei Open-Food-Facts- und BLS-Lebensmitteln umstellbar (z. B. Milch in ml); alte Einträge bleiben unverändert
+- Backup-Format 5 und Datenbank-Version 5; ältere Backups werden beim Import umgewandelt
+
 ## 1.0.0 – 25.10.2026
 
 Erste Version für die Nutzung: alle Phasen aus `PLAN.md` abgeschlossen, Offline- und Backup-Test auf dem iPhone bestanden. Funktionen wie 0.11.1.
