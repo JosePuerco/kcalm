@@ -403,7 +403,7 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**27.10.2026 · Phase 12 (Wünsche nach 1.0) umgesetzt, noch nicht gepusht** – 12a–12e je ein Commit, 931 Tests grün, Build und Lint sauber. Im Headless-Chrome bei 390 px geprüft (Hell/Dunkel): leere Startmenge, „4 × Reiswaffel“ inkl. Bearbeiten, Makros pro Slot, „Einfügen in“, „Kopieren“ im Hinzufügen-Sheet, BLS-Milch in ml. Nächster Schritt: Jans OK, dann Version 1.1.0 pushen und auf dem iPhone testen.
+**27.10.2026 · Phase 12 (Wünsche nach 1.0) als Version 1.1.0 deployt** – 12a–12e je ein Commit, 931 Tests grün, Build und Lint sauber. Im Headless-Chrome bei 390 px geprüft (Hell/Dunkel): leere Startmenge, „4 × Reiswaffel“ inkl. Bearbeiten, Makros pro Slot, „Einfügen in“, „Kopieren“ im Hinzufügen-Sheet, BLS-Milch in ml. Nächster Schritt: Jan testet 1.1.0 auf dem iPhone (vor allem Datenbank-Update auf Version 5 und Backup-Import).
 
 - Mit Jan abgestimmt: „Kopieren“ zusätzlich im Hinzufügen-Sheet (Ziel = dort gewählter Slot, ohne zweite Chip-Reihe), weil „Tag kopieren“ sonst nur an leeren Tagen erreichbar ist.
 - Eigene Entscheidungen: Nach Tipp auf einen Portions-Chip ersetzt die erste Taste die vorbelegte 1; Einheit g/ml gilt unabhängig vom Umschalter Meine/Original; Tagebuch zeigt weiter die Menge in g/ml (nicht „4 × …“); „Tag kopieren“ bleibt nur auf andere Tage.
