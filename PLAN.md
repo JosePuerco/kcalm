@@ -410,7 +410,7 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**27.10.2026 · Rückmeldungen zu 1.1.0 umgesetzt (12f–12i)** – je ein Commit, 936 Tests grün, Build und Lint sauber; Prüf-Dialog mit Einheit und Mahlzeit-Faktoren im Headless-Chrome geprüft. Der Tastatur-Fehler (12i) lässt sich nur auf dem iPhone prüfen. Als Version 1.2.0 deployt; nächster Schritt: Jan testet auf dem iPhone.
+**27.10.2026 · Rückmeldungen zu 1.1.0 umgesetzt (12f–12i)** – je ein Commit, 936 Tests grün, Build und Lint sauber; Prüf-Dialog mit Einheit und Mahlzeit-Faktoren im Headless-Chrome geprüft. Der Tastatur-Fehler (12i) lässt sich nur auf dem iPhone prüfen. Als Version 1.2.0 deployt, iPhone-Test bestanden (Jan, 27.10.2026).
 
 **27.10.2026 · Phase 12 (Wünsche nach 1.0) als Version 1.1.0 deployt** – 12a–12e je ein Commit, 931 Tests grün, Build und Lint sauber. Im Headless-Chrome bei 390 px geprüft (Hell/Dunkel): leere Startmenge, „4 × Reiswaffel“ inkl. Bearbeiten, Makros pro Slot, „Einfügen in“, „Kopieren“ im Hinzufügen-Sheet, BLS-Milch in ml. Nächster Schritt: Jan testet 1.1.0 auf dem iPhone (vor allem Datenbank-Update auf Version 5 und Backup-Import).
 
