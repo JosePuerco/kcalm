@@ -9,8 +9,14 @@ import { useToast } from '../../components/ui/toastContext.ts'
 import type { BlsData } from '../../data/bls.ts'
 import type { FoodSources } from '../../db/entries.ts'
 import { saveOffProduct } from '../../db/off.ts'
-import { amountToKeypad, choiceFromProduct, type FoodChoice } from '../../logic/addFood.ts'
-import { parseKeypadValue } from '../../logic/keypad.ts'
+import { choiceFromProduct, type FoodChoice } from '../../logic/addFood.ts'
+import {
+  EMPTY_INPUT,
+  inputAmount,
+  inputFromEntry,
+  inputPortionLabel,
+  type AmountInput,
+} from '../../logic/portionCount.ts'
 import type { OffProduct } from '../../logic/off.ts'
 import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
 import { AmountStep } from '../add/AmountStep.tsx'
@@ -21,6 +27,8 @@ import type { FoodResolver } from '../add/useFoodResolver.ts'
 export interface PickerEdit {
   food: FoodChoice
   amount: number
+  /** z. B. „4 × Reiswaffel“, öffnet dann mit der Anzahl */
+  portionLabel?: string | null
 }
 
 type Props = {
@@ -34,7 +42,8 @@ type Props = {
   resolver: FoodResolver
   exclude?: (food: FoodChoice) => boolean
   confirmLabel: string
-  onConfirm: (food: FoodChoice, amount: number) => void
+  /** portionLabel z. B. „4 × Reiswaffel“, null ohne Portion */
+  onConfirm: (food: FoodChoice, amount: number, portionLabel: string | null) => void
   onRemove?: () => void
 }
 
@@ -63,11 +72,13 @@ function PickerFlow({
   const toast = useToast()
   const reduced = useReduced()
   const [food, setFood] = useState<FoodChoice | null>(editing?.food ?? null)
-  const [amount, setAmount] = useState(editing ? amountToKeypad(editing.amount) : '')
+  const [input, setInput] = useState<AmountInput>(() =>
+    editing ? inputFromEntry(editing.amount, editing.portionLabel ?? null) : EMPTY_INPUT,
+  )
   const [query, setQuery] = useState('')
 
   const pick = (choice: FoodChoice) => {
-    setAmount('')
+    setInput(EMPTY_INPUT)
     setFood(choice)
   }
 
@@ -86,9 +97,9 @@ function PickerFlow({
   }
 
   const confirm = (choice: FoodChoice) => {
-    const value = parseKeypadValue(amount)
+    const value = inputAmount(input)
     if (value === null || value <= 0) return
-    onConfirm(choice, value)
+    onConfirm(choice, value, inputPortionLabel(choice, input))
     onClose()
   }
 
@@ -103,8 +114,8 @@ function PickerFlow({
       {food ? (
         <AmountStep
           food={food}
-          amount={amount}
-          onAmount={setAmount}
+          input={input}
+          onInput={setInput}
           // Beim Ändern schließt Zurück (wie beim Bearbeiten im Tagebuch), sonst zurück zur Suche
           onBack={editing ? onClose : () => setFood(null)}
           confirmLabel={confirmLabel}

@@ -164,6 +164,12 @@ describe('foodEntry', () => {
     expect(e.nutrients.kcal).toBe(63)
   })
 
+  it('Etikett „4 × …“ aus dem Mengen-Schritt geht vor', () => {
+    expect(foodEntry(c, 1000, '2026-10-21', 's', '4 × Becher').portionLabel).toBe('4 × Becher')
+    expect(foodEntry(c, 250, '2026-10-21', 's', null).portionLabel).toBeNull()
+    expect(foodEntry(c, 1000, '2026-10-21', 's').portionLabel).toBeNull()
+  })
+
   it('Menge muss positiv sein', () => {
     expect(() => foodEntry(c, 0, '2026-10-21', 's')).toThrow(RangeError)
     expect(() => foodEntry(c, Number.NaN, '2026-10-21', 's')).toThrow(RangeError)
@@ -200,6 +206,10 @@ describe('Bearbeiten', () => {
     const e = editedEntry(choiceFromEntry(stored, c), 250, '2026-10-20', 'abend')
     expect(e).toMatchObject({ date: '2026-10-20', slotId: 'abend', amount: 250, portionLabel: '1 Becher' })
     expect(e.nutrients.kcal).toBeCloseTo(157.5, 10)
+  })
+
+  it('Etikett beim Speichern übernehmen', () => {
+    expect(editedEntry(choiceFromEntry(stored, c), 500, '2026-10-21', 'snacks', '2 × Becher').portionLabel).toBe('2 × Becher')
   })
 
   it('canEditAsFood: nur Lebensmittel mit Verweis und Menge', () => {

@@ -97,8 +97,17 @@ export function per100Label(food: FoodChoice): string {
 
 export type NewEntryFields = Omit<Entry, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
 
-/** Neuer Tagebucheintrag; speichert die absoluten Nährwerte als Snapshot (spätere Produktänderungen ändern ihn nie) */
-export function foodEntry(food: FoodChoice, amount: number, date: LocalDate, slotId: string): NewEntryFields {
+/**
+ * Neuer Tagebucheintrag; speichert die absoluten Nährwerte als Snapshot (spätere Produktänderungen ändern ihn nie).
+ * portionLabel z. B. „4 × Reiswaffel“; ohne Angabe nur bei genau einer Portion.
+ */
+export function foodEntry(
+  food: FoodChoice,
+  amount: number,
+  date: LocalDate,
+  slotId: string,
+  portionLabel: string | null = portionLabelFor(food, amount),
+): NewEntryFields {
   if (!Number.isFinite(amount) || amount <= 0) throw new RangeError(`Ungültige Menge: ${amount}`)
   return {
     date,
@@ -108,7 +117,7 @@ export function foodEntry(food: FoodChoice, amount: number, date: LocalDate, slo
     nameSnapshot: food.name,
     amount,
     unit: food.unit,
-    portionLabel: portionLabelFor(food, amount),
+    portionLabel,
     nutrients: nutrientsForAmount(food.per100, amount),
     mealGroupId: null,
     mealName: null,
@@ -154,8 +163,14 @@ export function choiceFromEntry(entry: Entry, current?: FoodChoice): FoodChoice 
 export type EntryChanges = Pick<Entry, 'date' | 'slotId' | 'amount' | 'portionLabel' | 'nutrients'>
 
 /** Änderungen beim Speichern: Menge (Werte skaliert), Slot und Tag (Verschieben) */
-export function editedEntry(food: FoodChoice, amount: number, date: LocalDate, slotId: string): EntryChanges {
-  const { nutrients, portionLabel } = foodEntry(food, amount, date, slotId)
+export function editedEntry(
+  food: FoodChoice,
+  amount: number,
+  date: LocalDate,
+  slotId: string,
+  label?: string | null,
+): EntryChanges {
+  const { nutrients, portionLabel } = foodEntry(food, amount, date, slotId, label)
   return { date, slotId, amount, portionLabel, nutrients }
 }
 

@@ -1,19 +1,27 @@
 // Mengen-Schritt nach Kern.dc.html: Zurück, Produktname + Quelle + kcal/100 · große Menge mit Einheit und kcal ·
 // 4 Makro-Kacheln · Portions-Chips · eigener Ziffernblock · Hauptknopf.
+// Tipp auf einen Portions-Chip schaltet den Ziffernblock auf Anzahl („4 × Reiswaffel“), Chip „g“ zurück (Phase 12b).
 import type { ReactNode } from 'react'
 import { IconBack, IconCheck } from '../../components/icons/icons.tsx'
 import { Button } from '../../components/ui/Button.tsx'
 import { Chip } from '../../components/ui/Chip.tsx'
 import { Keypad } from '../../components/ui/Keypad.tsx'
-import { amountToKeypad, per100Label, portionChipLabel, type FoodChoice } from '../../logic/addFood.ts'
-import { formatNumber } from '../../logic/format.ts'
-import { parseKeypadValue } from '../../logic/keypad.ts'
+import { per100Label, portionChipLabel, type FoodChoice } from '../../logic/addFood.ts'
+import { formatAmount, formatNumber } from '../../logic/format.ts'
 import { nutrientsForAmount } from '../../logic/nutrients.ts'
+import {
+  inputAmount,
+  isActivePortion,
+  portionName,
+  selectGrams,
+  selectPortion,
+  type AmountInput,
+} from '../../logic/portionCount.ts'
 
 type Props = {
   food: FoodChoice
-  amount: string
-  onAmount: (amount: string) => void
+  input: AmountInput
+  onInput: (input: AmountInput) => void
   onBack: () => void
   confirmLabel: string
   onConfirm: () => void
@@ -22,8 +30,8 @@ type Props = {
   secondary?: ReactNode
 }
 
-export function AmountStep({ food, amount, onAmount, onBack, confirmLabel, onConfirm, busy, secondary }: Props) {
-  const value = parseKeypadValue(amount) ?? 0
+export function AmountStep({ food, input, onInput, onBack, confirmLabel, onConfirm, busy, secondary }: Props) {
+  const value = inputAmount(input) ?? 0
   const n = nutrientsForAmount(food.per100, value)
   const grams = (v: number | null) => (v === null ? '–' : `${formatNumber(v, 1)} g`)
   const tiles = [
@@ -54,14 +62,24 @@ export function AmountStep({ food, amount, onAmount, onBack, confirmLabel, onCon
         </span>
       </div>
 
-      <div className="flex items-baseline justify-between px-1 pt-3.5 pb-1.5" aria-live="polite">
-        <span className="text-hero">
-          {amount || '0'}
-          <span className="text-unit text-muted"> {food.unit}</span>
-        </span>
-        <span className="text-unit font-semibold">
-          {formatNumber(n.kcal)} <span className="text-label text-muted font-normal">kcal</span>
-        </span>
+      <div className="px-1 pt-3.5 pb-1.5" aria-live="polite">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="text-hero flex min-w-0 items-baseline">
+            {input.text || '0'}
+            {/* Abstand per Rand statt Leerzeichen: am Anfang eines Flex-Kinds fiele es weg */}
+            <span className="text-unit text-muted ml-1 truncate">
+              {input.portion ? `× ${portionName(input.portion)}` : food.unit}
+            </span>
+          </span>
+          <span className="text-unit shrink-0 font-semibold">
+            {formatNumber(n.kcal)} <span className="text-label text-muted font-normal">kcal</span>
+          </span>
+        </div>
+        {input.portion && (
+          <span className="text-small text-muted block">
+            = {formatAmount(value)} {food.unit}
+          </span>
+        )}
       </div>
 
       <div className="grid grid-cols-4 gap-2 pt-1.5 pb-3">
@@ -75,16 +93,28 @@ export function AmountStep({ food, amount, onAmount, onBack, confirmLabel, onCon
 
       {food.portions.length > 0 && (
         <div className="flex flex-wrap gap-1.5 pb-2.5">
-          {food.portions.map((p) => (
-            <Chip key={`${p.label}-${p.amount}`} variant="portion" onClick={() => onAmount(amountToKeypad(p.amount))}>
-              {portionChipLabel(p, food.unit)}
-            </Chip>
-          ))}
+          <Chip variant="portion" active={!input.portion} aria-pressed={!input.portion} onClick={() => onInput(selectGrams(input))}>
+            {food.unit}
+          </Chip>
+          {food.portions.map((p) => {
+            const active = isActivePortion(input, p)
+            return (
+              <Chip
+                key={`${p.label}-${p.amount}`}
+                variant="portion"
+                active={active}
+                aria-pressed={active}
+                onClick={() => onInput(selectPortion(p))}
+              >
+                {portionChipLabel(p, food.unit)}
+              </Chip>
+            )
+          })}
         </div>
       )}
 
       <div className="mt-auto">
-        <Keypad value={amount} onChange={onAmount} />
+        <Keypad value={input.text} onChange={(text) => onInput({ ...input, text })} />
       </div>
       <div className="mt-2.5 flex gap-2">
         {secondary}

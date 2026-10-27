@@ -29,7 +29,6 @@ import { getSlots } from '../../db/slots.ts'
 import type { Entry, LocalDate, Meal, Slot } from '../../db/types.ts'
 import {
   addedMessage,
-  amountToKeypad,
   canEditAsFood,
   choiceFromEntry,
   choiceFromProduct,
@@ -41,7 +40,6 @@ import {
 import { dayLabel } from '../../logic/diary.ts'
 import { formatTime } from '../../logic/format.ts'
 import { buildMealRows, buildRecipeRows } from '../../logic/groupList.ts'
-import { parseKeypadValue } from '../../logic/keypad.ts'
 import { mealEntries, type MealLine } from '../../logic/meal.ts'
 import { sumNutrients } from '../../logic/nutrients.ts'
 import {
@@ -53,6 +51,13 @@ import {
   type QuickValues,
 } from '../../logic/quickEntry.ts'
 import type { OffProduct } from '../../logic/off.ts'
+import {
+  EMPTY_INPUT,
+  inputAmount,
+  inputFromEntry,
+  inputPortionLabel,
+  type AmountInput,
+} from '../../logic/portionCount.ts'
 import { productToForm, type ProductFormValues } from '../../logic/productForm.ts'
 import { slotForTime } from '../../logic/slots.ts'
 import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
@@ -154,11 +159,10 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
     return needsCheck(scan.food) ? { kind: 'check', food: scan.food } : { kind: 'amount', food: scan.food }
   })
   const [query, setQuery] = useState('')
-  const [amount, setAmount] = useState(() => {
-    if (editing?.amount) return amountToKeypad(editing.amount)
-    // Neue Einträge starten leer (Jan, 27.10.2026)
-    return ''
-  })
+  // Neue Einträge starten leer (Jan, 27.10.2026); beim Bearbeiten ggf. wieder als Anzahl Portionen
+  const [input, setInput] = useState<AmountInput>(() =>
+    editing?.amount ? inputFromEntry(editing.amount, editing.portionLabel) : EMPTY_INPUT,
+  )
   // Gemerkter Scan: gilt als erledigt, sobald er eingetragen ist
   const [pendingScanId, setPendingScanId] = useState(scan?.scanId ?? null)
   // Produkt anlegen für einen gemerkten Scan, der bei OFF fehlt oder ohne kcal ist
@@ -189,7 +193,7 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
 
   // Scan und Auswahl aus der Suche: ungeprüfte OFF-Produkte erst prüfen, dann Menge
   const pick = (food: FoodChoice) => {
-    setAmount('')
+    setInput(EMPTY_INPUT)
     setStep(needsCheck(food) ? { kind: 'check', food } : { kind: 'amount', food })
   }
   // Aktuelle Werte (z. B. nach einer Korrektur im Prüf-Dialog); frisch gespeicherte OFF-Treffer
@@ -216,9 +220,9 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
 
   const add = (food: FoodChoice) =>
     run(async () => {
-      const value = parseKeypadValue(amount)
+      const value = inputAmount(input)
       if (!slot || value === null || value <= 0) return
-      const entry = await addEntry(foodEntry(food, value, viewed, slot.id))
+      const entry = await addEntry(foodEntry(food, value, viewed, slot.id, inputPortionLabel(food, input)))
       if (pendingScanId) {
         await resolvePendingScan(pendingScanId)
         setPendingScanId(null)
@@ -275,10 +279,10 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
 
   const save = (entry: Entry, food: FoodChoice) =>
     run(async () => {
-      const value = parseKeypadValue(amount)
+      const value = inputAmount(input)
       const target = slot?.id ?? entry.slotId
       if (value === null || value <= 0) return
-      await updateEntry(entry.id, editedEntry(food, value, date, target))
+      await updateEntry(entry.id, editedEntry(food, value, date, target, inputPortionLabel(food, input)))
       showNewEntry(target, entry.id)
       toast(`${entry.nameSnapshot} gespeichert`)
       closeAddSheet()
@@ -407,8 +411,8 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
         {step.kind === 'amount' && (
           <AmountStep
             food={live(step.food)}
-            amount={amount}
-            onAmount={setAmount}
+            input={input}
+            onInput={setInput}
             onBack={() => setStep({ kind: 'search' })}
             confirmLabel={`Zu ${slot?.name ?? ''} hinzufügen`}
             onConfirm={() => void add(live(step.food))}
@@ -435,8 +439,8 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
         {step.kind === 'edit' && step.entry.kind !== 'quick' && (
           <EditStep
             food={choiceFromEntry(step.entry, step.entry.ref ? resolver.resolve(step.entry.ref) : undefined)}
-            amount={amount}
-            onAmount={setAmount}
+            input={input}
+            onInput={setInput}
             busy={busy}
             onSave={(food) => void save(step.entry, food)}
             onDelete={() => void remove(step.entry)}
@@ -503,19 +507,19 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
 
 type EditProps = {
   food: FoodChoice
-  amount: string
-  onAmount: (amount: string) => void
+  input: AmountInput
+  onInput: (input: AmountInput) => void
   busy: boolean
   onSave: (food: FoodChoice) => void
   onDelete: () => void
 }
 
-function EditStep({ food, amount, onAmount, busy, onSave, onDelete }: EditProps) {
+function EditStep({ food, input, onInput, busy, onSave, onDelete }: EditProps) {
   return (
     <AmountStep
       food={food}
-      amount={amount}
-      onAmount={onAmount}
+      input={input}
+      onInput={onInput}
       // Zurück verwirft die Änderung und schließt (im Prototyp ginge es zur Suche)
       onBack={closeAddSheet}
       confirmLabel="Speichern"

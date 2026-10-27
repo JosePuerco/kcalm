@@ -13,7 +13,6 @@ import { loadFoodSources } from '../../db/entries.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { archiveMeal, createMeal, deleteMeal, restoreMeal, updateMeal } from '../../db/meals.ts'
 import type { Meal } from '../../db/types.ts'
-import { portionLabelFor } from '../../logic/addFood.ts'
 import { formatSum } from '../../logic/diary.ts'
 import { formatAmount, formatNumber } from '../../logic/format.ts'
 import { mealKcal, partCount, validateMeal, type MealFormData } from '../../logic/meal.ts'
@@ -217,13 +216,15 @@ function MealBody({ meal }: { meal: Meal | null }) {
         open={picking !== null}
         onClose={() => setPicking(null)}
         title={picking === 'new' ? 'Bestandteil hinzufügen' : 'Bestandteil'}
-        editing={editLine?.food ? { food: editLine.food, amount: editLine.item.amount } : null}
+        editing={
+          editLine?.food ? { food: editLine.food, amount: editLine.item.amount, portionLabel: editLine.item.portionLabel } : null
+        }
         sources={sources}
         bls={blsData}
         resolver={resolver}
         confirmLabel={picking === 'new' ? 'Zur Mahlzeit hinzufügen' : 'Übernehmen'}
-        onConfirm={(food, amount) => {
-          const item = { ref: food.ref, amount, unit: food.unit, portionLabel: portionLabelFor(food, amount) }
+        onConfirm={(food, amount, portionLabel) => {
+          const item = { ref: food.ref, amount, unit: food.unit, portionLabel }
           setValues((v) => ({
             ...v,
             items: typeof picking === 'number' ? v.items.map((it, i) => (i === picking ? item : it)) : [...v.items, item],
