@@ -2,9 +2,11 @@
 // werden nur archiviert (PLAN.md 2, Produkte).
 
 import type { ProductFormData } from '../logic/productForm.ts'
+import { effectiveUnit } from '../logic/verify.ts'
 import { db } from './db.ts'
 import { newRecord, softDelete, touch, upsertByKey } from './records.ts'
 import type { BlsPref, FoodRef, Portion, Product } from './types.ts'
+import { relabelUnit } from './units.ts'
 
 export async function createProduct(data: ProductFormData, now = new Date()): Promise<Product> {
   const product = newRecord<Product>(
@@ -21,11 +23,17 @@ export async function createProduct(data: ProductFormData, now = new Date()): Pr
   return product
 }
 
+/** Neue Einheit gilt auch für alte Einträge und Mahlzeiten, nur als Bezeichnung (Jan, 27.10.2026) */
 export async function updateProduct(id: string, data: ProductFormData, now = new Date()): Promise<Product> {
-  return db.transaction('rw', db.products, async () => {
+  return db.transaction('rw', [db.products, db.productOverrides, db.entries, db.meals], async () => {
     const existing = await getProduct(id)
     const updated = touch(existing, data, now)
     await db.products.put(updated)
+    if (data.unit !== existing.unit) {
+      const ref: FoodRef = `product:${id}`
+      const override = await db.productOverrides.where('productRef').equals(ref).first()
+      await relabelUnit(ref, effectiveUnit(data.unit, override), now)
+    }
     return updated
   })
 }

@@ -12,6 +12,7 @@ import {
 import { db } from './db.ts'
 import { setBlsUseOverride } from './products.ts'
 import { softDelete, touch, upsertByKey } from './records.ts'
+import { relabelUnit } from './units.ts'
 import type { FoodRef, Nutrients, ProductOverride, Unit } from './types.ts'
 
 const findOverride = (ref: FoodRef) => db.productOverrides.where('productRef').equals(ref).first()
@@ -64,11 +65,12 @@ export async function setVerified(ref: FoodRef, original: Nutrients, verified: b
   })
 }
 
-/** Einheit g/ml für Anzeige und neue Einträge (Phase 12e); alte Einträge behalten ihre Einheit (Snapshot) */
+/** Einheit g/ml (Phase 12e); alte Einträge und Mahlzeiten bekommen sie auch, nur als Bezeichnung (Jan, 27.10.2026) */
 export async function setUnit(ref: FoodRef, original: Unit, unit: Unit, now = new Date()) {
-  await db.transaction('rw', db.productOverrides, async () => {
+  await db.transaction('rw', [db.productOverrides, db.entries, db.meals], async () => {
     const existing = await getOverride(ref)
     await putOverride(ref, existing?.per100 ?? {}, existing?.verifiedAt ?? null, now, unitOverride(original, unit))
+    await relabelUnit(ref, unit, now)
   })
 }
 

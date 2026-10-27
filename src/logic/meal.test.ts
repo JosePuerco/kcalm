@@ -12,6 +12,7 @@ import {
   mealKcal,
   mealTotals,
   partCount,
+  relabelMealItems,
   scaledAmount,
   stepLineAmount,
   validateMeal,
@@ -327,5 +328,24 @@ describe('partCount', () => {
   it('Einzahl und Mehrzahl', () => {
     expect(partCount(1)).toBe('1 Bestandteil')
     expect(partCount(4)).toBe('4 Bestandteile')
+  })
+})
+
+describe('relabelMealItems', () => {
+  const items = [
+    { ref: 'bls:hafer' as FoodRef, amount: 60, unit: 'g' as const, portionLabel: null },
+    { ref: 'bls:milch' as FoodRef, amount: 250, unit: 'g' as const, portionLabel: null },
+  ]
+
+  it('nur die Einheit des Lebensmittels, Menge bleibt', () => {
+    expect(relabelMealItems(items, 'bls:milch', 'ml')).toEqual([
+      items[0],
+      { ref: 'bls:milch', amount: 250, unit: 'ml', portionLabel: null },
+    ])
+  })
+
+  it('nichts zu ändern → null', () => {
+    expect(relabelMealItems(items, 'bls:milch', 'g')).toBeNull()
+    expect(relabelMealItems(items, 'bls:kaese', 'ml')).toBeNull()
   })
 })

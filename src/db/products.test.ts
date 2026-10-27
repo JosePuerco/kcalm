@@ -78,6 +78,28 @@ describe('Produkte', () => {
     expect((await db.entries.get(entry.id))?.nutrients.kcal).toBe(94.5)
   })
 
+  it('neue Einheit: alte Einträge und Mahlzeiten heißen mit, Menge und Werte bleiben', async () => {
+    const p = await createProduct(skyr, t0)
+    const ref = `product:${p.id}` as const
+    const entry = { ...entryFor(ref), nutrients: { ...unknownNutrients(), kcal: 94.5 } }
+    const other = entryFor('bls:M111100')
+    const meal = newRecord<Meal>(
+      { name: 'Frühstück', items: [{ ref, amount: 150, unit: 'g', portionLabel: null }], archived: false },
+      t0,
+    )
+    await db.entries.bulkAdd([entry, other])
+    await db.meals.add(meal)
+    await updateProduct(p.id, { ...skyr, unit: 'ml' }, t1)
+    expect(await db.entries.get(entry.id)).toMatchObject({
+      unit: 'ml',
+      amount: 150,
+      nutrients: { kcal: 94.5 },
+      updatedAt: t1.toISOString(),
+    })
+    expect((await db.entries.get(other.id))?.unit).toBe('g')
+    expect((await db.meals.get(meal.id))?.items[0]).toMatchObject({ unit: 'ml', amount: 150 })
+  })
+
   it('Portionen aus der Detailansicht speichern', async () => {
     const p = await createProduct(skyr, t0)
     await saveProductPortions(p.id, [{ label: 'Halber Becher', amount: 225 }], t1)

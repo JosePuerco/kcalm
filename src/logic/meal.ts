@@ -1,7 +1,7 @@
 // Mahlzeit eintragen (Mahlzeit.dc.html): Bestandteile an/aus, Mengen mit −/+ oder Ziffernblock,
 // Gesamtskalierung. Änderungen gelten nur für diesen Eintrag, die Vorlage bleibt gleich. Reine Funktionen.
 
-import type { FoodRef, LocalDate, Meal, Nutrients } from '../db/types.ts'
+import type { FoodRef, LocalDate, Meal, MealItem, Nutrients, Unit } from '../db/types.ts'
 import { foodEntry, type FoodChoice, type NewEntryFields } from './addFood.ts'
 import { nutrientsForAmount, sumNutrients, type NutrientSum } from './nutrients.ts'
 
@@ -158,4 +158,13 @@ export function mealKcal(meal: Pick<Meal, 'items'>, resolve: (ref: FoodRef) => F
 /** „4 Bestandteile“ / „1 Bestandteil“ */
 export function partCount(n: number): string {
   return `${n} ${n === 1 ? 'Bestandteil' : 'Bestandteile'}`
+}
+
+/**
+ * Neue Einheit eines Lebensmittels in den Bestandteilen (Jan, 27.10.2026): nur die Bezeichnung, die Menge
+ * bleibt. null = nichts zu ändern.
+ */
+export function relabelMealItems(items: readonly MealItem[], ref: FoodRef, unit: Unit): MealItem[] | null {
+  if (!items.some((i) => i.ref === ref && i.unit !== unit)) return null
+  return items.map((i) => (i.ref === ref ? { ...i, unit } : i))
 }

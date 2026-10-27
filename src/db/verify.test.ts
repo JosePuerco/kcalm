@@ -4,6 +4,7 @@ import { choiceFromProduct, foodEntry } from '../logic/addFood.ts'
 import { mergeNutrients } from '../logic/verify.ts'
 import { db } from './db.ts'
 import { addEntry, getEntry } from './entries.ts'
+import { createMeal, getMeal } from './meals.ts'
 import { lookupBarcode, refreshOffProduct, type Network } from './off.ts'
 import { getBlsPref, getProduct } from './products.ts'
 import type { FoodRef, Product } from './types.ts'
@@ -92,6 +93,22 @@ describe('setUnit', () => {
     await setVerified(refOf(skyr), skyr.per100, false, T1)
     expect(await getOverride(refOf(skyr))).toMatchObject({ unit: 'ml', per100: { salt: 0.12 }, verifiedAt: null })
     expect((await getProduct(skyr.id)).unit).toBe('g')
+  })
+
+  it('alte Einträge und Mahlzeiten bekommen die Einheit, nichts wird umgerechnet', async () => {
+    const skyr = await scannedSkyr()
+    const choice = choiceFromProduct(skyr)
+    const entry = await addEntry(foodEntry(choice, 250, '2026-10-12', 'slot'), T0)
+    const meal = await createMeal(
+      { name: 'Frühstück', items: [{ ref: refOf(skyr), amount: 250, unit: 'g', portionLabel: null }] },
+      T0,
+    )
+    await setUnit(refOf(skyr), skyr.unit, 'ml', T1)
+    const changed = await getEntry(entry.id)
+    expect(changed).toMatchObject({ unit: 'ml', amount: 250, nutrients: entry.nutrients })
+    expect((await getMeal(meal.id)).items[0]).toMatchObject({ unit: 'ml', amount: 250 })
+    await setUnit(refOf(skyr), skyr.unit, 'g', T1)
+    expect((await getEntry(entry.id))?.unit).toBe('g')
   })
 
   it('nur Einheit: Prüfung entfernen löscht den Datensatz nicht', async () => {
