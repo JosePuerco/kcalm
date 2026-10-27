@@ -2,10 +2,11 @@
 // aufgeklappt die Einträge mit Trennlinien (EntryRow: Tipp bearbeitet, Wischen löscht).
 // Mahlzeiten: Kopfzeile mit Name und kcal-Summe, Bestandteile leicht eingerückt darunter (kein Prototyp,
 // mit Jan abgestimmt); die Kopfzeile ist nicht antippbar, Bestandteile bleiben einzeln bearbeitbar.
+// Aufgeklappt steht unter dem Kopf eine graue Zeile mit den Makros des Slots (Phase 12c).
 import { IconChevronRight, IconPlus } from '../../components/icons/icons.tsx'
 import { Reveal } from '../../components/ui/Reveal.tsx'
 import type { Entry } from '../../db/types.ts'
-import { entryCount, formatSum, groupSlotEntries, type DaySlot } from '../../logic/diary.ts'
+import { entryCount, formatSum, groupSlotEntries, slotMacros, type DaySlot } from '../../logic/diary.ts'
 import { EntryRow } from './EntryRow.tsx'
 
 type Props = {
@@ -25,6 +26,7 @@ type Props = {
 export function SlotCard({ day, open, flashId, swipedId, onSwipe, onEdit, onDelete, onToggle, onAdd }: Props) {
   const { slot, entries, kcal } = day
   const count = entries.length === 0 ? 'leer' : open ? '' : entryCount(entries.length)
+  const macros = open && entries.length > 0 ? slotMacros(entries) : null
   const row = (e: Entry) => (
     <EntryRow
       key={e.id}
@@ -67,8 +69,12 @@ export function SlotCard({ day, open, flashId, swipedId, onSwipe, onEdit, onDele
           <IconPlus size={20} strokeWidth={2} />
         </button>
       </div>
-      {open && entries.length > 0 && (
+      {macros && (
         <Reveal className="pb-1.5 pl-3">
+          <p className="text-small text-muted pr-3 pb-1">
+            <span aria-hidden="true">{macros.text}</span>
+            <span className="sr-only">{macros.label}</span>
+          </p>
           {groupSlotEntries(entries).map((item) => {
             if (item.kind === 'entry') return row(item.entry)
             return (

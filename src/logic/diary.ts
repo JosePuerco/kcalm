@@ -101,6 +101,27 @@ export function slotsForDay(slots: readonly Slot[], entries: readonly Entry[]): 
   })
 }
 
+const SLOT_MACROS = [
+  { key: 'protein', short: 'E', long: 'Eiweiß' },
+  { key: 'carbs', short: 'K', long: 'Kohlenhydrate' },
+  { key: 'fat', short: 'F', long: 'Fett' },
+  { key: 'fiber', short: 'B', long: 'Ballaststoffe' },
+] as const
+
+/**
+ * Makros eines Slots (Phase 12c): „E 32 g · K 80 g · F 20 g · B 5 g“, dazu ausgeschrieben für VoiceOver.
+ * Teilweise unbekannt → „mind. …“, ganz unbekannt → „–“ ohne Einheit.
+ */
+export function slotMacros(entries: readonly Entry[]): { text: string; label: string } {
+  const sums = sumNutrients(entries.map((e) => e.nutrients))
+  const parts = SLOT_MACROS.map((m) => {
+    const sum = sums[m.key]
+    const value = sum.value === null ? formatSum(sum) : `${formatSum(sum)} g`
+    return { short: `${m.short} ${value}`, long: `${m.long} ${value}` }
+  })
+  return { text: parts.map((p) => p.short).join(' · '), label: parts.map((p) => p.long).join(', ') }
+}
+
 /** Zeile im Slot: einzelner Eintrag oder Mahlzeit mit ihren Bestandteilen */
 export type SlotItem =
   | { kind: 'entry'; entry: Entry }

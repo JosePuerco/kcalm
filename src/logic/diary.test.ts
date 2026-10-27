@@ -13,6 +13,7 @@ import {
   kcalByDate,
   monthGrid,
   monthLabel,
+  slotMacros,
   slotsForDay,
   weekBarScale,
 } from './diary.ts'
@@ -127,6 +128,22 @@ describe('slotsForDay', () => {
   it('gelöschte Slots erscheinen nicht', () => {
     const deleted = { ...slot('X', 5), deletedAt: '2026-10-01T00:00:00.000Z' }
     expect(slotsForDay([...slots, deleted], []).map((s) => s.slot.name)).not.toContain('X')
+  })
+})
+
+describe('slotMacros', () => {
+  it('Summe in ganzen Gramm, ausgeschrieben für VoiceOver', () => {
+    const r = slotMacros([
+      entry('Mittag', { protein: 20.4, carbs: 50, fat: 12, fiber: 3 }),
+      entry('Mittag', { protein: 11.4, carbs: 30.2, fat: 8, fiber: 2 }),
+    ])
+    expect(r.text).toBe('E 32 g · K 80 g · F 20 g · B 5 g')
+    expect(r.label).toBe('Eiweiß 32 g, Kohlenhydrate 80 g, Fett 20 g, Ballaststoffe 5 g')
+  })
+
+  it('teilweise unbekannt „mind.“, ganz unbekannt „–“', () => {
+    const r = slotMacros([entry('Mittag', { protein: 10, carbs: 20, fat: 5 }), entry('Mittag', { protein: null, carbs: 5, fat: 1 })])
+    expect(r.text).toBe('E mind. 10 g · K 25 g · F 6 g · B –')
   })
 })
 
