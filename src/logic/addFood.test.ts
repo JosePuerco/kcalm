@@ -10,7 +10,6 @@ import {
   editedEntry,
   choiceFromProduct,
   foodEntry,
-  initialAmount,
   needsCheck,
   per100Label,
   portionChipLabel,
@@ -115,11 +114,6 @@ describe('recentRefs', () => {
 
 describe('Mengen-Schritt', () => {
   const c = choiceFromProduct(skyr)
-
-  it('Startmenge: erste Portion, sonst 100', () => {
-    expect(initialAmount(c)).toBe(250)
-    expect(initialAmount({ ...c, portions: [] })).toBe(100)
-  })
 
   it('amountToKeypad mit Dezimalkomma', () => {
     expect(amountToKeypad(250)).toBe('250')

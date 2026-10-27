@@ -9,7 +9,7 @@ import { useToast } from '../../components/ui/toastContext.ts'
 import type { BlsData } from '../../data/bls.ts'
 import type { FoodSources } from '../../db/entries.ts'
 import { saveOffProduct } from '../../db/off.ts'
-import { amountToKeypad, choiceFromProduct, initialAmount, type FoodChoice } from '../../logic/addFood.ts'
+import { amountToKeypad, choiceFromProduct, type FoodChoice } from '../../logic/addFood.ts'
 import { parseKeypadValue } from '../../logic/keypad.ts'
 import type { OffProduct } from '../../logic/off.ts'
 import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
@@ -67,7 +67,7 @@ function PickerFlow({
   const [query, setQuery] = useState('')
 
   const pick = (choice: FoodChoice) => {
-    setAmount(amountToKeypad(initialAmount(choice)))
+    setAmount('')
     setFood(choice)
   }
 

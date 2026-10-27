@@ -74,11 +74,6 @@ export function recentRefs(entries: readonly Entry[], limit = 15): FoodRef[] {
   return refs
 }
 
-/** Startmenge im Mengen-Schritt: erste Portion (wie im Prototyp), sonst 100 */
-export function initialAmount(food: FoodChoice): number {
-  return food.portions[0]?.amount ?? 100
-}
-
 /** Zahl für den Ziffernblock: 250 → „250“, 12.5 → „12,5“ */
 export function amountToKeypad(amount: number): string {
   return String(amount).replace('.', ',')

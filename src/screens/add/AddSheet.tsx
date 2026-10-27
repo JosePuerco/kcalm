@@ -35,7 +35,6 @@ import {
   choiceFromProduct,
   editedEntry,
   foodEntry,
-  initialAmount,
   needsCheck,
   type FoodChoice,
 } from '../../logic/addFood.ts'
@@ -157,7 +156,8 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
   const [query, setQuery] = useState('')
   const [amount, setAmount] = useState(() => {
     if (editing?.amount) return amountToKeypad(editing.amount)
-    return scan?.food ? amountToKeypad(initialAmount(scan.food)) : ''
+    // Neue Einträge starten leer (Jan, 27.10.2026)
+    return ''
   })
   // Gemerkter Scan: gilt als erledigt, sobald er eingetragen ist
   const [pendingScanId, setPendingScanId] = useState(scan?.scanId ?? null)
@@ -189,7 +189,7 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
 
   // Scan und Auswahl aus der Suche: ungeprüfte OFF-Produkte erst prüfen, dann Menge
   const pick = (food: FoodChoice) => {
-    setAmount(amountToKeypad(initialAmount(food)))
+    setAmount('')
     setStep(needsCheck(food) ? { kind: 'check', food } : { kind: 'amount', food })
   }
   // Aktuelle Werte (z. B. nach einer Korrektur im Prüf-Dialog); frisch gespeicherte OFF-Treffer
