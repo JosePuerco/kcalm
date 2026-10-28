@@ -31,4 +31,12 @@ describe('motionTokens', () => {
     expect(motionTokens.sheetOut.duration).toBe(0.22)
     expect(motionTokens.toastVisibleMs).toBe(2200)
   })
+
+  it('Sheet fährt ohne Überschießen hoch (Unterkante bleibt am Rand)', () => {
+    const ease = motionTokens.sheetIn.ease
+    expect(Array.isArray(ease)).toBe(true)
+    const [, y1, , y2] = ease as [number, number, number, number]
+    expect(y1).toBeLessThanOrEqual(1)
+    expect(y2).toBeLessThanOrEqual(1)
+  })
 })

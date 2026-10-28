@@ -4,7 +4,7 @@ import tokens from '../../design/tokens.json'
 
 export type Bezier = [number, number, number, number]
 
-/** „cubic-bezier(.2,1.15,.35,1)“ → [0.2, 1.15, 0.35, 1]; benannte Kurven übersetzen */
+/** „cubic-bezier(.2,1,.35,1)“ → [0.2, 1, 0.35, 1]; benannte Kurven übersetzen */
 export function parseEasing(easing: string): Bezier | 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' {
   const m = /^cubic-bezier\(([^)]+)\)$/.exec(easing.trim())
   if (m) {

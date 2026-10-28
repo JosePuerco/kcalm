@@ -69,7 +69,7 @@ Verbindlich für die Umsetzung. Werte stehen in `tokens.json`, die präzise Vorl
 
 Alle Werte in `tokens.json` → `motion`. Umsetzung mit Motion (motion/react).
 
-- Sheet fährt mit leichtem Federeffekt hoch, schließt schnell und ohne Feder.
+- Sheet fährt weich abgebremst hoch, ohne Überschießen (Unterkante bleibt am Rand; Federeffekt auf Jans Wunsch entfernt, 28.10.2026), schließt schnell.
 - Schritte im Sheet (Suche → Menge) gleiten 18 px seitlich ein.
 - Nach dem Hinzufügen: Ring, Zahl „kcal übrig“, Makro-Balken und Wochensumme zählen in 650 ms hoch; der neue Eintrag blinkt kurz in Akzent-Ton.
 - Aufklappen (Slot, Woche, Kalender): Chevron dreht, Inhalt gleitet 8 px von oben ein.

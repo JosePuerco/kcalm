@@ -48,7 +48,7 @@ export function App() {
 
   return (
     // Referenzbreite 390, fluid bis 430 (DESIGN.md 2)
-    <div className="bg-bg text-text relative mx-auto flex h-full w-full max-w-[430px] flex-col overflow-hidden">
+    <div data-shell className="bg-bg text-text relative mx-auto flex h-full w-full max-w-[430px] flex-col overflow-hidden">
       <OverlayProvider>
         <ToastProvider>
           {setupDone === false && <Setup />}

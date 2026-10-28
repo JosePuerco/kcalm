@@ -1,5 +1,5 @@
 // Bottom-Sheet nach Kern.dc.html: bis 772 px hoch, Radius oben 28, Griff 40 × 5,
-// Scrim; Titel links, „Fertig“ rechts. Fährt mit Feder hoch, schließt schnell.
+// Scrim; Titel links, „Fertig“ rechts. Fährt weich abgebremst hoch (ohne Überschießen), schließt schnell.
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { instant, motionTokens, useReduced } from '../../motion/motion.ts'
@@ -26,7 +26,9 @@ export function Sheet({ open, onClose, title, doneLabel = 'Fertig', onBack, chil
 
   useEffect(() => {
     if (!open) return
-    panel.current?.focus()
+    // Ohne Scrollen: Das Sheet liegt beim Öffnen noch unter dem Bildschirm. Safari würde sonst die App-Hülle
+    // verschieben, damit es sichtbar wird (oben abgeschnitten, unten leer; Jan, 28.10.2026).
+    panel.current?.focus({ preventScroll: true })
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)

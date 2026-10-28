@@ -87,7 +87,7 @@
 
 :root {
   --kc-motion-sheet-in-duration: 420ms;
-  --kc-motion-sheet-in-easing: cubic-bezier(.2,1.15,.35,1);
+  --kc-motion-sheet-in-easing: cubic-bezier(.2,1,.35,1);
   --kc-motion-sheet-out-duration: 220ms;
   --kc-motion-sheet-out-easing: cubic-bezier(.4,0,1,1);
   --kc-motion-scrim-in-duration: 260ms;

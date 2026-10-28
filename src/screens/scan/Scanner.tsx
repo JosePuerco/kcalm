@@ -99,7 +99,7 @@ export default function Scanner({ onDetected, onClose, paused = false, children,
 
   // Escape schließt nur den Scanner, nicht das Sheet darunter
   useEffect(() => {
-    dialog.current?.focus()
+    dialog.current?.focus({ preventScroll: true })
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
       e.stopPropagation()
