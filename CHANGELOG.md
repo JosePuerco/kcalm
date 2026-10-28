@@ -8,6 +8,12 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 1.3.2 – 28.10.2026
+
+- Behoben: Beim Öffnen eines Sheets (z. B. „+“) war die App manchmal nach oben verschoben, oben abgeschnitten und unten leer
+- Sheets fahren ohne Federeffekt hoch (kein Hoch-und-zurück mehr)
+- Build-Werkzeuge aktualisiert (`npm audit fix`)
+
 ## 1.3.1 – 28.10.2026
 
 Keine Änderung an der App: Deploy-Workflow gewartet (GitHub Actions mit Node 24, Runner fest auf Ubuntu 24.04), Projektnotizen in `PLAN.md` (iPhone-Test von 1.3.0).
