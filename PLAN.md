@@ -428,8 +428,8 @@ Offen (nächster Termin mit Jan):
 
 Offen (Wartung, Kandidat für 1.0.1):
 
-- [ ] GitHub Actions auf Versionen mit Node 24 heben: `actions/configure-pages` und `actions/upload-pages-artifact` laufen noch mit Node 20 (Warnung im Deploy, Node 20 wird abgeschaltet)
-- [ ] `runs-on: ubuntu-latest` prüfen: wechselt ab 19.10.2026 auf Ubuntu 26; Deploy nach dem Wechsel beobachten oder Version fest eintragen
+- [x] GitHub Actions auf Versionen mit Node 24 heben: `actions/configure-pages` und `actions/upload-pages-artifact` laufen noch mit Node 20 (Warnung im Deploy, Node 20 wird abgeschaltet) – erledigt 28.10.2026: `configure-pages@v6`, `upload-pages-artifact@v5` (nutzt `upload-artifact` v7), `deploy-pages@v5`; `checkout@v5` und `setup-node@v5` liefen schon mit Node 24
+- [x] `runs-on: ubuntu-latest` prüfen: wechselt ab 19.10.2026 auf Ubuntu 26; Deploy nach dem Wechsel beobachten oder Version fest eintragen – erledigt 28.10.2026: fest `ubuntu-24.04` (der Deploy von 1.3.0 lief noch darauf); auf 26.04 später bewusst umstellen
 - [ ] Startbild Dunkelmodus: bisher nur das iPhone 16e (1170 × 2532); weitere Geräte nur bei Bedarf (`scripts/build-splash.ts`, Liste `screens`)
 
 Verlauf Phase 11: 11a Abweichungen vom Prototyp, 11b Startbilder und Manifest-`id`, 11c Darstellung/Über und Vorschau nur im Entwicklungsmodus, Versionierung (Tags `v0.0.0`–`v0.10.0`, `CHANGELOG.md`, Prüfung im Workflow, Regeln in `CLAUDE.md`). Version 0.11.0 deployt und von Jan auf dem iPhone getestet (Checkliste bestanden). Danach als 0.11.1: Häkchen „vollständig“ beim schnellen Blättern behoben, Badge „geprüft“ im Mengen-Schritt, Willkommensbildschirm mit „Aus Backup laden“. Nächster Schritt: Jan testet 0.11.1, danach Version 1.0.0 und Phase 11 abschließen.
