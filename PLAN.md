@@ -411,6 +411,8 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
+**28.10.2026 · Anleitung „Kamera dauerhaft erlauben“** – iOS fragt in der Home-Bildschirm-App bei jedem Start nach der Kamera. Lösung (von Jan gefunden): in Safari Seitenmenü (drei Striche) → Website-Einstellungen → Kamera „Erlauben“, erst danach zum Home-Bildschirm hinzufügen. Anleitung `docs/kamera-erlaubnis.md` und in der App unter Einstellungen › Hilfe (`src/screens/einstellungen/CameraGuideSheet.tsx`); Begriffe nach iOS 27.2, von Jan am iPhone bestätigt. Neue Gruppe „Hilfe“ vor „Über“ (nicht im Prototyp, mit Jan abgestimmt). 936 Tests grün, Build und Lint sauber, im Headless-Chrome bei 390 px geprüft (Hell/Dunkel). Noch nicht deployt.
+
 **27.10.2026 · Rückmeldungen zu 1.1.0 umgesetzt (12f–12i)** – je ein Commit, 936 Tests grün, Build und Lint sauber; Prüf-Dialog mit Einheit und Mahlzeit-Faktoren im Headless-Chrome geprüft. Der Tastatur-Fehler (12i) lässt sich nur auf dem iPhone prüfen. Als Version 1.2.0 deployt, iPhone-Test bestanden (Jan, 27.10.2026), bis auf den Tastatur-Fehler (siehe unten).
 
 Offen (nächster Termin mit Jan):
@@ -486,7 +488,7 @@ Verlauf Phase 11: 11a Abweichungen vom Prototyp, 11b Startbilder und Manifest-`i
 - Erledigt: `src/logic/barcode.ts` (Prüfziffer, Einheitsform), `src/logic/off.ts` (Adressen, Zod, Umwandlung, kJ → kcal), `src/db/off.ts` (lokal zuerst, Zeitlimit, Textsuche mit Wiederholung), `src/scanner/detector.ts` (barcode-detector, WASM aus dem eigenen Build, Test auf Version/SHA-256), Scanner-Screen, Ablauf nach dem Scan, `pendingScans` mit Nachladen im Hintergrund, OFF-Textsuche.
 - Nach Jans iPhone-Test: Kamera erst sichtbar, wenn das erste Bild läuft (kein Sprung aus kleinem Fenster); Treffer direkt zur Menge; Kamera aus beim Eintippen. Vibration bewusst nicht (iOS unterstützt sie in Web-Apps nicht).
 - Tokens ergänzt (mit Jans OK): `color.scanner`, `shadow.laser`, `radius.scanFrame`, `motion.scanLaser`.
-- Kamera-Erlaubnis: iOS fragt einmal pro App-Start; im Code nicht änderbar. Lösung (Jan, 28.10.2026): in Safari unter aA → Website-Einstellungen Kamera auf „Erlauben“ stellen und erst danach zum Home-Bildschirm hinzufügen; die App übernimmt die Einstellung nur beim Hinzufügen. Anleitung `docs/kamera-erlaubnis.md`.
+- Kamera-Erlaubnis: iOS fragt einmal pro App-Start; im Code nicht änderbar. Lösung (Jan, 28.10.2026): in Safari unter Seitenmenü (drei Striche) → Website-Einstellungen Kamera auf „Erlauben“ stellen und erst danach zum Home-Bildschirm hinzufügen; die App übernimmt die Einstellung nur beim Hinzufügen. Anleitung `docs/kamera-erlaubnis.md`.
 
 **21.10.2026 · Phase 3 abgeschlossen** – alle Punkte erledigt (Teilschritte 3a–3g, je ein Commit), deployt und von Jan auf dem iPhone getestet. 439 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 4 (Open Food Facts und Barcode), vorher Kurztest OFF aus dem Browser (CORS).
 

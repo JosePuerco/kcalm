@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { version } from '../../package.json'
 import { href, useSubPath } from '../app/router.ts'
 import { THEME_OPTIONS, setThemePref, useThemePref } from '../app/theme.ts'
@@ -12,6 +12,7 @@ import { useLiveQuery } from '../db/live.ts'
 import { getSlots } from '../db/slots.ts'
 import { formatNumber } from '../logic/format.ts'
 import { BackupCard } from './BackupCard.tsx'
+import { CameraGuideSheet } from './einstellungen/CameraGuideSheet.tsx'
 import { EstimateScreen } from './einstellungen/EstimateScreen.tsx'
 import { ExportScreen } from './einstellungen/ExportScreen.tsx'
 import { ProfilesScreen } from './einstellungen/ProfilesScreen.tsx'
@@ -35,13 +36,14 @@ export function Einstellungen() {
   return <Overview />
 }
 
-// Gruppen nach Einstellungen.dc.html: Ziele, Funktionen, Daten, Darstellung, Über
+// Gruppen nach Einstellungen.dc.html: Ziele, Funktionen, Daten, Darstellung, Über; dazu „Hilfe“ (nicht im Prototyp)
 function Overview() {
   const slots = useLiveQuery(getSlots, [])
   const today = useToday()
   const profiles = useLiveQuery(loadProfiles, [])
   const estimate = useLiveQuery(getEstimateEnabled, [])
   const theme = useThemePref()
+  const [cameraGuide, setCameraGuide] = useState(false)
   const activeId = profiles && profileStatus(profiles.assignments, profiles.versions, today).activeProfileId
   const activeName = profiles?.profiles.find((p) => p.id === activeId)?.name ?? ''
   const slotsMeta = slots
@@ -85,6 +87,18 @@ function Overview() {
           <Segmented label="Erscheinungsbild" inCard options={THEME_OPTIONS} value={theme} onChange={setThemePref} />
         </Card>
       </Group>
+      <Group title="Hilfe">
+        <Card padded={false}>
+          <button
+            type="button"
+            onClick={() => setCameraGuide(true)}
+            className="text-text flex min-h-[52px] w-full items-center gap-2.5 pr-3 pl-4 text-left"
+          >
+            <span className="text-body flex-1">Kamera dauerhaft erlauben</span>
+            <IconChevronRight className="text-chevron-muted" />
+          </button>
+        </Card>
+      </Group>
       <Group title="Über">
         {/* Version aus package.json (beim Build eingesetzt); Quellenhinweise für OFF (ODbL) und BLS */}
         <Card padded={false} className="px-card-padding text-secondary text-muted flex flex-col gap-2 py-3.5 leading-[1.45]">
@@ -101,6 +115,7 @@ function Overview() {
           <LinkRow to={href('vorschau')} label="Bausteine (Vorschau)" />
         </Card>
       )}
+      <CameraGuideSheet open={cameraGuide} onClose={() => setCameraGuide(false)} />
     </Screen>
   )
 }
