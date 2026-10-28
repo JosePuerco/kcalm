@@ -35,7 +35,7 @@ Vorher einmal mit Netz öffnen, damit alles im Cache liegt. Dann Flugmodus an (W
 ## D. Neu installieren und zurückspielen
 
 - [ ] App vom Home-Bildschirm löschen (löscht alle Daten auf dem Gerät)
-- [ ] In Safari `josepuerco.github.io/kcalm/` öffnen → Teilen → „Zum Home-Bildschirm“
+- [ ] In Safari `josepuerco.github.io/kcalm/` öffnen → aA → Website-Einstellungen → Kamera „Erlauben“ (siehe `docs/kamera-erlaubnis.md`), dann Teilen → „Zum Home-Bildschirm“
 - [ ] Neu installierte App zeigt Icon „Kcalm“ und startet mit dem Willkommensbildschirm (Ring zeichnet sich)
 - [ ] „Aus Backup laden“ → Datei aus iCloud Drive wählen → „Ersetzen“ → „Alles ersetzen“ → direkt ins Tagebuch
 - [ ] Tagebuch zeigt alle Tage, auch den Eintrag „Backup-Test“; Profile, Slots, Produkte, Mahlzeiten, Rezepte, Gewichte sind da

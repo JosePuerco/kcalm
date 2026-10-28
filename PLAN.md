@@ -176,6 +176,7 @@ Der Stack entspricht Mixli, ergänzt um Scanner, Diagramme und ein Build-Skript 
 ### Barcode-Scanner
 
 - Kamerastart nur per Tipp (iOS-Vorgabe)
+- Kamera-Erlaubnis dauerhaft nur über Safari vor dem Hinzufügen zum Home-Bildschirm (Anleitung `docs/kamera-erlaubnis.md`)
 - Decoder-Datei (ca. 1 MB) im Build mitliefern und in den Offline-Cache aufnehmen
 - Formate: EAN-13, EAN-8, UPC-A, UPC-E
 - Taschenlampe falls verfügbar, manuelle Code-Eingabe als Ersatz
@@ -485,7 +486,7 @@ Verlauf Phase 11: 11a Abweichungen vom Prototyp, 11b Startbilder und Manifest-`i
 - Erledigt: `src/logic/barcode.ts` (Prüfziffer, Einheitsform), `src/logic/off.ts` (Adressen, Zod, Umwandlung, kJ → kcal), `src/db/off.ts` (lokal zuerst, Zeitlimit, Textsuche mit Wiederholung), `src/scanner/detector.ts` (barcode-detector, WASM aus dem eigenen Build, Test auf Version/SHA-256), Scanner-Screen, Ablauf nach dem Scan, `pendingScans` mit Nachladen im Hintergrund, OFF-Textsuche.
 - Nach Jans iPhone-Test: Kamera erst sichtbar, wenn das erste Bild läuft (kein Sprung aus kleinem Fenster); Treffer direkt zur Menge; Kamera aus beim Eintippen. Vibration bewusst nicht (iOS unterstützt sie in Web-Apps nicht).
 - Tokens ergänzt (mit Jans OK): `color.scanner`, `shadow.laser`, `radius.scanFrame`, `motion.scanLaser`.
-- Kamera-Erlaubnis: iOS fragt einmal pro App-Start; im Code nicht änderbar. Jan kann sie in Safari pro Website erlauben (aA → Website-Einstellungen → Kamera).
+- Kamera-Erlaubnis: iOS fragt einmal pro App-Start; im Code nicht änderbar. Lösung (Jan, 28.10.2026): in Safari unter aA → Website-Einstellungen Kamera auf „Erlauben“ stellen und erst danach zum Home-Bildschirm hinzufügen; die App übernimmt die Einstellung nur beim Hinzufügen. Anleitung `docs/kamera-erlaubnis.md`.
 
 **21.10.2026 · Phase 3 abgeschlossen** – alle Punkte erledigt (Teilschritte 3a–3g, je ein Commit), deployt und von Jan auf dem iPhone getestet. 439 Tests grün, Build und Lint sauber. Nächster Schritt: Phase 4 (Open Food Facts und Barcode), vorher Kurztest OFF aus dem Browser (CORS).
 
