@@ -63,6 +63,11 @@ export function itemsCost(items: readonly { ref: FoodRef; amount: number }[], lo
   return sumCosts(items.map((i) => costForAmount(lookup(i.ref), i.amount)))
 }
 
+/** Zutaten bzw. Bestandteile ohne bekannten Preis, jeder Verweis einmal (für „Preis fehlt bei: …“) */
+export function missingPrices(items: readonly { ref: FoodRef }[], lookup: UnitPriceLookup): FoodRef[] {
+  return [...new Set(items.map((i) => i.ref))].filter((ref) => lookup(ref) === null)
+}
+
 /**
  * € je g fertig = Topfkosten ÷ Endgewicht. Fehlt bei einer Zutat der Preis, ist der Rezeptpreis unbekannt
  * (wie bei den Nährwerten pro 100 g: eine zu kleine Zahl darf nicht als genau gelten).

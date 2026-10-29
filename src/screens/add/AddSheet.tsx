@@ -21,6 +21,7 @@ import { Overlay } from '../../components/ui/overlay.tsx'
 import { Sheet } from '../../components/ui/Sheet.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { useBls } from '../../data/bls.ts'
+import { getCostsEnabled } from '../../db/costs.ts'
 import { getCompleteDates } from '../../db/days.ts'
 import { addEntries, addEntry, deleteEntry, getEntry, loadFoodSources, updateEntry } from '../../db/entries.ts'
 import { saveOffProduct } from '../../db/off.ts'
@@ -148,6 +149,7 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
   const viewed = useDiaryState().date ?? today
   const sources = useLiveQuery(loadFoodSources, [])
   const completeDates = useLiveQuery(getCompleteDates, [])
+  const costs = useLiveQuery(getCostsEnabled, [])
   const bls = useBls()
   const blsData = bls.status === 'ready' ? bls.data : null
   const resolver = useFoodResolver(sources, blsData)
@@ -416,6 +418,7 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
             confirmLabel={`Zu ${slot?.name ?? ''} hinzufügen`}
             onConfirm={() => void addQuick()}
             busy={busy}
+            showCost={costs === true}
           />
         )}
 
@@ -447,6 +450,7 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
             confirmLabel="Speichern"
             onConfirm={() => void saveQuick(step.entry)}
             busy={busy}
+            showCost={costs === true}
             secondary={
               <Button variant="danger" disabled={busy} onClick={() => void remove(step.entry)}>
                 Löschen

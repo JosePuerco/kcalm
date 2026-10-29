@@ -13,12 +13,15 @@ import { loadFoodSources } from '../../db/entries.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { archiveMeal, createMeal, deleteMeal, restoreMeal, updateMeal } from '../../db/meals.ts'
 import type { Meal } from '../../db/types.ts'
+import { costText, itemsCost, missingPrices } from '../../logic/cost.ts'
 import { formatSum } from '../../logic/diary.ts'
 import { formatAmount, formatNumber } from '../../logic/format.ts'
 import { mealKcal, partCount, validateMeal, type MealFormData } from '../../logic/meal.ts'
 import { nutrientsForAmount } from '../../logic/nutrients.ts'
 import { useFoodResolver } from '../add/useFoodResolver.ts'
+import { CostCard } from './CostCard.tsx'
 import { FoodPickerSheet } from './FoodPickerSheet.tsx'
+import { usePriceLookup } from './usePriceLookup.ts'
 
 const LIST = href('lebensmittel')
 
@@ -51,6 +54,7 @@ function MealBody({ meal }: { meal: Meal | null }) {
   const bls = useBls()
   const blsData = bls.status === 'ready' ? bls.data : null
   const resolver = useFoodResolver(sources, blsData)
+  const prices = usePriceLookup(sources)
 
   const [values, setValues] = useState<MealFormData>(() =>
     meal ? { name: meal.name, items: meal.items } : { name: '', items: [] },
@@ -152,6 +156,13 @@ function MealBody({ meal }: { meal: Meal | null }) {
             </div>
           )}
         </Card>
+
+        {prices && values.items.length > 0 && (
+          <CostCard
+            rows={[{ label: 'Ganze Mahlzeit', value: costText(itemsCost(values.items, prices)) }]}
+            missing={missingPrices(values.items, prices).map((ref) => resolver.resolve(ref)?.name ?? unknownName)}
+          />
+        )}
 
         <p className="text-small text-muted px-1 leading-[1.45]">
           Beim Eintragen kannst du Bestandteile abwählen, Mengen anpassen und alles skalieren. Die Vorlage bleibt

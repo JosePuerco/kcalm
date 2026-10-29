@@ -12,6 +12,7 @@ import {
   entryCost,
   formatEuro,
   itemsCost,
+  missingPrices,
   priceLookup,
   QUICK_GROUP_NAME,
   recipeUnitPrice,
@@ -141,6 +142,11 @@ describe('itemsCost / recipeUnitPrice', () => {
   })
   it('Topf mit Zutat ohne Preis: „mind.“', () => {
     expect(itemsCost(sources.recipes[1]!.ingredients, lookup)).toMatchObject({ atLeast: true })
+  })
+  it('missingPrices: jede Zutat ohne Preis einmal', () => {
+    const items = [{ ref: 'product:ohne' as const }, { ref: 'product:hafer' as const }, { ref: 'product:ohne' as const }]
+    expect(missingPrices(items, lookup)).toEqual(['product:ohne'])
+    expect(missingPrices([], lookup)).toEqual([])
   })
   it('ohne Zutaten oder ohne Endgewicht → unbekannt', () => {
     expect(recipeUnitPrice({ ingredients: [], finalWeightG: 500 }, lookup)).toBeNull()

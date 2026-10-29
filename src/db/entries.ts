@@ -31,7 +31,7 @@ export async function getEntry(id: string): Promise<Entry> {
 /** Menge, Slot oder Tag ändern (Verschieben), beim Schnelleintrag auch den Namen; updatedAt wird gesetzt */
 export async function updateEntry(
   id: string,
-  changes: EntryChanges & Partial<Pick<Entry, 'nameSnapshot'>>,
+  changes: EntryChanges & Partial<Pick<Entry, 'nameSnapshot' | 'cost'>>,
   now = new Date(),
 ): Promise<Entry> {
   return db.transaction('rw', db.entries, async () => {

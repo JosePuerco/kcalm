@@ -1,6 +1,6 @@
 // Schnelleintrag nach Schnell.dc.html: Name optional, große kcal-Zahl, 3 Makro-Felder; aktives Feld blau
 // umrandet, Eingabe über den Ziffernblock. Darunter „Makros ergeben 832 kcal · passt“ (bei > 10 % Abweichung
-// in warnText) und „Weitere Nährwerte“.
+// in warnText) und „Weitere Nährwerte“. Bei aktiver Kostenauswertung zusätzlich „Preis“ (Phase 13, kein Prototyp).
 import { useState, type ReactNode } from 'react'
 import { Button } from '../../components/ui/Button.tsx'
 import { Keypad } from '../../components/ui/Keypad.tsx'
@@ -23,15 +23,20 @@ type Props = {
   busy?: boolean
   /** „Löschen“ beim Bearbeiten */
   secondary?: ReactNode
+  /** Preisfeld zeigen (Kostenauswertung an) */
+  showCost?: boolean
 }
+
+type Active = QuickField | 'cost'
 
 const ring = (active: boolean) => (active ? 'ring-accent ring-2' : '')
 
-export function QuickStep({ values, onChange, error, confirmLabel, onConfirm, busy, secondary }: Props) {
-  const [active, setActive] = useState<QuickField>('kcal')
+export function QuickStep({ values, onChange, error, confirmLabel, onConfirm, busy, secondary, showCost }: Props) {
+  const [active, setActive] = useState<Active>('kcal')
   const [showMore, setShowMore] = useState(() => MORE_FIELDS.some((k) => values.fields[k] !== ''))
   const check = macroCheck(values)
-  const setField = (value: string) => onChange({ ...values, fields: { ...values.fields, [active]: value } })
+  const setField = (value: string) =>
+    onChange(active === 'cost' ? { ...values, cost: value } : { ...values, fields: { ...values.fields, [active]: value } })
   const shown = (key: QuickField) => values.fields[key] || '–'
 
   const small = (key: QuickField) => (
@@ -78,6 +83,20 @@ export function QuickStep({ values, onChange, error, confirmLabel, onConfirm, bu
         </button>
         <div className="grid grid-cols-3 gap-2">{MAIN_MACROS.map(small)}</div>
         {showMore && <div className="grid grid-cols-2 gap-2">{MORE_FIELDS.map(small)}</div>}
+        {showCost && (
+          <button
+            type="button"
+            onClick={() => setActive('cost')}
+            aria-pressed={active === 'cost'}
+            className={`press bg-card rounded-field flex min-h-12 items-center justify-between px-3.5 ${ring(active === 'cost')}`}
+          >
+            <span className="text-secondary text-muted">Preis (optional)</span>
+            <span className="text-sheet-title">
+              {values.cost || '–'}
+              <span className="text-secondary text-muted font-normal"> €</span>
+            </span>
+          </button>
+        )}
         <div className="flex min-h-touch-min items-center justify-between gap-2 px-1">
           <span className={`text-small ${check && !check.ok ? 'text-warn-text' : 'text-muted'}`}>
             {check ? macroCheckText(check) : 'Leere Felder zählen als unbekannt'}
@@ -95,7 +114,7 @@ export function QuickStep({ values, onChange, error, confirmLabel, onConfirm, bu
       </div>
 
       <div className="pt-2">
-        <Keypad value={values.fields[active]} onChange={setField} />
+        <Keypad value={active === 'cost' ? values.cost : values.fields[active]} onChange={setField} />
       </div>
       {error && <p className="text-small text-danger px-1 pt-2">{error}</p>}
       <div className="mt-2.5 flex gap-2">

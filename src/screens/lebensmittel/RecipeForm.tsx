@@ -19,6 +19,7 @@ import { isFoodUsed } from '../../db/products.ts'
 import { archiveRecipe, createRecipe, deleteRecipe, restoreRecipe, updateRecipe } from '../../db/recipes.ts'
 import type { Recipe } from '../../db/types.ts'
 import { amountToKeypad, type FoodChoice } from '../../logic/addFood.ts'
+import { costText, formatEuro, itemsCost, missingPrices, recipeUnitPrice } from '../../logic/cost.ts'
 import { formatSum } from '../../logic/diary.ts'
 import { formatAmount, formatNumber } from '../../logic/format.ts'
 import { parseKeypadValue } from '../../logic/keypad.ts'
@@ -35,8 +36,10 @@ import {
   type RecipeLine,
 } from '../../logic/recipe.ts'
 import { useFoodResolver } from '../add/useFoodResolver.ts'
+import { CostCard } from './CostCard.tsx'
 import { FoodPickerSheet } from './FoodPickerSheet.tsx'
 import { PortionsCard } from './PortionsCard.tsx'
+import { usePriceLookup } from './usePriceLookup.ts'
 
 const LIST = href('lebensmittel')
 // Kein Rezept im Rezept (Kreisbezüge)
@@ -71,6 +74,7 @@ function RecipeBody({ recipe }: { recipe: Recipe | null }) {
   const bls = useBls()
   const blsData = bls.status === 'ready' ? bls.data : null
   const resolver = useFoodResolver(sources, blsData)
+  const prices = usePriceLookup(sources)
   const used = useLiveQuery(() => (recipe ? isFoodUsed(`recipe:${recipe.id}`) : Promise.resolve(false)), [recipe])
 
   const [values, setValues] = useState<RecipeFormValues>(() =>
@@ -103,6 +107,16 @@ function RecipeBody({ recipe }: { recipe: Recipe | null }) {
 
   const editLine = typeof picking === 'number' ? lines[picking] : undefined
   const unknownName = bls.status === 'loading' ? 'Wird geladen …' : 'Unbekanntes Lebensmittel'
+  // Kosten aus den aktuellen Eingaben, damit sie beim Bearbeiten mitlaufen
+  const perG = prices && recipeUnitPrice({ ingredients: values.ingredients, finalWeightG: values.finalWeightG ?? 0 }, prices)
+  const costRows = prices && [
+    { label: 'Ganzer Topf', value: costText(itemsCost(values.ingredients, prices)) },
+    { label: 'Pro 100 g fertig', value: formatEuro(perG === null ? null : perG * 100) },
+    ...values.portions.map((p) => ({
+      label: `${p.label} (${formatAmount(p.amount)} g)`,
+      value: formatEuro(perG === null ? null : perG * p.amount),
+    })),
+  ]
 
   const run = async (action: () => Promise<void>, done: string) => {
     setBusy(true)
@@ -265,9 +279,17 @@ function RecipeBody({ recipe }: { recipe: Recipe | null }) {
           onSave={async (portions) => set('portions', portions)}
         />
 
+        {prices && costRows && values.ingredients.length > 0 && (
+          <CostCard
+            rows={costRows}
+            missing={missingPrices(values.ingredients, prices).map((ref) => resolver.resolve(ref)?.name ?? unknownName)}
+          />
+        )}
+
         {recipe && (
           <p className="text-small text-muted px-1 leading-[1.45]">
-            Änderungen gelten nur für künftige Einträge. Was schon im Tagebuch steht, bleibt gleich.
+            Änderungen gelten nur für künftige Einträge. Was schon im Tagebuch steht, bleibt gleich
+            {prices ? ', nur die Kosten rechnen immer mit dem aktuellen Rezept.' : '.'}
           </p>
         )}
         {!check.ok && (values.name !== '' || values.ingredients.length > 0) && (

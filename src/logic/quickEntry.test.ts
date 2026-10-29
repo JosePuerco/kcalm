@@ -12,9 +12,10 @@ import {
   type QuickValues,
 } from './quickEntry.ts'
 
-const with_ = (fields: Partial<QuickValues['fields']>, name = ''): QuickValues => ({
+const with_ = (fields: Partial<QuickValues['fields']>, name = '', cost = ''): QuickValues => ({
   name,
   fields: { ...emptyQuick().fields, ...fields },
+  cost,
 })
 
 // Beispiel aus PLAN.md / Schnell.dc.html: 38/80/40 g gegen 850 kcal
@@ -72,6 +73,17 @@ describe('validateQuick / quickEntry', () => {
     expect(validateQuick(with_({ kcal: '500', salt: '101' }))).toMatchObject({ ok: false, field: 'salt' })
   })
 
+  it('Preis optional: leer = unbekannt, Dezimalkomma, 0 €', () => {
+    expect(quickEntry(with_({ kcal: '850' }), '2026-10-21', 's').cost).toBeNull()
+    expect(quickEntry(with_({ kcal: '850' }, 'Döner', '7,5'), '2026-10-21', 's').cost).toBe(7.5)
+    expect(quickEntry(with_({ kcal: '850' }, 'Kantine', '0'), '2026-10-21', 's').cost).toBe(0)
+    expect(quickEntry(with_({ kcal: '850' }, '', '12,'), '2026-10-21', 's').cost).toBe(12)
+  })
+
+  it('Preis über 1.000 € ist ein Tippfehler', () => {
+    expect(validateQuick(with_({ kcal: '850' }, '', '1001'))).toEqual({ ok: false, error: 'Preis: Höchstens 1.000 €', field: 'cost' })
+  })
+
   it('weitere Nährwerte werden übernommen', () => {
     const e = quickEntry(with_({ kcal: '500', fiber: '7,5', salt: '2,1' }), '2026-10-21', 's')
     expect(e.nutrients).toMatchObject({ fiber: 7.5, salt: 2.1 })
@@ -92,6 +104,15 @@ describe('Bearbeiten', () => {
       nameSnapshot: 'Döner Teller',
       nutrients: stored.nutrients,
     })
+  })
+
+  it('Preis: Hin und zurück, auch wenn er (bei ausgeschalteter Kostenauswertung) nicht angefasst wird', () => {
+    const withCost = newRecord<Entry>(quickEntry({ ...doener, cost: '12,9' }, '2026-10-21', 'abend'))
+    const values = quickFromEntry(withCost)
+    expect(values.cost).toBe('12,9')
+    expect(editedQuick(values, '2026-10-21', 'abend').cost).toBe(12.9)
+    expect(editedQuick({ ...values, cost: '' }, '2026-10-21', 'abend').cost).toBeNull()
+    expect(quickFromEntry(stored).cost).toBe('')
   })
 
   it('Standardname wird beim Bearbeiten nicht zum Feldinhalt', () => {

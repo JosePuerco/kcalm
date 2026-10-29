@@ -4,6 +4,7 @@
 import { unknownNutrients } from '../db/records.ts'
 import type { Entry, LocalDate, NutrientKey } from '../db/types.ts'
 import type { EntryChanges, NewEntryFields } from './addFood.ts'
+import { validateQuickCost } from './cost.ts'
 import { formatNumber } from './format.ts'
 import { parseKeypadValue } from './keypad.ts'
 
@@ -28,12 +29,18 @@ export interface QuickValues {
   name: string
   /** Texte vom Ziffernblock mit Dezimalkomma; leer = unbekannt */
   fields: Record<QuickField, string>
+  /** Preis in € vom Ziffernblock, nur bei aktiver Kostenauswertung sichtbar; leer = unbekannt (Phase 13) */
+  cost: string
 }
 
 export const DEFAULT_QUICK_NAME = 'Schnelleintrag'
 
 export function emptyQuick(): QuickValues {
-  return { name: '', fields: { kcal: '', protein: '', carbs: '', fat: '', satFat: '', sugar: '', fiber: '', salt: '' } }
+  return {
+    name: '',
+    fields: { kcal: '', protein: '', carbs: '', fat: '', satFat: '', sugar: '', fiber: '', salt: '' },
+    cost: '',
+  }
 }
 
 /** Werte eines vorhandenen Schnelleintrags fürs Bearbeiten */
@@ -41,7 +48,11 @@ export function quickFromEntry(entry: Entry): QuickValues {
   const text = (v: number | null) => (v === null ? '' : String(v).replace('.', ','))
   const values = emptyQuick()
   for (const key of Object.keys(values.fields) as QuickField[]) values.fields[key] = text(entry.nutrients[key])
-  return { name: entry.nameSnapshot === DEFAULT_QUICK_NAME ? '' : entry.nameSnapshot, fields: values.fields }
+  return {
+    name: entry.nameSnapshot === DEFAULT_QUICK_NAME ? '' : entry.nameSnapshot,
+    fields: values.fields,
+    cost: text(entry.cost),
+  }
 }
 
 export interface MacroCheck {
@@ -76,7 +87,9 @@ const LIMITS: Record<QuickField, number> = {
   salt: 100,
 }
 
-export type QuickResult = { ok: true; changes: Pick<Entry, 'nameSnapshot' | 'nutrients'> } | { ok: false; error: string; field?: QuickField }
+export type QuickResult =
+  | { ok: true; changes: Pick<Entry, 'nameSnapshot' | 'nutrients' | 'cost'> }
+  | { ok: false; error: string; field?: QuickField | 'cost' }
 
 /** Pflicht sind nur die kcal; die Plausibilität ist nur ein Hinweis und sperrt nichts */
 export function validateQuick(values: QuickValues): QuickResult {
@@ -90,8 +103,10 @@ export function validateQuick(values: QuickValues): QuickResult {
     }
     nutrients[key as NutrientKey] = v
   }
+  const cost = validateQuickCost(values.cost)
+  if (!cost.ok) return { ok: false, error: `Preis: ${cost.error}`, field: 'cost' }
   const name = values.name.trim().slice(0, 120)
-  return { ok: true, changes: { nameSnapshot: name || DEFAULT_QUICK_NAME, nutrients } }
+  return { ok: true, changes: { nameSnapshot: name || DEFAULT_QUICK_NAME, nutrients, cost: cost.cost } }
 }
 
 /** Neuer Schnelleintrag (ohne Produkt, ohne Menge) */
@@ -109,12 +124,15 @@ export function quickEntry(values: QuickValues, date: LocalDate, slotId: string)
     portionLabel: null,
     mealGroupId: null,
     mealName: null,
-    cost: null,
   }
 }
 
 /** Änderungen beim Speichern eines bearbeiteten Schnelleintrags (inkl. Verschieben) */
-export function editedQuick(values: QuickValues, date: LocalDate, slotId: string): EntryChanges & Pick<Entry, 'nameSnapshot'> {
+export function editedQuick(
+  values: QuickValues,
+  date: LocalDate,
+  slotId: string,
+): EntryChanges & Pick<Entry, 'nameSnapshot' | 'cost'> {
   const fields = quickEntry(values, date, slotId)
   return {
     date,
@@ -123,5 +141,6 @@ export function editedQuick(values: QuickValues, date: LocalDate, slotId: string
     portionLabel: null,
     nutrients: fields.nutrients,
     nameSnapshot: fields.nameSnapshot,
+    cost: fields.cost,
   }
 }
