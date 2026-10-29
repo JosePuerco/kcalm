@@ -291,10 +291,10 @@ describe('dayBars', () => {
       today,
     )
     expect(b.map((x) => x.label)).toEqual(['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'])
-    expect(b[0]).toMatchObject({ full: true, kcal: { value: 2874, atLeast: false }, caption: 'Mo 19.10.: 2.874 kcal' })
+    expect(b[0]).toMatchObject({ full: true, value: { value: 2874, atLeast: false }, caption: 'Mo 19.10.: 2.874 kcal' })
     expect(b[1]).toMatchObject({ full: false, caption: 'Di 20.10.: 1.500 kcal · unvollständig' })
-    expect(b[2]).toMatchObject({ kcal: null, caption: 'Mi 21.10.: keine Einträge' })
-    expect(b[5]).toMatchObject({ kcal: null, caption: 'Sa 24.10.: noch offen' })
+    expect(b[2]).toMatchObject({ value: null, caption: 'Mi 21.10.: keine Einträge' })
+    expect(b[5]).toMatchObject({ value: null, caption: 'Sa 24.10.: noch offen' })
   })
 
   it('4 Wochen: nur Montage beschriftet', () => {
@@ -320,14 +320,14 @@ describe('weekBars', () => {
   it('5 von 7 vollständig → blau, Ø nur der vollständigen Tage', () => {
     const e = prevWeek.map((d, i) => entry(d, 2000 + i * 100))
     const b = bars(e, prevWeek.slice(0, 5))
-    expect(b[0]).toMatchObject({ full: true, completeDays: 5, label: '', kcal: { value: 2200, atLeast: false } })
+    expect(b[0]).toMatchObject({ full: true, completeDays: 5, label: '', value: { value: 2200, atLeast: false } })
     expect(b[0]!.caption).toBe('KW 42: Ø 2.200 kcal · 5 von 7 Tagen vollständig')
   })
 
   it('4 von 7 → grau, trotzdem mit Ø', () => {
     const e = prevWeek.map((d) => entry(d, 2500))
     const b = bars(e, prevWeek.slice(0, 4))
-    expect(b[0]).toMatchObject({ full: false, completeDays: 4, kcal: { value: 2500, atLeast: false } })
+    expect(b[0]).toMatchObject({ full: false, completeDays: 4, value: { value: 2500, atLeast: false } })
   })
 
   it('leere Tage zählen nicht als vollständig', () => {
@@ -337,7 +337,7 @@ describe('weekBars', () => {
 
   it('keine vollständigen Tage → kein Balken', () => {
     const b = bars([entry('2026-10-12', 2500)], [])
-    expect(b[0]).toMatchObject({ kcal: null, full: false, completeDays: 0, caption: 'KW 42: keine vollständigen Tage' })
+    expect(b[0]).toMatchObject({ value: null, full: false, completeDays: 0, caption: 'KW 42: keine vollständigen Tage' })
   })
 
   it('laufende Woche blau, solange alle bisherigen Tage mit Einträgen vollständig sind', () => {
@@ -349,7 +349,7 @@ describe('weekBars', () => {
   })
 
   it('laufende Woche ohne vollständige Tage → grau ohne Balken', () => {
-    expect(bars([entry(today, 900)], [])[1]).toMatchObject({ full: false, kcal: null })
+    expect(bars([entry(today, 900)], [])[1]).toMatchObject({ full: false, value: null })
   })
 
   it('vergangene Woche: Sonderregel gilt nicht', () => {
@@ -372,7 +372,7 @@ describe('weekBars', () => {
 })
 
 describe('barScale', () => {
-  const bar = (value: number | null) => ({ date: today, label: '', kcal: value === null ? null : { value, atLeast: false }, full: true, completeDays: null, caption: '' })
+  const bar = (value: number | null) => ({ date: today, label: '', value: value === null ? null : { value, atLeast: false }, full: true, completeDays: null, caption: '' })
 
   it('Ziel bei 7/8 der Höhe', () => {
     expect(barScale([bar(2000), bar(null)], 2800)).toBe(3200)

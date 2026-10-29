@@ -60,7 +60,7 @@ export function KcalChart({ stats }: { stats: Stats }) {
   const pct = (kcal: number) => `${((Math.min(kcal, scale) / scale) * 100).toFixed(1)}%`
   const sel = selected !== null ? bars[selected] : undefined
   const hint = range === 'quarter' ? 'Ø/Tag je Woche' : 'Tippe auf einen Balken'
-  const empty = bars.every((b) => b.kcal === null)
+  const empty = bars.every((b) => b.value === null)
   const gap = bars.length > 14 ? 'gap-[3px]' : 'gap-2'
 
   return (
@@ -107,7 +107,7 @@ export function KcalChart({ stats }: { stats: Stats }) {
                     <span
                       className={`rounded-t-bar-top block w-full rounded-b-[2px] ${b.full ? 'bg-accent' : 'bg-neutral-bar'}`}
                       style={{
-                        height: b.kcal?.value ? pct(b.kcal.value) : 0,
+                        height: b.value?.value ? pct(b.value.value) : 0,
                         opacity: selected === null || selected === i ? 1 : 0.45,
                         transition: `${barTransition}, opacity 200ms ease`,
                       }}

@@ -77,6 +77,17 @@ export function dayGoal(
   }
 }
 
+export function dayState(
+  date: LocalDate,
+  today: LocalDate,
+  hasEntries: boolean,
+  completeDates: ReadonlySet<LocalDate>,
+): DayState {
+  if (date > today) return 'future'
+  if (!hasEntries) return 'empty'
+  return completeDates.has(date) ? 'complete' : 'incomplete'
+}
+
 export interface StatsInput {
   today: LocalDate
   dates: readonly LocalDate[]
@@ -99,17 +110,9 @@ export function statsDays(input: StatsInput): StatsDay[] {
   return input.dates.map((date) => {
     const entries = byDate.get(date) ?? []
     const sums = sumNutrients(entries.map((e) => e.nutrients))
-    const state: DayState =
-      date > input.today
-        ? 'future'
-        : entries.length === 0
-          ? 'empty'
-          : input.completeDates.has(date)
-            ? 'complete'
-            : 'incomplete'
     return {
       date,
-      state,
+      state: dayState(date, input.today, entries.length > 0, input.completeDates),
       kcal: sums.kcal,
       macros: { protein: sums.protein, carbs: sums.carbs, fat: sums.fat, fiber: sums.fiber },
       goal: dayGoal(input.assignments, input.versions, date, input.weightAt?.(date) ?? null),
@@ -197,8 +200,8 @@ export interface StatsBar {
   date: LocalDate
   /** Beschriftung unter dem Balken; leer = keine */
   label: string
-  /** kcal (Tag) bzw. Ø kcal/Tag der vollständigen Tage (Woche); null = kein Balken */
-  kcal: NutrientSum | null
+  /** Wert des Tages bzw. Ø pro Tag der vollständigen Tage (Woche), z. B. kcal oder €; null = kein Balken */
+  value: NutrientSum | null
   /** vollständig = accent, sonst neutralBar */
   full: boolean
   /** nur Wochen: vollständige Tage */
@@ -215,20 +218,33 @@ function kcalText(sum: NutrientSum): string {
   return `${sum.atLeast ? 'mind. ' : ''}${formatNumber(sum.value)} kcal`
 }
 
+/** Tag mit Zustand, aus dem ein Balken entsteht */
+export type BarDay = Pick<StatsDay, 'date' | 'state'>
+
+/** Was ein Balken zeigt: Wert eines Tages und dessen Text für die Beschriftung */
+export interface BarMetric<D extends BarDay> {
+  value: (day: D) => NutrientSum
+  text: (sum: NutrientSum) => string
+}
+
+const KCAL_METRIC: BarMetric<StatsDay> = { value: (d) => d.kcal, text: kcalText }
+
 /** Ein Balken je Tag (Woche, 4 Wochen). Unvollständige Tage grau, leere und künftige ohne Balken. */
-export function dayBars(days: readonly StatsDay[], today: LocalDate): StatsBar[] {
+export function dayBars(days: readonly StatsDay[], today: LocalDate): StatsBar[]
+export function dayBars<D extends BarDay>(days: readonly D[], today: LocalDate, metric: BarMetric<D>): StatsBar[]
+export function dayBars(days: readonly StatsDay[], today: LocalDate, metric = KCAL_METRIC): StatsBar[] {
   const single = days.length <= 7
   return days.map((d, i) => {
     const name = dayLabel(d.date, today).date
     const has = d.state === 'complete' || d.state === 'incomplete'
     const caption = has
-      ? `${name}: ${kcalText(d.kcal)}${d.state === 'incomplete' ? ' · unvollständig' : ''}`
+      ? `${name}: ${metric.text(metric.value(d))}${d.state === 'incomplete' ? ' · unvollständig' : ''}`
       : `${name}: ${d.state === 'future' ? 'noch offen' : 'keine Einträge'}`
     return {
       date: d.date,
       // 4 Wochen: nur die Montage beschriften
       label: single ? name.slice(0, 2) : i % 7 === 0 ? shortDate(d.date) : '',
-      kcal: has ? d.kcal : null,
+      value: has ? metric.value(d) : null,
       full: d.state === 'complete',
       completeDays: null,
       caption,
@@ -242,7 +258,9 @@ export function dayBars(days: readonly StatsDay[], today: LocalDate): StatsBar[]
  * (heute zählt erst, wenn er markiert ist). Beschriftet ist jede zweite Woche, von der laufenden rückwärts,
  * weil 13 × „KW30“ in 11 px nicht nebeneinander passt.
  */
-export function weekBars(days: readonly StatsDay[], today: LocalDate): StatsBar[] {
+export function weekBars(days: readonly StatsDay[], today: LocalDate): StatsBar[]
+export function weekBars<D extends BarDay>(days: readonly D[], today: LocalDate, metric: BarMetric<D>): StatsBar[]
+export function weekBars(days: readonly StatsDay[], today: LocalDate, metric = KCAL_METRIC): StatsBar[] {
   const bars: StatsBar[] = []
   const count = Math.ceil(days.length / 7)
   for (let i = 0; i < days.length; i += 7) {
@@ -253,16 +271,16 @@ export function weekBars(days: readonly StatsDay[], today: LocalDate): StatsBar[
     const openBefore = week.some((d) => d.state === 'incomplete' && d.date < today)
     const full =
       complete.length >= FULL_WEEK_MIN_DAYS || (current && complete.length > 0 && !openBefore)
-    const kcal = averageSums(complete.map((d) => d.kcal))
+    const value = averageSums(complete.map(metric.value))
     const name = `KW ${isoWeek(monday)}`
     bars.push({
       date: monday,
       label: (count - 1 - i / 7) % 2 === 0 ? `KW${isoWeek(monday)}` : '',
-      kcal,
+      value,
       full,
       completeDays: complete.length,
-      caption: kcal
-        ? `${name}: Ø ${kcalText(kcal)} · ${complete.length} von 7 Tagen vollständig`
+      caption: value
+        ? `${name}: Ø ${metric.text(value)} · ${complete.length} von 7 Tagen vollständig`
         : `${name}: keine vollständigen Tage`,
     })
   }
@@ -270,11 +288,11 @@ export function weekBars(days: readonly StatsDay[], today: LocalDate): StatsBar[
 }
 
 /**
- * Maßstab der Balken (kcal am oberen Rand): Ziellinie bei 7/8 der Höhe, höhere Balken strecken ihn.
+ * Maßstab der Balken (Wert am oberen Rand): Ziellinie bei 7/8 der Höhe, höhere Balken strecken ihn.
  * Wie weekBarScale in der Tagesansicht.
  */
 export function barScale(bars: readonly StatsBar[], goal: number | null): number {
-  const max = Math.max(...bars.map((b) => b.kcal?.value ?? 0), 0)
+  const max = Math.max(...bars.map((b) => b.value?.value ?? 0), 0)
   return Math.max(goal === null ? 0 : goal / 0.875, max, 1)
 }
 

@@ -362,7 +362,7 @@ Nach dem iPhone-Test von 1.1.0 (Jan, 27.10.2026; Version 1.2.0):
 Mit Jan abgestimmt am 29.10.2026. Optional, Schalter in den Einstellungen; aus = alles ausgeblendet, Preise bleiben gespeichert. Regeln in Abschnitt 7 „Kosten: …“.
 
 - [x] 13a Datenmodell: `products.price`, `blsPrefs.price` (`{ amount, per }` = Betrag in € für Packungsgröße in g/ml), `entries.cost` (nur Schnelleintrag); Datenbank-Version 6 und Backup-Format 6 mit Migration
-- [ ] 13b Rechenlogik `src/logic/cost.ts` mit Tests: Preis pro g/ml, Kosten je Eintrag, Rezept aus Zutaten, Summen mit „mind.“, Statistik-Werte
+- [x] 13b Rechenlogik `src/logic/cost.ts` mit Tests: Preis pro g/ml, Kosten je Eintrag, Rezept aus Zutaten, Summen mit „mind.“, Statistik-Werte
 - [ ] 13c Schalter „Kostenauswertung“ (Einstellung `costsEnabled`), Preisfeld bei Produkt, OFF- und BLS-Lebensmittel
 - [ ] 13d Rezept (Topf und Portion), Mahlzeit (Summe), Schnelleintrag mit optionalem Preis
 - [ ] 13e Statistik: Kacheln Ø €/Tag und Summe, € pro Tag als Balken, Preis-Leistung, teuerste Lebensmittel
