@@ -302,6 +302,7 @@ export function topFoods(entries: readonly CostEntry[], lookup: UnitPriceLookup,
 }
 
 export interface CostStats {
+  range: StatsRange
   tiles: CostTiles
   bars: StatsBar[]
   scale: number
@@ -319,6 +320,7 @@ export function buildCostStats(range: StatsRange, input: CostStatsInput): CostSt
   const inRange = input.entries.filter((e) => e.date >= first && e.date <= input.today)
   const bars = range === 'quarter' ? weekBars(days, input.today, COST_METRIC) : dayBars(days, input.today, COST_METRIC)
   return {
+    range,
     tiles: costTiles(days),
     bars,
     scale: barScale(bars, null),

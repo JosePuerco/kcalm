@@ -1,20 +1,29 @@
-// kcal pro Tag (bzw. Ø je Woche): Balken gegen gestrichelte Ziellinie.
+// Balken pro Tag (bzw. Ø je Woche), z. B. kcal gegen gestrichelte Ziellinie oder € ohne Ziel.
 // Die ganze Fläche hört auf den Finger: Tipp wählt den nächsten Balken, Wischen wandert,
 // erneuter Tipp auf denselben Balken hebt die Auswahl auf. Senkrecht scrollt die Seite weiter.
 import { useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 import { Card } from '../../components/ui/Card.tsx'
 import { formatNumber } from '../../logic/format.ts'
-import { nearestBar, type Stats } from '../../logic/stats.ts'
+import { nearestBar, type StatsBar, type StatsRange } from '../../logic/stats.ts'
 
 // Breite des Streifens rechts für die Zielzahl („2.800“ in 11 px plus Abstand zur Linie)
 const GUTTER = 'w-9'
 
 const barTransition = 'height var(--kc-motion-bars-and-ring-duration) var(--kc-motion-bars-and-ring-easing)'
 
-export function KcalChart({ stats }: { stats: Stats }) {
-  const { bars, scale, goalLine, range } = stats
+type Props = {
+  title: string
+  range: StatsRange
+  bars: readonly StatsBar[]
+  /** Wert am oberen Rand (barScale) */
+  scale: number
+  /** gestrichelte Ziellinie; null = ohne */
+  goalLine: number | null
+}
+
+export function BarChart({ title, range, bars, scale, goalLine }: Props) {
   // Auswahl gehört zum Zeitraum: beim Wechsel aufgehoben, die Balken animieren trotzdem weiter
-  const [pick, setPick] = useState<{ range: Stats['range']; index: number } | null>(null)
+  const [pick, setPick] = useState<{ range: StatsRange; index: number } | null>(null)
   const selected = pick?.range === range ? pick.index : null
   const setSelected = (index: number | null) => setPick(index === null ? null : { range, index })
   const area = useRef<HTMLDivElement>(null)
@@ -57,7 +66,7 @@ export function KcalChart({ stats }: { stats: Stats }) {
     setSelected(selected === i ? null : i)
   }
 
-  const pct = (kcal: number) => `${((Math.min(kcal, scale) / scale) * 100).toFixed(1)}%`
+  const pct = (value: number) => `${((Math.min(value, scale) / scale) * 100).toFixed(1)}%`
   const sel = selected !== null ? bars[selected] : undefined
   const hint = range === 'quarter' ? 'Ø/Tag je Woche' : 'Tippe auf einen Balken'
   const empty = bars.every((b) => b.value === null)
@@ -66,7 +75,7 @@ export function KcalChart({ stats }: { stats: Stats }) {
   return (
     <Card>
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-body font-semibold">kcal pro Tag</h2>
+        <h2 className="text-body font-semibold">{title}</h2>
         <span className="text-secondary text-muted truncate" aria-live="polite">
           {sel ? sel.caption : empty ? '' : hint}
         </span>

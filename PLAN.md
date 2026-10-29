@@ -365,7 +365,7 @@ Mit Jan abgestimmt am 29.10.2026. Optional, Schalter in den Einstellungen; aus =
 - [x] 13b Rechenlogik `src/logic/cost.ts` mit Tests: Preis pro g/ml, Kosten je Eintrag, Rezept aus Zutaten, Summen mit „mind.“, Statistik-Werte
 - [x] 13c Schalter „Kostenauswertung“ (Einstellung `costsEnabled`), Preisfeld bei Produkt, OFF- und BLS-Lebensmittel
 - [x] 13d Rezept (Topf und Portion), Mahlzeit (Summe), Schnelleintrag mit optionalem Preis
-- [ ] 13e Statistik: Kacheln Ø €/Tag und Summe, € pro Tag als Balken, Preis-Leistung, teuerste Lebensmittel
+- [x] 13e Statistik: Kacheln Ø €/Tag und Summe, € pro Tag als Balken, Preis-Leistung, teuerste Lebensmittel
 - [ ] 13f Export: Spalte Kosten, nur bei aktiver Kostenauswertung
 
 ## 7. Entscheidungen zu früher offenen Fragen

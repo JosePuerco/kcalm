@@ -23,7 +23,7 @@ export function StatTiles({ tiles, goal }: Props) {
   )
 }
 
-function Tile({ label, sub, children }: { label: string; sub: string; children: ReactNode }) {
+export function Tile({ label, sub, children }: { label: string; sub: string; children: ReactNode }) {
   return (
     <div className="bg-card rounded-card flex min-w-0 flex-col gap-1 p-3">
       <span className="text-small text-muted">{label}</span>
