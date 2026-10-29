@@ -357,6 +357,17 @@ Nach dem iPhone-Test von 1.1.0 (Jan, 27.10.2026; Version 1.2.0):
 - [x] 12h Mahlzeit: Faktor-Chip setzt alle Mengen auf Vorlage × Faktor; nach einer Handänderung ist kein Chip aktiv (Variante 1, mit Jan abgestimmt)
 - [x] 12i iOS: Seite nach dem Schließen der Tastatur auf den Anfang zurücksetzen (Sheet war hochgeschoben, unten leer); Suchfeld vor dem Wechsel zur Menge verlassen
 
+### Phase 13 – Kostenauswertung (Version 1.4.0)
+
+Mit Jan abgestimmt am 29.10.2026. Optional, Schalter in den Einstellungen; aus = alles ausgeblendet, Preise bleiben gespeichert. Regeln in Abschnitt 7 „Kosten: …“.
+
+- [ ] 13a Datenmodell: `products.price`, `blsPrefs.price` (`{ amount, per }` = Betrag in € für Packungsgröße in g/ml), `entries.cost` (nur Schnelleintrag), Einstellung `costsEnabled`; Datenbank-Version 6 und Backup-Format 6 mit Migration
+- [ ] 13b Rechenlogik `src/logic/cost.ts` mit Tests: Preis pro g/ml, Kosten je Eintrag, Rezept aus Zutaten, Summen mit „mind.“, Statistik-Werte
+- [ ] 13c Schalter „Kostenauswertung“, Preisfeld bei Produkt, OFF- und BLS-Lebensmittel
+- [ ] 13d Rezept (Topf und Portion), Mahlzeit (Summe), Schnelleintrag mit optionalem Preis
+- [ ] 13e Statistik: Kacheln Ø €/Tag und Summe, € pro Tag als Balken, Preis-Leistung, teuerste Lebensmittel
+- [ ] 13f Export: Spalte Kosten, nur bei aktiver Kostenauswertung
+
 ## 7. Entscheidungen zu früher offenen Fragen
 
 | Frage | Entscheidung |
@@ -401,6 +412,10 @@ Nach dem iPhone-Test von 1.1.0 (Jan, 27.10.2026; Version 1.2.0):
 | Versionsnummern | Semantic Versioning `MAJOR.MINOR.PATCH` aus `package.json`, angezeigt unter Einstellungen › Über. Jeder Push auf `main` = eine Version mit Tag `vX.Y.Z`, Abschnitt in `CHANGELOG.md` und GitHub Release; der Deploy bricht ohne passenden Tag ab. Vor 1.0.0 `0.<Phase>.<n>`, frühere Phasen nachträglich als `v0.0.0`–`v0.10.0` getaggt (Commit „Phase N abgeschlossen/deployt“). 1.0.0 nach bestandenem iPhone-Test (Jan, 25.10.2026) |
 | Tage vor dem ersten Profil | Kein Ziel: Ring leer, „kcal gegessen“; bleibt so, kein Rückgriff aufs erste Profil (Jan nach iPhone-Test, 25.10.2026) |
 | Willkommensbildschirm | Schritt 0 der Ersteinrichtung (kein Prototyp): Icon mit sich zeichnendem Ring, „Neu einrichten“ oder „Aus Backup laden“ (direkt ins Tagebuch); Import aus Schritt 4 entfernt (Jan, 25.10.2026) |
+| Kosten: Preis-Eingabe | Preis + Packungsgröße („1,49 € für 500 g“), nur €. Gilt für eigene, OFF- und BLS-Lebensmittel; Rezepte und Mahlzeiten rechnen aus ihren Zutaten. Der Preis gehört nicht zu den OFF-Daten, eine OFF-Aktualisierung lässt ihn stehen (Jan, 29.10.2026) |
+| Kosten: immer aktueller Preis | **Bewusste Ausnahme vom Snapshot-Prinzip:** Kosten sind ein abgeleiteter Wert aus dem heutigen Preis, auch für alte Einträge. Ein neuer oder geänderter Preis gilt rückwirkend. Nur der Schnelleintrag speichert seinen Preis (`entries.cost`), weil es kein Produkt gibt (Jan, 29.10.2026) |
+| Kosten: unbekannt | Ohne Preis sind die Kosten `null`, nie 0; Summen zeigen „mind. …“. Rezept ohne Preis bei einer Zutat → Rezeptpreis unbekannt (Jan, 29.10.2026) |
+| Kosten: Statistik | Ø €/Tag nur über vollständige Tage (wie Ø kcal), Summe über alle Tage mit Einträgen bis heute. Preis-Leistung (€ pro 1.000 kcal, € pro 100 g Eiweiß) nur aus Einträgen mit bekanntem Preis und bekanntem Nährwert. Teuerste Lebensmittel: Top 5, Schnelleinträge zusammen als eine Zeile. Im Tagebuch keine Kosten (Jan, 29.10.2026) |
 | Splashscreen | Startbilder aus den Tokens per `npm run splash` (eigenes Skript, keine Abhängigkeit), nur für das iPhone 16e (1170 × 2532), hell und dunkel; ob iOS die Dunkel-Variante nutzt, zeigt der iPhone-Test (25.10.2026) |
 
 Offen nur noch:

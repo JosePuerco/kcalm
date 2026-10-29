@@ -21,7 +21,7 @@ Kcalm ist eine minimalistische Kalorien-Tracking-PWA fürs iPhone. Alle Daten bl
 ### Daten und Rechnen
 - Rechenlogik als reine Funktionen in eigenem Modul (`src/logic/`), getrennt von der Oberfläche, mit Vitest-Tests inkl. Grenzfällen. Intern exakt rechnen, nur die Anzeige runden.
 - Unbekannte Nährwerte sind `null`, niemals 0. Summen mit unbekannten Werten zeigen „mind. …“.
-- Snapshot-Prinzip: Jeder Tagebucheintrag speichert seine absoluten Nährwerte, jeder Tag sein damals gültiges Profil. Spätere Änderungen an Produkten, Korrekturen, Rezepten oder Profilen ändern alte Tage nie.
+- Snapshot-Prinzip: Jeder Tagebucheintrag speichert seine absoluten Nährwerte, jeder Tag sein damals gültiges Profil. Spätere Änderungen an Produkten, Korrekturen, Rezepten oder Profilen ändern alte Tage nie. Ausnahme (bewusst, Jan): Kosten rechnen immer mit dem aktuellen Preis, auch rückwirkend (PLAN.md §7).
 - Abgeleitete Werte (Summen, Ziele, Trend, Schätzung) werden berechnet, nicht gespeichert.
 - Sync-fähiges Modell: jede Tabelle hat `id` (UUID), `createdAt`, `updatedAt`, `deletedAt`. Löschen = Löschmarker setzen.
 - Verifizieren = Korrekturschicht (`productOverrides`). Das OFF-Original wird nie überschrieben.
