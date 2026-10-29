@@ -101,7 +101,6 @@ export function ProductDetail({ id }: { id: string }) {
           foodRef={`product:${id}`}
           original={product.per100}
           override={override ?? undefined}
-          useOverride={product.useOverride}
           unit={unit}
           editHref={href('lebensmittel', 'produkt', id, 'bearbeiten')}
           note="Ein Update aus Open Food Facts ändert nur die Original-Spalte."

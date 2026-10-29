@@ -6,9 +6,9 @@ import { db } from './db.ts'
 import { addEntry, getEntry } from './entries.ts'
 import { createMeal, getMeal } from './meals.ts'
 import { lookupBarcode, refreshOffProduct, type Network } from './off.ts'
-import { getBlsPref, getProduct } from './products.ts'
+import { getProduct } from './products.ts'
 import type { FoodRef, Product } from './types.ts'
-import { getOverride, saveCorrection, setUnit, setUseOverride, setVerified } from './verify.ts'
+import { getOverride, saveCorrection, setUnit, setVerified } from './verify.ts'
 
 const T0 = new Date('2026-10-12T08:00:00.000Z')
 const T1 = new Date('2026-10-21T12:00:00.000Z')
@@ -55,22 +55,39 @@ describe('saveCorrection', () => {
     expect((await getProduct(skyr.id)).per100.carbs).toBe(4)
   })
 
-  it('alles zurück auf Original → Löschmarker; neue Korrektur belebt denselben Datensatz', async () => {
+  it('Korrigieren heißt prüfen: mit allen Pflichtangaben geprüft, Datum = jetzt (Jan, 29.10.2026)', async () => {
+    const skyr = await scannedSkyr()
+    await setVerified(refOf(skyr), skyr.per100, true, T0)
+    await saveCorrection(refOf(skyr), skyr.per100, { ...skyr.per100, salt: 0.13 }, T1)
+    expect(await getOverride(refOf(skyr))).toMatchObject({ per100: { salt: 0.13 }, verifiedAt: T1.toISOString() })
+  })
+
+  it('alles wie im Original = geprüft ohne Korrektur (wie „Stimmt so“), derselbe Datensatz', async () => {
     const skyr = await scannedSkyr()
     await saveCorrection(refOf(skyr), skyr.per100, { ...skyr.per100, kcal: 65 }, T0)
     const first = await getOverride(refOf(skyr))
     await saveCorrection(refOf(skyr), skyr.per100, skyr.per100, T1)
-    expect(await getOverride(refOf(skyr))).toBeUndefined()
-    await saveCorrection(refOf(skyr), skyr.per100, { ...skyr.per100, kcal: 66 }, T1)
-    expect((await getOverride(refOf(skyr)))?.id).toBe(first?.id)
+    expect(await getOverride(refOf(skyr))).toMatchObject({ id: first?.id, per100: {}, verifiedAt: T1.toISOString() })
     expect(await db.productOverrides.count()).toBe(1)
   })
 
-  it('Bearbeiten behält eine Prüfung', async () => {
+  it('fehlt eine Pflichtangabe: Korrektur gespeichert, aber nicht (mehr) geprüft', async () => {
     const skyr = await scannedSkyr()
     await setVerified(refOf(skyr), skyr.per100, true, T0)
-    await saveCorrection(refOf(skyr), skyr.per100, { ...skyr.per100, salt: 0.13 }, T1)
-    expect(await getOverride(refOf(skyr))).toMatchObject({ per100: { salt: 0.13 }, verifiedAt: T0.toISOString() })
+    await saveCorrection(refOf(skyr), skyr.per100, { ...skyr.per100, kcal: 65, sugar: null }, T1)
+    expect(await getOverride(refOf(skyr))).toMatchObject({ per100: { kcal: 65, sugar: null }, verifiedAt: null })
+  })
+
+  it('ohne Pflichtangaben und ohne Abweichung → Löschmarker; neue Korrektur belebt denselben Datensatz', async () => {
+    const skyr = await scannedSkyr()
+    const gap = { ...skyr.per100, satFat: null }
+    await saveCorrection(refOf(skyr), gap, { ...gap, kcal: 65 }, T0)
+    const first = await getOverride(refOf(skyr))
+    await saveCorrection(refOf(skyr), gap, gap, T1)
+    expect(await getOverride(refOf(skyr))).toBeUndefined()
+    await saveCorrection(refOf(skyr), gap, { ...gap, kcal: 66 }, T1)
+    expect((await getOverride(refOf(skyr)))?.id).toBe(first?.id)
+    expect(await db.productOverrides.count()).toBe(1)
   })
 })
 
@@ -145,25 +162,13 @@ describe('setVerified', () => {
   it('Prüfung entfernen lässt Korrekturen stehen; ohne Korrekturen Löschmarker', async () => {
     const skyr = await scannedSkyr()
     await saveCorrection(refOf(skyr), skyr.per100, { ...skyr.per100, kcal: 65 }, T0)
-    await setVerified(refOf(skyr), skyr.per100, true, T0)
     await setVerified(refOf(skyr), skyr.per100, false, T1)
     expect(await getOverride(refOf(skyr))).toMatchObject({ per100: { kcal: 65 }, verifiedAt: null })
 
+    await setVerified(refOf(skyr), skyr.per100, true, T1)
     await saveCorrection(refOf(skyr), skyr.per100, skyr.per100, T1)
+    await setVerified(refOf(skyr), skyr.per100, false, T1)
     expect(await getOverride(refOf(skyr))).toBeUndefined()
-  })
-})
-
-describe('setUseOverride', () => {
-  it('Produkt: Umschalter im Produkt', async () => {
-    const skyr = await scannedSkyr()
-    await setUseOverride(refOf(skyr), false, T1)
-    expect((await getProduct(skyr.id)).useOverride).toBe(false)
-  })
-
-  it('BLS: Umschalter in blsPrefs, Portionen bleiben leer', async () => {
-    await setUseOverride('bls:F503100', false, T1)
-    expect(await getBlsPref('F503100')).toMatchObject({ useOverride: false, portions: [] })
   })
 })
 

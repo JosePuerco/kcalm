@@ -13,7 +13,6 @@ import {
   restoreProduct,
   saveBlsPortions,
   saveBlsPrice,
-  setBlsUseOverride,
   saveProductPortions,
   saveProductPrice,
   updateProduct,
@@ -194,18 +193,11 @@ describe('BLS-Einstellungen', () => {
     expect(all[0]!.createdAt).toBe(t0.toISOString())
   })
 
-  it('Umschalter Meine/Original behält die Portionen', async () => {
-    await saveBlsPortions('N100000', [{ label: '1 Tasse', amount: 200 }])
-    await setBlsUseOverride('N100000', false)
-    expect(await getBlsPref('N100000')).toMatchObject({ useOverride: false, portions: [{ label: '1 Tasse', amount: 200 }] })
-  })
-
-  it('Preis legt den Datensatz an und behält Portionen und Umschalter', async () => {
+  it('Preis legt den Datensatz an; Portionen und Preis bleiben gegenseitig erhalten', async () => {
     await saveBlsPrice('M111000', { amount: 1.19, per: 1000 }, t0)
     expect(await getBlsPref('M111000')).toMatchObject({ price: { amount: 1.19, per: 1000 }, portions: [], useOverride: true })
     await saveBlsPortions('M111000', [{ label: '1 Glas', amount: 200 }])
-    await setBlsUseOverride('M111000', false)
-    expect(await getBlsPref('M111000')).toMatchObject({ price: { amount: 1.19, per: 1000 }, useOverride: false })
+    expect(await getBlsPref('M111000')).toMatchObject({ price: { amount: 1.19, per: 1000 }, portions: [{ label: '1 Glas', amount: 200 }] })
     await saveBlsPrice('M111000', null)
     expect(await getBlsPref('M111000')).toMatchObject({ price: null, portions: [{ label: '1 Glas', amount: 200 }] })
   })

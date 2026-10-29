@@ -6,7 +6,6 @@ import {
   compareRows,
   correctionFromValues,
   countCorrected,
-  effectiveNutrients,
   effectiveUnit,
   isEmptyOverride,
   isVerified,
@@ -54,12 +53,6 @@ describe('mergeNutrients', () => {
     mergeNutrients(original, override({ kcal: 70 }))
     expect(original).toEqual(copy)
   })
-})
-
-describe('effectiveNutrients', () => {
-  const o = override({ kcal: 65 })
-  it('Meine Werte nutzen', () => expect(effectiveNutrients(original, o, true).kcal).toBe(65))
-  it('Original nutzen', () => expect(effectiveNutrients(original, o, false).kcal).toBe(63))
 })
 
 describe('compareRows / countCorrected', () => {

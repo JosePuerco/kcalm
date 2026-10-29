@@ -1,22 +1,17 @@
-// Verifizieren nach Produkt.dc.html: Karte „Nährwerte pro 100 g“ mit Umschalter Meine/Original,
-// Tabelle Original · Meine mit markierten Abweichungen, darunter „Werte bearbeiten“ und Prüfen.
-// Für OFF-Produkte und BLS-Lebensmittel; eigene Produkte bearbeiten ihre Werte direkt.
+// Verifizieren nach Produkt.dc.html: Karte „Nährwerte pro 100 g“ mit Tabelle Original · Meine und
+// markierten Abweichungen, darunter „Werte bearbeiten“ und Prüfen. Für OFF-Produkte und BLS-Lebensmittel;
+// eigene Produkte bearbeiten ihre Werte direkt. Meine Werte gelten immer, das Original steht zum Vergleich
+// daneben; den Umschalter Meine/Original aus dem Prototyp gibt es nicht mehr (Jan, 29.10.2026).
 import { useState } from 'react'
 import { IconCheck } from '../../components/icons/icons.tsx'
 import { Badge } from '../../components/ui/SubScreen.tsx'
 import { Card } from '../../components/ui/Card.tsx'
-import { Segmented } from '../../components/ui/Segmented.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import type { FoodRef, Nutrients, ProductOverride, Unit } from '../../db/types.ts'
-import { setUseOverride, setVerified } from '../../db/verify.ts'
+import { setVerified } from '../../db/verify.ts'
 import { formatDate } from '../../logic/format.ts'
 import { formatNutrient, NUTRIENT_INFO } from '../../logic/nutrientInfo.ts'
 import { canVerify, compareRows, countCorrected, mergeNutrients, missingForVerify } from '../../logic/verify.ts'
-
-const USE_OPTIONS = [
-  { value: 'mine', label: 'Meine Werte nutzen' },
-  { value: 'original', label: 'Original nutzen' },
-] as const
 
 /** Badge Prüfstatus: „Geprüft am 12.10.2026“ bzw. „Nicht geprüft“ */
 export function VerifiedBadge({ override }: { override: ProductOverride | undefined }) {
@@ -33,14 +28,13 @@ type Props = {
   foodRef: FoodRef
   original: Nutrients
   override: ProductOverride | undefined
-  useOverride: boolean
   unit: Unit
   editHref: string
   /** Satz am Ende der Fußnote, z. B. Quelle */
   note: string
 }
 
-export function VerifySection({ foodRef, original, override, useOverride, unit, editHref, note }: Props) {
+export function VerifySection({ foodRef, original, override, unit, editHref, note }: Props) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
   const rows = compareRows(original, override)
@@ -69,18 +63,6 @@ export function VerifySection({ foodRef, original, override, useOverride, unit, 
           <h2 className="text-body font-semibold">Nährwerte pro 100 {unit}</h2>
           <span className="text-small text-muted">{corrected} korrigiert</span>
         </div>
-        {/* Umschalter nur, wenn es etwas umzuschalten gibt (ohne Korrektur sind beide Spalten gleich) */}
-        {corrected > 0 && (
-          <div className="mb-1.5">
-            <Segmented
-              label="Verwendete Werte"
-              inCard
-              options={USE_OPTIONS}
-              value={useOverride ? 'mine' : 'original'}
-              onChange={(v) => void run(() => setUseOverride(foodRef, v === 'mine'))}
-            />
-          </div>
-        )}
         <div className="text-small text-muted grid grid-cols-[minmax(0,1fr)_76px_76px] pt-1.5 pb-1">
           <span />
           <span className="pr-2 text-right">Original</span>
@@ -91,13 +73,13 @@ export function VerifySection({ foodRef, original, override, useOverride, unit, 
           return (
             <div key={r.key} className="border-line text-label grid min-h-10 grid-cols-[minmax(0,1fr)_76px_76px] items-center border-t">
               <span className={info.sub ? 'text-muted pl-3' : ''}>{info.label}</span>
-              <Cell value={formatNutrient(r.key, r.original)} active={!useOverride} differs={r.differs} />
-              <Cell value={formatNutrient(r.key, r.mine)} active={useOverride} differs={r.differs} mine />
+              <Cell value={formatNutrient(r.key, r.original)} active={false} differs={r.differs} />
+              <Cell value={formatNutrient(r.key, r.mine)} active differs={r.differs} mine />
             </div>
           )
         })}
         <p className="text-small text-muted py-2 leading-[1.4]">
-          Abweichungen sind markiert. „–“ heißt unbekannt, nicht 0. {note}
+          Es gelten deine Werte, das Original steht zum Vergleich daneben. „–“ heißt unbekannt, nicht 0. {note}
         </p>
       </Card>
 

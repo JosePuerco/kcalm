@@ -119,7 +119,6 @@ export function CheckStep({ food, onBack, onDone }: Props) {
               original={product.per100}
               override={override}
               back={() => setCorrecting(false)}
-              verifyOnSave
               onSaved={onDone}
             />
           </div>

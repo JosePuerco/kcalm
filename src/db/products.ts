@@ -96,7 +96,7 @@ export async function getBlsPref(code: string): Promise<BlsPref | undefined> {
 /** Eigene Einstellung zu einem BLS-Lebensmittel ändern; legt sie bei Bedarf an (eindeutig je Code) */
 async function updateBlsPref(
   code: string,
-  changes: Partial<Pick<BlsPref, 'portions' | 'useOverride' | 'price'>>,
+  changes: Partial<Pick<BlsPref, 'portions' | 'price'>>,
   now: Date,
 ) {
   await db.transaction('rw', db.blsPrefs, async () => {
@@ -111,9 +111,6 @@ async function updateBlsPref(
 
 export const saveBlsPortions = (code: string, portions: Portion[], now = new Date()) =>
   updateBlsPref(code, { portions }, now)
-
-export const setBlsUseOverride = (code: string, useOverride: boolean, now = new Date()) =>
-  updateBlsPref(code, { useOverride }, now)
 
 /** Preis eines BLS-Lebensmittels; null = entfernen (Phase 13) */
 export const saveBlsPrice = (code: string, price: Price | null, now = new Date()) => updateBlsPref(code, { price }, now)

@@ -1,5 +1,5 @@
 // Korrekturschicht speichern (PLAN.md 2, Produkte; Logik in logic/verify.ts).
-// Das Original wird hier nie geschrieben; nur productOverrides und die Umschalter Meine/Original.
+// Das Original wird hier nie geschrieben, nur productOverrides.
 
 import {
   canVerify,
@@ -10,8 +10,7 @@ import {
   type Correction,
 } from '../logic/verify.ts'
 import { db } from './db.ts'
-import { setBlsUseOverride } from './products.ts'
-import { softDelete, touch, upsertByKey } from './records.ts'
+import { softDelete, upsertByKey } from './records.ts'
 import { relabelUnit } from './units.ts'
 import type { FoodRef, Nutrients, ProductOverride, Unit } from './types.ts'
 
@@ -46,11 +45,15 @@ export async function putOverride(
   )
 }
 
-/** „Werte bearbeiten“: nur Abweichungen vom Original speichern; eine Prüfung bleibt bestehen */
+/**
+ * „Werte bearbeiten“: nur Abweichungen vom Original speichern. Korrigieren heißt prüfen (Jan, 29.10.2026):
+ * Sind danach alle Pflichtangaben da, gilt das Lebensmittel ab jetzt als geprüft, sonst als ungeprüft.
+ * Alles wie im Original mit allen Pflichtangaben = geprüft ohne Korrektur (wie „Stimmt so“).
+ */
 export async function saveCorrection(ref: FoodRef, original: Nutrients, edited: Nutrients, now = new Date()) {
   await db.transaction('rw', db.productOverrides, async () => {
-    const existing = await getOverride(ref)
-    await putOverride(ref, correctionFromValues(original, edited), existing?.verifiedAt ?? null, now)
+    const verifiedAt = canVerify(edited) ? now.toISOString() : null
+    await putOverride(ref, correctionFromValues(original, edited), verifiedAt, now)
   })
 }
 
@@ -74,13 +77,3 @@ export async function setUnit(ref: FoodRef, original: Unit, unit: Unit, now = ne
   })
 }
 
-/** Umschalter „Meine Werte nutzen“ / „Original nutzen“; gilt für künftige Einträge */
-export async function setUseOverride(ref: FoodRef, useOverride: boolean, now = new Date()) {
-  if (ref.startsWith('bls:')) return setBlsUseOverride(ref.slice(4), useOverride, now)
-  if (!ref.startsWith('product:')) throw new Error(`Kein Produkt: ${ref}`)
-  await db.transaction('rw', db.products, async () => {
-    const product = await db.products.get(ref.slice(8))
-    if (!product || product.deletedAt !== null) throw new Error(`Produkt fehlt: ${ref}`)
-    await db.products.put(touch(product, { useOverride }, now))
-  })
-}

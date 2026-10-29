@@ -1,5 +1,5 @@
 // BLS-Lebensmittel nach Produkt.dc.html: Original gegen Meine Werte (Korrekturschicht),
-// eigene Portionen und der Umschalter Meine/Original in blsPrefs.
+// eigene Portionen und Preis in blsPrefs.
 import { href } from '../../app/router.ts'
 import { Badge, SubScreen, SubScreenTitle } from '../../components/ui/SubScreen.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
@@ -52,7 +52,6 @@ export function BlsDetail({ code }: { code: string }) {
         foodRef={`bls:${code}`}
         original={food.per100}
         override={override ?? undefined}
-        useOverride={pref?.useOverride ?? true}
         unit={unit}
         editHref={href('lebensmittel', 'bls', code, 'bearbeiten')}
         note="Quelle: Max Rubner-Institut, BLS 4.0."

@@ -57,7 +57,7 @@ Der wichtigste Ablauf ist: beim Essen App öffnen, Slot wählen, Produkt scannen
 
 - Felder: Name, Marke, Barcode, Einheit (g oder ml), Nährwerte pro 100 g/ml, Portionsgrößen
 - Herkunft: OFF, BLS oder eigenes Produkt
-- **Verifizieren (optional):** eigene Werte als Korrekturschicht über dem Original, Status „geprüft“ mit Datum; Tabelle Original gegen Meine Werte mit markierten Abweichungen; pro Produkt umschaltbar, welche Werte genutzt werden (gilt für künftige Einträge); ein späteres OFF-Update ändert nur das Original
+- **Verifizieren (optional):** eigene Werte als Korrekturschicht über dem Original, Status „geprüft“ mit Datum; Tabelle Original gegen Meine Werte mit markierten Abweichungen; „Meine Werte“ gelten immer für künftige Einträge, das Original steht nur zum Vergleich daneben (seit 1.4.1); ein späteres OFF-Update ändert nur das Original
 - Fehlende Werte werden als „unbekannt“ geführt, nie als 0; Summen zeigen dann „mind. …“
 - Pflichtangaben beim Anlegen eigener Produkte und beim Prüfen: Name und alle Werte der EU-Nährwerttabelle (Energie, Fett, davon gesättigte Fettsäuren, Kohlenhydrate, davon Zucker, Eiweiß, Salz); Ballaststoffe optional
 - Archivieren statt löschen, wenn das Produkt im Tagebuch verwendet wurde
@@ -213,7 +213,7 @@ Alle Tabellen sind sync-fähig angelegt, und jeder Tagebucheintrag speichert sei
 | --- | --- | --- |
 | products | source (off / own / recipe), barcode?, name, brand?, unit (g / ml), per100: Nutrients, portions [{label, amount}], useOverride, archived, offFetchedAt? | OFF-Produkte werden hier lokal gespeichert |
 | productOverrides | productRef (Produkt-ID oder BLS-Code), per100: Nutrients (nur geänderte Felder), verifiedAt?, note? | Korrekturschicht fürs Verifizieren; Original bleibt unverändert |
-| blsPrefs | blsCode, portions, useOverride | Eigene Portionen und Umschalter Meine/Original für BLS-Lebensmittel |
+| blsPrefs | blsCode, portions, useOverride, price | Eigene Portionen und Preis für BLS-Lebensmittel; `useOverride` wird seit 1.4.1 nicht mehr ausgewertet |
 | meals | name, items [{ref, amount, unit, portionLabel?}], archived | Mahlzeiten-Vorlagen |
 | recipes | name, ingredients [{ref, amount}], finalWeightG, portions, archived | Berechnung pro 100 g aus Zutaten ÷ Endgewicht |
 | slots | name, order, timeFrom?, timeTo?, archived | Frei festlegbare Mahlzeiten-Slots mit Uhrzeitfenster |
@@ -368,6 +368,10 @@ Mit Jan abgestimmt am 29.10.2026. Optional, Schalter in den Einstellungen; aus =
 - [x] 13e Statistik: Kacheln Ø €/Tag und Summe, € pro Tag als Balken, Preis-Leistung, teuerste Lebensmittel
 - [x] 13f Export: Spalte Kosten, nur bei aktiver Kostenauswertung
 
+### Nach 1.4.0 (Version 1.4.1)
+
+- [x] Korrigieren heißt prüfen: Umschalter Meine/Original entfällt, „Werte bearbeiten“ prüft beim Sichern mit (Jan, 29.10.2026; Regeln in Abschnitt 7)
+
 ## 7. Entscheidungen zu früher offenen Fragen
 
 | Frage | Entscheidung |
@@ -391,7 +395,8 @@ Mit Jan abgestimmt am 29.10.2026. Optional, Schalter in den Einstellungen; aus =
 | Mahlzeit: −/+ bei Skalierung | Schritt auf der angezeigten Menge (unter 50 → 5, unter 200 → 10, sonst 50), rastet auf Vielfache ein, nicht unter 5 (Jan, 21.10.2026) |
 | Umschalter Meine/Original bei BLS | Feld `useOverride` in `blsPrefs`, Backup-Format 3 und Datenbank-Version 3 (Bestand: `true`) (Jan, 21.10.2026) |
 | OFF-Update bei vorhandener Korrektur | Felder, die OFF ändert, werden mit dem alten Wert in der Korrektur festgehalten: „Meine Werte“ bleiben gleich, die Änderung erscheint als Abweichung. Ohne Korrektur übernimmt das Produkt das neue Original. Liefert OFF keine kcal mehr, bleibt alles (Jan, 21.10.2026) |
-| Prüfstatus | „Geprüft“ bezieht sich auf „Meine Werte“; „Original nutzen“ und „Werte bearbeiten“ behalten die Prüfung; „Prüfung entfernen“ lässt Korrekturen stehen; Korrektur ohne Felder und ohne Prüfung bekommt den Löschmarker (Jan, 21.10.2026) |
+| Prüfstatus | „Geprüft“ bezieht sich auf „Meine Werte“; „Prüfung entfernen“ lässt Korrekturen stehen; Korrektur ohne Felder und ohne Prüfung bekommt den Löschmarker (Jan, 21.10.2026; „Werte bearbeiten“ seit 29.10.2026 siehe nächste Zeile) |
+| Korrigieren heißt prüfen | Der Umschalter „Meine Werte nutzen / Original nutzen“ entfällt: Korrekturen gelten immer für neue Einträge, auch ungeprüft (Pflichtangabe fehlt, Prüfung entfernt); das Original bleibt zum Vergleich sichtbar. „Werte bearbeiten“ prüft beim Sichern mit, wenn alle Pflichtangaben da sind (Datum = jetzt), sonst gilt das Lebensmittel als ungeprüft; alles wie im Original = geprüft ohne Korrektur. „Prüfung entfernen“ bleibt. Feld `useOverride` (products, blsPrefs) bleibt im Datenmodell, wird aber nicht mehr ausgewertet (keine Migration). Wer vorher „Original nutzen“ gewählt hatte, bekommt ab jetzt Meine Werte; alte Einträge bleiben (Snapshot) (Jan, 29.10.2026) |
 | Wasser-Tracking | Entfällt ganz, Phase 7 gestrichen (Jan, 22.10.2026). Entfernt: Nährwert `water` (auch aus dem BLS), `isDrink`/„Ist ein Getränk“, `countsAsWater`, `entries.waterMl` und Art `water`, `profileVersions.waterMl`, Einstellung `waterEnabled` (bekommt den Löschmarker). Backup-Format 4 und Datenbank-Version 4; ältere Backups werden beim Import umgewandelt |
 | Diagramme | Eigenes SVG/HTML, keine Bibliothek: kleiner, Motion über Tokens inkl. `prefers-reduced-motion`, echte Tipp-Ziele und VoiceOver statt Canvas. Ganze Diagrammfläche antippbar (nächster Balken), Wischen wandert (Jan, 22.10.2026) |
 | Statistik: welche Tage zählen | Ø kcal/Tag, Bilanz und Makro-Ø nur über vollständige Tage; unvollständige Tage im Diagramm grau, Tage ohne Einträge ohne Balken und nirgends mitgezählt (auch nicht bei „Vollständig x/y“) (Jan, 22.10.2026) |

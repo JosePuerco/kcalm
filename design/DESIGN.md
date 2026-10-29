@@ -120,7 +120,7 @@ Jeder Screen entspricht einem Prototyp. Beispieldaten im Prototyp sind nur Beisp
 ### Produktdetail – `Produkt.dc.html`
 
 - Name, Marke · Menge · EAN, Badges Quelle und Prüfstatus.
-- Karte Nährwerte: Umschalter „Meine Werte nutzen“ / „Original nutzen“; Tabelle Nährwert · Original · Meine; Abweichungen auf `accentSoft` markiert; nicht genutzte Spalte `muted`; „–“ = unbekannt.
+- Karte Nährwerte: Tabelle Nährwert · Original · Meine; Abweichungen auf `accentSoft` markiert; Original-Spalte `muted` (nur zum Vergleich); „–“ = unbekannt. Kein Umschalter „Meine Werte nutzen“ / „Original nutzen“ mehr: Korrekturen gelten immer (Jan, 29.10.2026; der Prototyp zeigt ihn noch).
 - „Werte bearbeiten“ / „Als geprüft markieren“ bzw. „Prüfung entfernen“. Portionen, Getränk, „Zuletzt aus OFF geladen“, „Original jetzt aktualisieren“, „Archivieren“ in `warnText`.
 
 ### Rezept anlegen – `Rezept.dc.html`

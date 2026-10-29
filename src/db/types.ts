@@ -54,7 +54,10 @@ export interface Product extends SyncFields {
   unit: Unit
   per100: Nutrients
   portions: Portion[]
-  /** Korrekturschicht für künftige Einträge nutzen */
+  /**
+   * Früherer Umschalter Meine/Original. Wird nicht mehr ausgewertet (Korrekturen gelten immer, Jan, 29.10.2026);
+   * bleibt im Datenmodell, damit keine Migration nötig ist. Neue Datensätze: true.
+   */
   useOverride: boolean
   archived: boolean
   offFetchedAt: Timestamp | null
@@ -74,12 +77,12 @@ export interface ProductOverride extends SyncFields {
   unit: Unit | null
 }
 
-/** Eigene Portionen und Umschalter Meine/Original für BLS-Lebensmittel */
+/** Eigene Portionen und Preis für BLS-Lebensmittel */
 export interface BlsPref extends SyncFields {
   /** eindeutig */
   blsCode: string
   portions: Portion[]
-  /** Korrekturschicht für künftige Einträge nutzen (wie Product.useOverride) */
+  /** Wird nicht mehr ausgewertet, siehe Product.useOverride */
   useOverride: boolean
   /** null = unbekannt */
   price: Price | null

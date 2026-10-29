@@ -53,11 +53,18 @@ describe('choiceFromProduct / choiceFromBls', () => {
     expect(c.verified).toBe(true)
   })
 
-  it('useOverride aus: Original-Werte, aber trotzdem geprüft', () => {
+  it('früherer Umschalter „Original nutzen“ zählt nicht mehr: Korrekturen gelten immer (Jan, 29.10.2026)', () => {
     const o = override({ per100: { kcal: 65 }, verifiedAt: '2026-10-20T08:00:00.000Z' })
     const c = choiceFromProduct({ ...skyr, useOverride: false }, o)
-    expect(c.per100.kcal).toBe(63)
+    expect(c.per100.kcal).toBe(65)
     expect(c.verified).toBe(true)
+  })
+
+  it('BLS: früherer Umschalter zählt ebenfalls nicht', () => {
+    const pref = newRecord<BlsPref>({ blsCode: 'F110100', portions: [], useOverride: false, price: null })
+    const o = override({ productRef: 'bls:F110100', per100: { kcal: 99 } })
+    const apfel = { code: 'F110100', name: 'Apfel roh', per100: { ...unknownNutrients(), kcal: 54 } }
+    expect(choiceFromBls(apfel, pref, o).per100.kcal).toBe(99)
   })
 
   it('gelöschte Korrektur zählt nicht', () => {

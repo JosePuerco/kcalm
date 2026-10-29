@@ -10,7 +10,10 @@ export type Correction = Partial<Nutrients>
 
 const active = (o: ProductOverride | undefined): o is ProductOverride => !!o && o.deletedAt === null
 
-/** „Meine Werte“: Original mit darübergelegter Korrektur */
+/**
+ * „Meine Werte“: Original mit darübergelegter Korrektur. Gilt immer für neue Einträge: korrigiert heißt
+ * geprüft, einen Umschalter auf das Original gibt es nicht mehr (Jan, 29.10.2026).
+ */
 export function mergeNutrients(original: Nutrients, override: ProductOverride | undefined): Nutrients {
   return active(override) ? applyCorrection(original, override.per100) : original
 }
@@ -21,18 +24,9 @@ function applyCorrection(original: Nutrients, correction: Correction): Nutrients
   return result
 }
 
-/** Werte, die neue Einträge bekommen: je nach Umschalter Meine oder Original */
-export function effectiveNutrients(
-  original: Nutrients,
-  override: ProductOverride | undefined,
-  useOverride: boolean,
-): Nutrients {
-  return useOverride ? mergeNutrients(original, override) : original
-}
-
 /**
  * Einheit für Anzeige und neue Einträge (Phase 12e): die gewählte, sonst das Original.
- * Gilt unabhängig vom Umschalter Meine/Original; die Nährwerte bleiben pro 100 g bzw. ml.
+ * Die Nährwerte bleiben pro 100 g bzw. ml.
  */
 export function effectiveUnit(original: Unit, override: ProductOverride | undefined): Unit {
   return (active(override) && override.unit) || original

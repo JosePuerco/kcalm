@@ -11,7 +11,7 @@ import { useBls } from '../../data/bls.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { NUTRIENT_KEYS } from '../../db/records.ts'
 import type { FoodRef, Nutrients, Product, ProductOverride, Unit } from '../../db/types.ts'
-import { getOverride, saveCorrection, setVerified } from '../../db/verify.ts'
+import { getOverride, saveCorrection } from '../../db/verify.ts'
 import { formatNutrient } from '../../logic/nutrientInfo.ts'
 import { fieldId, nutrientsToForm, parseDecimal, validateCorrectionForm, type FormErrors } from '../../logic/productForm.ts'
 import { canVerify, effectiveUnit, mergeNutrients } from '../../logic/verify.ts'
@@ -72,11 +72,10 @@ type Props = {
   back: string | (() => void)
   /** Statt zurückzuspringen (Prüf-Dialog) */
   onSaved?: () => void
-  /** Prüf-Dialog: Werte kommen vom Etikett, also gleich als geprüft markieren (wenn alle Pflichtangaben da sind) */
-  verifyOnSave?: boolean
 }
 
-export function CorrectionForm({ foodRef, name, unit, original, override, back, onSaved, verifyOnSave = false }: Props) {
+/** Sichern prüft mit, wenn alle Pflichtangaben da sind (saveCorrection) */
+export function CorrectionForm({ foodRef, name, unit, original, override, back, onSaved }: Props) {
   const toast = useToast()
   // Startwerte nur einmal übernehmen; spätere Datenbank-Änderungen überschreiben die Eingaben nicht
   const [values, setValues] = useState(() => nutrientsToForm(mergeNutrients(original, override)))
@@ -93,8 +92,7 @@ export function CorrectionForm({ foodRef, name, unit, original, override, back, 
     setSaving(true)
     try {
       await saveCorrection(foodRef, original, result.per100)
-      if (verifyOnSave && canVerify(result.per100)) await setVerified(foodRef, original, true)
-      toast('Gespeichert')
+      toast(canVerify(result.per100) ? 'Gespeichert und geprüft' : 'Gespeichert, noch nicht geprüft')
       if (onSaved) onSaved()
       else if (typeof back === 'string') navigate(back, { replace: true })
       else back()

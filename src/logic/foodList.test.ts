@@ -101,12 +101,12 @@ describe('buildFoodRows', () => {
     expect(rows.filter((r) => r.verified).map((r) => r.name)).toEqual(['Eigenes Brot', 'Skyr natur'])
   })
 
-  it('kcal /100 aus den genutzten Werten (Korrektur bzw. Original)', () => {
+  it('kcal /100 aus Meine Werte, auch bei früherem Umschalter auf Original', () => {
     const corrected = newRecord<ProductOverride>({ productRef: `product:${skyr.id}`, per100: { kcal: 65 }, verifiedAt: null, note: null, unit: null })
     const kcal = (p: typeof skyr) =>
       buildFoodRows({ products: [p], blsPrefs: [], overrides: [corrected], bls })[0]!.kcalPer100
     expect(kcal(skyr)).toBe(65)
-    expect(kcal({ ...skyr, useOverride: false })).toBe(63)
+    expect(kcal({ ...skyr, useOverride: false })).toBe(65)
   })
 
   it('sortiert alphabetisch nach deutscher Sortierung, Umlaute richtig', () => {
