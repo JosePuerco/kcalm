@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button.tsx'
 import { Card } from '../../components/ui/Card.tsx'
 import { Badge, SubScreen, SubScreenTitle } from '../../components/ui/SubScreen.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
+import { getCostsEnabled } from '../../db/costs.ts'
 import { db } from '../../db/db.ts'
 import { useLiveQuery } from '../../db/live.ts'
 import { refreshOffProduct, type OffRefresh } from '../../db/off.ts'
@@ -15,6 +16,7 @@ import {
   isFoodUsed,
   restoreProduct,
   saveProductPortions,
+  saveProductPrice,
 } from '../../db/products.ts'
 import { getOverride } from '../../db/verify.ts'
 import { SOURCE_LABEL } from '../../logic/foodList.ts'
@@ -22,6 +24,7 @@ import { formatDate } from '../../logic/format.ts'
 import { effectiveUnit } from '../../logic/verify.ts'
 import { NutrientTable } from './NutrientTable.tsx'
 import { PortionsCard } from './PortionsCard.tsx'
+import { PriceCard } from './PriceCard.tsx'
 import { UnitCard } from './UnitCard.tsx'
 import { VerifiedBadge, VerifySection } from './VerifySection.tsx'
 
@@ -43,6 +46,7 @@ export function ProductDetail({ id }: { id: string }) {
     return p && p.deletedAt === null ? p : null
   }, [id])
   const used = useLiveQuery(() => isFoodUsed(`product:${id}`), [id])
+  const costs = useLiveQuery(getCostsEnabled, [])
   // null = keine Korrektur
   const override = useLiveQuery(async () => (await getOverride(`product:${id}`)) ?? null, [id])
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -122,6 +126,8 @@ export function ProductDetail({ id }: { id: string }) {
         unit={unit}
         onSave={(portions) => saveProductPortions(id, portions)}
       />
+
+      {costs && <PriceCard price={product.price} unit={unit} onSave={(price) => saveProductPrice(id, price)} />}
 
       {isOff && (
         <Card padded={false} className="px-card-padding py-1">

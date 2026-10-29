@@ -7,6 +7,7 @@ import { Card } from '../components/ui/Card.tsx'
 import { Screen } from '../components/ui/Screen.tsx'
 import { Segmented } from '../components/ui/Segmented.tsx'
 import { ToggleRow } from '../components/ui/ToggleRow.tsx'
+import { getCostsEnabled, setCostsEnabled } from '../db/costs.ts'
 import { getEstimateEnabled, setEstimateEnabled } from '../db/weights.ts'
 import { useLiveQuery } from '../db/live.ts'
 import { getSlots } from '../db/slots.ts'
@@ -42,6 +43,7 @@ function Overview() {
   const today = useToday()
   const profiles = useLiveQuery(loadProfiles, [])
   const estimate = useLiveQuery(getEstimateEnabled, [])
+  const costs = useLiveQuery(getCostsEnabled, [])
   const theme = useThemePref()
   const [cameraGuide, setCameraGuide] = useState(false)
   const activeId = profiles && profileStatus(profiles.assignments, profiles.versions, today).activeProfileId
@@ -77,6 +79,16 @@ function Overview() {
               </a>
             )}
           </ToggleRow>
+          <div className="border-line border-t">
+            <ToggleRow
+              label="Kostenauswertung"
+              sub="Preise bei Lebensmitteln, Kosten in der Statistik"
+              checked={costs === true}
+              onChange={(on) => {
+                setCostsEnabled(on).catch((error: unknown) => console.error('Einstellung nicht gespeichert', error))
+              }}
+            />
+          </div>
         </Card>
       </Group>
       <Group title="Daten">

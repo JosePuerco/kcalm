@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto' // IndexedDB in Node nachbilden, vor dem Import von db
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { ProductFormData } from '../logic/productForm.ts'
+import { getCostsEnabled, setCostsEnabled } from './costs.ts'
 import { db } from './db.ts'
 import {
   archiveProduct,
@@ -11,8 +12,10 @@ import {
   isFoodUsed,
   restoreProduct,
   saveBlsPortions,
+  saveBlsPrice,
   setBlsUseOverride,
   saveProductPortions,
+  saveProductPrice,
   updateProduct,
 } from './products.ts'
 import { newRecord, softDelete, unknownNutrients } from './records.ts'
@@ -110,6 +113,17 @@ describe('Produkte', () => {
     expect(stored.name).toBe('Skyr natur')
   })
 
+  it('Preis speichern und entfernen; Bearbeiten im Formular lässt ihn stehen', async () => {
+    const p = await createProduct(skyr, t0)
+    expect(p.price).toBeNull()
+    await saveProductPrice(p.id, { amount: 1.49, per: 450 }, t1)
+    expect(await getProduct(p.id)).toMatchObject({ price: { amount: 1.49, per: 450 }, updatedAt: t1.toISOString() })
+    await updateProduct(p.id, { ...skyr, name: 'Skyr' })
+    expect((await getProduct(p.id)).price).toEqual({ amount: 1.49, per: 450 })
+    await saveProductPrice(p.id, null)
+    expect((await getProduct(p.id)).price).toBeNull()
+  })
+
   it('archivieren und wiederherstellen', async () => {
     const p = await createProduct(skyr)
     await archiveProduct(p.id)
@@ -186,6 +200,16 @@ describe('BLS-Einstellungen', () => {
     expect(await getBlsPref('N100000')).toMatchObject({ useOverride: false, portions: [{ label: '1 Tasse', amount: 200 }] })
   })
 
+  it('Preis legt den Datensatz an und behält Portionen und Umschalter', async () => {
+    await saveBlsPrice('M111000', { amount: 1.19, per: 1000 }, t0)
+    expect(await getBlsPref('M111000')).toMatchObject({ price: { amount: 1.19, per: 1000 }, portions: [], useOverride: true })
+    await saveBlsPortions('M111000', [{ label: '1 Glas', amount: 200 }])
+    await setBlsUseOverride('M111000', false)
+    expect(await getBlsPref('M111000')).toMatchObject({ price: { amount: 1.19, per: 1000 }, useOverride: false })
+    await saveBlsPrice('M111000', null)
+    expect(await getBlsPref('M111000')).toMatchObject({ price: null, portions: [{ label: '1 Glas', amount: 200 }] })
+  })
+
   it('belebt einen gelöschten Datensatz wieder statt doppelt anzulegen', async () => {
     await saveBlsPortions('F503100', [{ label: '1 Stück', amount: 120 }])
     const [pref] = await db.blsPrefs.toArray()
@@ -205,5 +229,15 @@ describe('Einstellungen', () => {
     await setSetting('theme', 'light')
     expect(await getSetting('theme')).toBe('light')
     expect(await db.settings.count()).toBe(1)
+  })
+})
+
+describe('Kostenauswertung', () => {
+  it('ist anfangs aus und lässt sich schalten', async () => {
+    expect(await getCostsEnabled()).toBe(false)
+    await setCostsEnabled(true)
+    expect(await getCostsEnabled()).toBe(true)
+    await setCostsEnabled(false)
+    expect(await getCostsEnabled()).toBe(false)
   })
 })

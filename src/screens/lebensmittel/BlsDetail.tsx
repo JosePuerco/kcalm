@@ -4,11 +4,13 @@ import { href } from '../../app/router.ts'
 import { Badge, SubScreen, SubScreenTitle } from '../../components/ui/SubScreen.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { useBls } from '../../data/bls.ts'
+import { getCostsEnabled } from '../../db/costs.ts'
 import { useLiveQuery } from '../../db/live.ts'
-import { getBlsPref, saveBlsPortions } from '../../db/products.ts'
+import { getBlsPref, saveBlsPortions, saveBlsPrice } from '../../db/products.ts'
 import { getOverride } from '../../db/verify.ts'
 import { effectiveUnit } from '../../logic/verify.ts'
 import { PortionsCard } from './PortionsCard.tsx'
+import { PriceCard } from './PriceCard.tsx'
 import { UnitCard } from './UnitCard.tsx'
 import { VerifiedBadge, VerifySection } from './VerifySection.tsx'
 
@@ -21,6 +23,7 @@ export function BlsDetail({ code }: { code: string }) {
   const pref = useLiveQuery(async () => (await getBlsPref(code)) ?? null, [code])
   // null = keine Korrektur
   const override = useLiveQuery(async () => (await getOverride(`bls:${code}`)) ?? null, [code])
+  const costs = useLiveQuery(getCostsEnabled, [])
 
   if (bls.status === 'loading' || pref === undefined || override === undefined) return <SubScreen back={LIST} />
   const food = bls.status === 'ready' ? bls.data.byCode.get(code) : undefined
@@ -65,6 +68,8 @@ export function BlsDetail({ code }: { code: string }) {
           if (portions.length > 0 && (pref?.portions.length ?? 0) === 0) toast('Steht jetzt in deinen Lebensmitteln')
         }}
       />
+
+      {costs && <PriceCard price={pref?.price ?? null} unit={unit} onSave={(price) => saveBlsPrice(code, price)} />}
     </SubScreen>
   )
 }

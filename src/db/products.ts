@@ -5,7 +5,7 @@ import type { ProductFormData } from '../logic/productForm.ts'
 import { effectiveUnit } from '../logic/verify.ts'
 import { db } from './db.ts'
 import { newRecord, softDelete, touch, upsertByKey } from './records.ts'
-import type { BlsPref, FoodRef, Portion, Product } from './types.ts'
+import type { BlsPref, FoodRef, Portion, Price, Product } from './types.ts'
 import { relabelUnit } from './units.ts'
 
 export async function createProduct(data: ProductFormData, now = new Date()): Promise<Product> {
@@ -64,6 +64,13 @@ export async function saveProductPortions(id: string, portions: Portion[], now =
   })
 }
 
+/** Preis direkt aus der Detailansicht ändern; null = entfernen (Phase 13). Auch bei OFF-Produkten: kein OFF-Wert. */
+export async function saveProductPrice(id: string, price: Price | null, now = new Date()): Promise<void> {
+  await db.transaction('rw', db.products, async () => {
+    await db.products.put(touch(await getProduct(id), { price }, now))
+  })
+}
+
 async function setArchived(id: string, archived: boolean, now: Date) {
   await db.transaction('rw', db.products, async () => {
     await db.products.put(touch(await getProduct(id), { archived }, now))
@@ -107,3 +114,6 @@ export const saveBlsPortions = (code: string, portions: Portion[], now = new Dat
 
 export const setBlsUseOverride = (code: string, useOverride: boolean, now = new Date()) =>
   updateBlsPref(code, { useOverride }, now)
+
+/** Preis eines BLS-Lebensmittels; null = entfernen (Phase 13) */
+export const saveBlsPrice = (code: string, price: Price | null, now = new Date()) => updateBlsPref(code, { price }, now)
