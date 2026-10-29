@@ -8,6 +8,17 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 1.4.0 – 29.10.2026
+
+- Neu: Kostenauswertung, in den Einstellungen unter „Funktionen“ einschaltbar
+- Preis mit Packungsgröße bei eigenen, Open-Food-Facts- und BLS-Lebensmitteln („1,49 € für 500 g“, dazu Grundpreis €/kg bzw. €/l)
+- Rezepte zeigen Kosten für Topf, 100 g und Portion, Mahlzeiten die Summe; fehlende Preise werden genannt
+- Schnelleintrag mit optionalem Preis
+- Statistik: Ø Kosten pro Tag, Summe, € pro Tag, Preis-Leistung (je 1.000 kcal, je 100 g Eiweiß), teuerste Lebensmittel
+- Export: Spalte „Kosten“
+- Kosten rechnen immer mit dem aktuellen Preis, auch für frühere Tage
+- Datenbank-Version 6 und Backup-Format 6; ältere Daten und Backups werden automatisch übernommen
+
 ## 1.3.2 – 28.10.2026
 
 - Behoben: Beim Öffnen eines Sheets (z. B. „+“) war die App manchmal nach oben verschoben, oben abgeschnitten und unten leer
