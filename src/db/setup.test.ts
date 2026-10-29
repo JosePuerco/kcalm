@@ -40,6 +40,7 @@ function entry(date: string, slotId: string, kcal: number | null) {
     nutrients: { ...unknownNutrients(), kcal },
     mealGroupId: null,
     mealName: null,
+    cost: null,
   })
 }
 

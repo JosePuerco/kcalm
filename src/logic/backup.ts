@@ -26,7 +26,7 @@ import type {
 import { formatTime } from './format.ts'
 
 export const BACKUP_APP = 'kcalm'
-export const BACKUP_FORMAT_VERSION = 5
+export const BACKUP_FORMAT_VERSION = 6
 /** Ab so vielen Tagen ohne Backup warnt die Einstellungsseite */
 export const BACKUP_REMINDER_DAYS = 14
 
@@ -95,6 +95,7 @@ const foodRef = z
   .transform((s) => s as FoodRef)
 const unit = z.enum(['g', 'ml'])
 const portion = z.object({ label: z.string(), amount: z.number() })
+const price = z.object({ amount: z.number(), per: z.number() })
 const macroTarget = z.object({ mode: z.enum(['g', 'percent', 'gPerKg', 'rest']), value: z.number().nullable() })
 
 const product = z.object({
@@ -109,6 +110,7 @@ const product = z.object({
   useOverride: z.boolean(),
   archived: z.boolean(),
   offFetchedAt: timestamp.nullable(),
+  price: price.nullable(),
 })
 
 const productOverride = z.object({
@@ -125,6 +127,7 @@ const blsPref = z.object({
   blsCode: z.string().min(1),
   portions: z.array(portion),
   useOverride: z.boolean(),
+  price: price.nullable(),
 })
 
 const meal = z.object({
@@ -165,6 +168,7 @@ const entry = z.object({
   nutrients,
   mealGroupId: z.uuid().nullable(),
   mealName: z.string().nullable(),
+  cost: z.number().nullable(),
 })
 
 const day = z.object({ ...sync, date: localDate, complete: z.boolean() })
@@ -302,6 +306,23 @@ export const MIGRATIONS: Record<number, (data: Record<string, unknown>) => Recor
     if (Array.isArray(tables.productOverrides)) tables.productOverrides.forEach(addOverrideUnit)
     return { ...data, formatVersion: 5 }
   },
+  5: (data) => {
+    // Format 6: Kostenauswertung (Jan, 29.10.2026)
+    const tables = isObject(data.tables) ? data.tables : {}
+    for (const [table, records] of Object.entries(tables)) {
+      if (Array.isArray(records)) records.forEach((record) => addPriceFields(table, record))
+    }
+    return { ...data, formatVersion: 6 }
+  },
+}
+
+/** Neue Felder der Kostenauswertung je Tabelle (Phase 13) */
+const PRICE_FIELDS: Record<string, string> = { products: 'price', blsPrefs: 'price', entries: 'cost' }
+
+/** Ergänzt price bzw. cost = null (unbekannt), falls es fehlt (verändert record). Auch für das Datenbank-Update. */
+export function addPriceFields(table: string, record: unknown): void {
+  const field = PRICE_FIELDS[table]
+  if (field !== undefined && isObject(record) && !(field in record)) record[field] = null
 }
 
 /** Ergänzt productOverrides.unit = null (Original gilt), falls es fehlt (verändert record). Auch für das Datenbank-Update. */

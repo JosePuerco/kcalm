@@ -195,6 +195,13 @@ describe('refreshOffProduct', () => {
     expect(await getOverride(refOf(skyr))).toBeUndefined()
   })
 
+  it('Preis bleibt (gehört nicht zu den OFF-Daten)', async () => {
+    const skyr = await scannedSkyr()
+    await db.products.update(skyr.id, { price: { amount: 1.49, per: 450 } })
+    await refreshOffProduct(skyr.id, network(offAnswer({ ...SKYR, 'energy-kcal_100g': 65 })), T1)
+    expect((await getProduct(skyr.id)).price).toEqual({ amount: 1.49, per: 450 })
+  })
+
   it('Portionen und Umschalter bleiben', async () => {
     const skyr = await scannedSkyr()
     await db.products.update(skyr.id, { portions: [{ label: '1 Becher', amount: 450 }], useOverride: false })

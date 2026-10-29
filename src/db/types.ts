@@ -34,6 +34,12 @@ export type Unit = 'g' | 'ml'
 /** Verweis auf ein Lebensmittel als String, damit er indexierbar ist */
 export type FoodRef = `product:${string}` | `bls:${string}` | `recipe:${string}`
 
+/** Preis einer Packung: amount in € für per g bzw. ml, z. B. 1,49 € für 500 g (Phase 13) */
+export interface Price {
+  amount: number
+  per: number
+}
+
 /** Portionsgröße, amount in g bzw. ml */
 export interface Portion {
   label: string
@@ -52,6 +58,8 @@ export interface Product extends SyncFields {
   useOverride: boolean
   archived: boolean
   offFetchedAt: Timestamp | null
+  /** Eigene Angabe, nicht Teil der OFF-Daten; null = unbekannt */
+  price: Price | null
 }
 
 /** Korrekturschicht fürs Verifizieren; das Original bleibt unverändert */
@@ -73,6 +81,8 @@ export interface BlsPref extends SyncFields {
   portions: Portion[]
   /** Korrekturschicht für künftige Einträge nutzen (wie Product.useOverride) */
   useOverride: boolean
+  /** null = unbekannt */
+  price: Price | null
 }
 
 export interface MealItem {
@@ -127,6 +137,8 @@ export interface Entry extends SyncFields {
   nutrients: Nutrients
   mealGroupId: string | null
   mealName: string | null
+  /** Preis in €, nur beim Schnelleintrag; sonst null, Kosten kommen dann aus dem aktuellen Preis */
+  cost: number | null
 }
 
 /** Nur Tage mit Markierung; Datum eindeutig */

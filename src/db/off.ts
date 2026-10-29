@@ -90,6 +90,7 @@ export async function saveOffProduct(data: OffProduct, now = new Date()): Promis
         useOverride: true,
         archived: false,
         offFetchedAt: now.toISOString(),
+        price: null,
       },
       now,
     )

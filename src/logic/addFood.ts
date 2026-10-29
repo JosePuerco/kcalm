@@ -121,6 +121,7 @@ export function foodEntry(
     nutrients: nutrientsForAmount(food.per100, amount),
     mealGroupId: null,
     mealName: null,
+    cost: null,
   }
 }
 

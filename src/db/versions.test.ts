@@ -55,7 +55,7 @@ describe('Datenbank-Version 2', () => {
     defineVersions(db)
     await db.open()
 
-    expect(db.verno).toBe(5)
+    expect(db.verno).toBe(6)
     expect(await db.table('products').get('p1')).toMatchObject({ per100: { kcal: 42 } })
     expect((await db.table('products').get('p1')).per100).not.toHaveProperty('alcohol')
     expect((await db.table('productOverrides').get('o1')).per100).toEqual({})
@@ -78,7 +78,7 @@ describe('Datenbank-Version 2', () => {
     const db = new Dexie(NAME)
     defineVersions(db)
     await db.open()
-    expect(db.verno).toBe(5)
+    expect(db.verno).toBe(6)
     db.close()
   })
 })
@@ -98,7 +98,7 @@ describe('Datenbank-Version 4', () => {
   it('entfernt Wasser-Felder und den Nährwert water, updatedAt bleibt', async () => {
     await createV3()
     const db = await openCurrent()
-    expect(await db.table('products').get('p1')).toEqual({ id: 'p1', ...sync, name: 'Cola', per100: { kcal: 42 } })
+    expect(await db.table('products').get('p1')).toEqual({ id: 'p1', ...sync, name: 'Cola', per100: { kcal: 42 }, price: null })
     expect((await db.table('productOverrides').get('o1')).per100).toEqual({ kcal: 40 })
     expect(await db.table('blsPrefs').get('b1')).toEqual({
       id: 'b1',
@@ -106,8 +106,9 @@ describe('Datenbank-Version 4', () => {
       blsCode: 'N110000',
       portions: [],
       useOverride: true,
+      price: null,
     })
-    expect(await db.table('entries').get('e1')).toEqual({ id: 'e1', ...sync, date: '2026-10-01', nutrients: { kcal: 210 } })
+    expect(await db.table('entries').get('e1')).toEqual({ id: 'e1', ...sync, date: '2026-10-01', nutrients: { kcal: 210 }, cost: null })
     expect(await db.table('profileVersions').get('v1')).toEqual({ id: 'v1', ...sync, profileId: 'x', weeklyKcal: 14000 })
     db.close()
   })
@@ -141,6 +142,26 @@ describe('Datenbank-Version 5', () => {
       unit: null,
     })
     expect((await db.table('productOverrides').get('o2')).unit).toBe('ml')
+    db.close()
+  })
+})
+
+describe('Datenbank-Version 6', () => {
+  it('Produkte und BLS bekommen price = null, Einträge cost = null; updatedAt und vorhandene Werte bleiben', async () => {
+    const old = new Dexie(NAME)
+    old.version(5).stores(SCHEMA_V1)
+    await old.table('products').add({ id: 'p1', ...sync, name: 'Skyr' })
+    await old.table('products').add({ id: 'p2', ...sync, name: 'Hafer', price: { amount: 0.89, per: 500 } })
+    await old.table('blsPrefs').add({ id: 'b1', ...sync, blsCode: 'F503100', portions: [], useOverride: true })
+    await old.table('entries').add({ id: 'e1', ...sync, date: '2026-10-01', kind: 'quick' })
+    await old.table('settings').add({ id: 's1', ...sync, key: 'theme', value: 'dark' })
+    old.close()
+    const db = await openCurrent()
+    expect(await db.table('products').get('p1')).toEqual({ id: 'p1', ...sync, name: 'Skyr', price: null })
+    expect((await db.table('products').get('p2')).price).toEqual({ amount: 0.89, per: 500 })
+    expect(await db.table('blsPrefs').get('b1')).toMatchObject({ price: null, updatedAt: T0 })
+    expect(await db.table('entries').get('e1')).toMatchObject({ cost: null, updatedAt: T0 })
+    expect(await db.table('settings').get('s1')).not.toHaveProperty('price')
     db.close()
   })
 })

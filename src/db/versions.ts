@@ -5,6 +5,7 @@ import type { Dexie } from 'dexie'
 import {
   addBlsUseOverride,
   addOverrideUnit,
+  addPriceFields,
   NUTRIENT_FIELDS,
   removeAlcohol,
   removeWater,
@@ -68,5 +69,17 @@ export function defineVersions(db: Dexie): void {
         .table('productOverrides')
         .toCollection()
         .modify((record: unknown) => addOverrideUnit(record))
+    })
+
+  // Kostenauswertung (Jan, 29.10.2026): price bzw. cost = null, updatedAt bleibt
+  db.version(6)
+    .stores(SCHEMA_V1)
+    .upgrade(async (tx) => {
+      for (const table of ['products', 'blsPrefs', 'entries']) {
+        await tx
+          .table(table)
+          .toCollection()
+          .modify((record: unknown) => addPriceFields(table, record))
+      }
     })
 }

@@ -16,6 +16,7 @@ export async function createProduct(data: ProductFormData, now = new Date()): Pr
       useOverride: true,
       archived: false,
       offFetchedAt: null,
+      price: null,
     },
     now,
   )
@@ -88,15 +89,15 @@ export async function getBlsPref(code: string): Promise<BlsPref | undefined> {
 /** Eigene Einstellung zu einem BLS-Lebensmittel ändern; legt sie bei Bedarf an (eindeutig je Code) */
 async function updateBlsPref(
   code: string,
-  changes: Partial<Pick<BlsPref, 'portions' | 'useOverride'>>,
+  changes: Partial<Pick<BlsPref, 'portions' | 'useOverride' | 'price'>>,
   now: Date,
 ) {
   await db.transaction('rw', db.blsPrefs, async () => {
     const existing = await db.blsPrefs.where('blsCode').equals(code).first()
     const base =
       existing && existing.deletedAt === null
-        ? { portions: existing.portions, useOverride: existing.useOverride }
-        : { portions: [], useOverride: true }
+        ? { portions: existing.portions, useOverride: existing.useOverride, price: existing.price }
+        : { portions: [], useOverride: true, price: null }
     await db.blsPrefs.put(upsertByKey<BlsPref>(existing, { ...base, ...changes, blsCode: code }, now))
   })
 }

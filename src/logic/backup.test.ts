@@ -40,6 +40,7 @@ function product(name: string, now = T0): Product {
       useOverride: false,
       archived: false,
       offFetchedAt: null,
+      price: null,
     },
     now,
   )
@@ -59,6 +60,7 @@ function entry(productId: string, now = T0): Entry {
       nutrients: { ...unknownNutrients(), kcal: 148.8 },
       mealGroupId: null,
       mealName: null,
+      cost: null,
     },
     now,
   )
@@ -92,7 +94,7 @@ describe('buildBackup / serializeBackup', () => {
   it('erzeugt app, formatVersion, exportedAt und alle Tabellen', () => {
     const backup = buildBackup(sampleTables(), T2)
     expect(backup.app).toBe('kcalm')
-    expect(backup.formatVersion).toBe(5)
+    expect(backup.formatVersion).toBe(6)
     expect(backup.exportedAt).toBe('2026-10-09T10:00:00.000Z')
     expect(Object.keys(backup.tables).sort()).toEqual([...TABLE_NAMES].sort())
   })
@@ -144,7 +146,7 @@ describe('parseBackup – Ablehnung', () => {
   })
 
   it('neuere formatVersion als die App', () => {
-    expect(parse({ ...valid(), formatVersion: 6 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
+    expect(parse({ ...valid(), formatVersion: 7 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
   })
 
   it('fehlende Tabelle', () => {
@@ -248,7 +250,7 @@ describe('parseBackup – Migration Format 1 → 2', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     const { tables } = result.backup
-    expect(result.backup.formatVersion).toBe(5)
+    expect(result.backup.formatVersion).toBe(6)
     expect(tables.products.every((p) => !('alcohol' in p.per100))).toBe(true)
     expect(tables.entries.every((e) => !('alcohol' in e.nutrients))).toBe(true)
     expect(tables.productOverrides[0]!.per100).toEqual({ kcal: 40 })
@@ -286,7 +288,7 @@ describe('parseBackup – Migration Format 2 → 3', () => {
     data.tables.blsPrefs = blsPrefs
     return data
   }
-  const pref = newRecord<BlsPref>({ blsCode: 'F503100', portions: [], useOverride: false }, T0)
+  const pref = newRecord<BlsPref>({ blsCode: 'F503100', portions: [], useOverride: false, price: null }, T0)
   function withoutUseOverride() {
     const old: Record<string, unknown> = { ...pref }
     delete old.useOverride
@@ -323,7 +325,7 @@ describe('parseBackup – Migration Format 3 → 4', () => {
     Object.assign(products[0]!.per100 as object, { water: 89.4 })
     entries.forEach((e) => Object.assign(e, { waterMl: 447 }))
     Object.assign(entries[0]!.nutrients as object, { water: null })
-    const pref = newRecord<BlsPref>({ blsCode: 'N110000', portions: [], useOverride: true }, T0)
+    const pref = newRecord<BlsPref>({ blsCode: 'N110000', portions: [], useOverride: true, price: null }, T0)
     data.tables.blsPrefs = [{ ...pref, isDrink: true, countsAsWater: null }]
     data.tables.settings!.push({ ...setting('waterEnabled', true) })
     return data
@@ -334,7 +336,7 @@ describe('parseBackup – Migration Format 3 → 4', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     const { tables } = result.backup
-    expect(result.backup.formatVersion).toBe(5)
+    expect(result.backup.formatVersion).toBe(6)
     expect(tables.products[0]).not.toHaveProperty('isDrink')
     expect(tables.products[0]).not.toHaveProperty('countsAsWater')
     expect(tables.products[0]!.per100).not.toHaveProperty('water')
@@ -378,7 +380,7 @@ describe('parseBackup – Migration Format 4 → 5', () => {
     const result = parseBackup(JSON.stringify(v4Backup([withoutUnit()])))
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.backup.formatVersion).toBe(5)
+    expect(result.backup.formatVersion).toBe(6)
     expect(result.backup.tables.productOverrides[0]).toMatchObject({ unit: null, per100: { kcal: 64 }, updatedAt: T0.toISOString() })
   })
 
@@ -395,6 +397,50 @@ describe('parseBackup – Migration Format 4 → 5', () => {
   it('unbekannte Einheit ist beschädigt', () => {
     const data = { ...v4Backup([{ ...override, unit: 'l' }]), formatVersion: 5 }
     expect(parseBackup(JSON.stringify(data))).toEqual({ ok: false, error: 'Backup ist beschädigt (productOverrides[0].unit)' })
+  })
+})
+
+describe('parseBackup – Migration Format 5 → 6', () => {
+  // Backup aus der Zeit vor der Kostenauswertung
+  function v5Backup() {
+    const data = JSON.parse(serializeBackup(buildBackup(sampleTables(), T2))) as {
+      formatVersion: number
+      tables: Record<string, Record<string, unknown>[]>
+    }
+    data.formatVersion = 5
+    for (const p of data.tables.products!) delete p.price
+    for (const e of data.tables.entries!) delete e.cost
+    data.tables.blsPrefs = [{ ...newRecord<BlsPref>({ blsCode: 'F503100', portions: [], useOverride: true, price: null }, T0) }]
+    delete data.tables.blsPrefs[0]!.price
+    return data
+  }
+
+  it('Produkte und BLS bekommen price = null, Einträge cost = null, updatedAt bleibt', () => {
+    const result = parseBackup(JSON.stringify(v5Backup()))
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.backup.formatVersion).toBe(6)
+    expect(result.backup.tables.products.every((p) => p.price === null)).toBe(true)
+    expect(result.backup.tables.entries.every((e) => e.cost === null)).toBe(true)
+    expect(result.backup.tables.blsPrefs[0]).toMatchObject({ price: null, updatedAt: T0.toISOString() })
+  })
+
+  it('vorhandener Preis bleibt', () => {
+    const data = v5Backup()
+    data.tables.products![0]!.price = { amount: 1.49, per: 500 }
+    const result = parseBackup(JSON.stringify(data))
+    expect(result.ok && result.backup.tables.products[0]!.price).toEqual({ amount: 1.49, per: 500 })
+  })
+
+  it('Format 6 ohne price ist beschädigt', () => {
+    const data = { ...v5Backup(), formatVersion: 6 }
+    expect(parseBackup(JSON.stringify(data))).toEqual({ ok: false, error: 'Backup ist beschädigt (products[0].price)' })
+  })
+
+  it('Preis als Text ist beschädigt', () => {
+    const data = v5Backup()
+    data.tables.products![0]!.price = { amount: '1,49', per: 500 }
+    expect(parseBackup(JSON.stringify(data))).toEqual({ ok: false, error: 'Backup ist beschädigt (products[0].price.amount)' })
   })
 })
 

@@ -17,6 +17,7 @@ function entry(slotId: string, kcal: number | null, createdAt: string, extra: Pa
       nutrients: { ...unknownNutrients(), kcal },
       mealGroupId: null,
       mealName: null,
+      cost: null,
     }),
     createdAt,
     ...extra,

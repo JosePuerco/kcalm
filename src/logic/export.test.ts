@@ -52,6 +52,7 @@ function entry(date: LocalDate, slotId: string, name: string, nutrients: Partial
       nutrients: { ...full, ...nutrients },
       mealGroupId: null,
       mealName: null,
+      cost: null,
     }),
     createdAt: `2026-09-01T08:00:${String(clock).padStart(4, '0')}.000Z`,
     ...extra,

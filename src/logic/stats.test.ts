@@ -51,6 +51,7 @@ function entry(date: LocalDate, kcal: number | null, more: Partial<Nutrients> = 
     nutrients: { ...unknownNutrients(), kcal, ...more },
     mealGroupId: null,
     mealName: null,
+    cost: null,
   })
 }
 

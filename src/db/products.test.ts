@@ -44,6 +44,7 @@ function entryFor(ref: Entry['ref']) {
     nutrients: unknownNutrients(),
     mealGroupId: null,
     mealName: null,
+    cost: null,
   })
 }
 

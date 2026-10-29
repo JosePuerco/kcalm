@@ -42,6 +42,7 @@ export function copiedEntries(
         nutrients: { ...e.nutrients },
         mealGroupId,
         mealName: e.mealName,
+        cost: e.cost,
       }
     })
 }

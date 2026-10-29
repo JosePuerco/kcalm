@@ -19,6 +19,7 @@ function entry(date: string) {
     nutrients: { ...unknownNutrients(), kcal: 500 },
     mealGroupId: null,
     mealName: null,
+    cost: null,
   })
 }
 

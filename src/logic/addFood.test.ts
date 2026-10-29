@@ -32,6 +32,7 @@ const skyr: Product = newRecord<Product>({
   useOverride: true,
   archived: false,
   offFetchedAt: null,
+  price: null,
 })
 
 const override = (fields: Partial<ProductOverride>) =>
@@ -71,7 +72,7 @@ describe('choiceFromProduct / choiceFromBls', () => {
 
   it('BLS: Gramm, eigene Portionen aus blsPrefs', () => {
     const food = { code: 'F110100', name: 'Apfel roh', per100: { ...unknownNutrients(), kcal: 54 } }
-    const pref = newRecord<BlsPref>({ blsCode: 'F110100', portions: [{ label: '1 Stück', amount: 150 }], useOverride: true })
+    const pref = newRecord<BlsPref>({ blsCode: 'F110100', portions: [{ label: '1 Stück', amount: 150 }], useOverride: true, price: null })
     expect(choiceFromBls(food, pref)).toMatchObject({ ref: 'bls:F110100', source: 'BLS', unit: 'g', portions: [{ amount: 150 }] })
     expect(choiceFromBls(food).portions).toEqual([])
   })
@@ -98,6 +99,7 @@ describe('recentRefs', () => {
       nutrients: unknownNutrients(),
       mealGroupId: null,
       mealName: null,
+      cost: null,
     }),
     createdAt,
   })
