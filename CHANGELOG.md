@@ -8,6 +8,12 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 1.4.1 – 29.10.2026
+
+- Geänderte Werte gelten immer: Der Umschalter „Meine Werte nutzen / Original nutzen“ entfällt, das Original steht nur noch zum Vergleich daneben
+- „Werte bearbeiten“ markiert beim Sichern gleich als geprüft, wenn alle Pflichtangaben da sind
+- Wer bisher bei einem Lebensmittel „Original nutzen“ gewählt hatte, bekommt ab jetzt die eigenen Werte; alte Einträge bleiben unverändert
+
 ## 1.4.0 – 29.10.2026
 
 - Neu: Kostenauswertung, in den Einstellungen unter „Funktionen“ einschaltbar
