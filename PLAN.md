@@ -366,7 +366,7 @@ Mit Jan abgestimmt am 29.10.2026. Optional, Schalter in den Einstellungen; aus =
 - [x] 13c Schalter „Kostenauswertung“ (Einstellung `costsEnabled`), Preisfeld bei Produkt, OFF- und BLS-Lebensmittel
 - [x] 13d Rezept (Topf und Portion), Mahlzeit (Summe), Schnelleintrag mit optionalem Preis
 - [x] 13e Statistik: Kacheln Ø €/Tag und Summe, € pro Tag als Balken, Preis-Leistung, teuerste Lebensmittel
-- [ ] 13f Export: Spalte Kosten, nur bei aktiver Kostenauswertung
+- [x] 13f Export: Spalte Kosten, nur bei aktiver Kostenauswertung
 
 ## 7. Entscheidungen zu früher offenen Fragen
 
@@ -416,6 +416,7 @@ Mit Jan abgestimmt am 29.10.2026. Optional, Schalter in den Einstellungen; aus =
 | Kosten: immer aktueller Preis | **Bewusste Ausnahme vom Snapshot-Prinzip:** Kosten sind ein abgeleiteter Wert aus dem heutigen Preis, auch für alte Einträge. Ein neuer oder geänderter Preis gilt rückwirkend. Nur der Schnelleintrag speichert seinen Preis (`entries.cost`), weil es kein Produkt gibt (Jan, 29.10.2026) |
 | Kosten: unbekannt | Ohne Preis sind die Kosten `null`, nie 0; Summen zeigen „mind. …“. Rezept ohne Preis bei einer Zutat → Rezeptpreis unbekannt (Jan, 29.10.2026) |
 | Kosten: Statistik | Ø €/Tag nur über vollständige Tage (wie Ø kcal), Summe über alle Tage mit Einträgen bis heute. Preis-Leistung (€ pro 1.000 kcal, € pro 100 g Eiweiß) nur aus Einträgen mit bekanntem Preis und bekanntem Nährwert. Teuerste Lebensmittel: Top 5, Schnelleinträge zusammen als eine Zeile. Im Tagebuch keine Kosten (Jan, 29.10.2026) |
+| Kosten: Export | Spalte „Kosten“ (`cost_eur`, 2 Stellen) auf allen Ebenen, nur bei aktiver Kostenauswertung; aktueller Preis wie in der Statistik; unbekannte Teile in `partial`. Nicht Teil der Vorlage „Monatsauswertung Claude“. `exportVersion` bleibt 1, weil nur ein wählbarer Schlüssel dazukommt und alle bisherigen gleich bleiben (29.10.2026) |
 | Splashscreen | Startbilder aus den Tokens per `npm run splash` (eigenes Skript, keine Abhängigkeit), nur für das iPhone 16e (1170 × 2532), hell und dunkel; ob iOS die Dunkel-Variante nutzt, zeigt der iPhone-Test (25.10.2026) |
 
 Offen nur noch:
@@ -425,6 +426,11 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**29.10.2026 · Phase 13 (Kostenauswertung) umgesetzt** – 13a–13f je ein Commit, 1002 Tests grün, Build und Lint sauber. Im Headless-Chrome bei 390 px geprüft (Hell/Dunkel): Schalter, Preis-Karte bei eigenem, OFF- und BLS-Lebensmittel, Rezept und Mahlzeit mit „Preis fehlt bei“, Schnelleintrag mit Preis, Statistik (alle Zeiträume), Export CSV/JSON. Noch nicht deployt; nächster Schritt nach Jans OK: Version 1.4.0 (Datenbank-Version 6, Backup-Format 6), dann iPhone-Test (vor allem Datenbank-Update, Backup-Import, Tipp auf „Hinzufügen“ im Schnelleintrag).
+
+- Eigene Entscheidungen: Preis im Detail statt im Formular „Neues Produkt“ (gleich für eigene, OFF und BLS); ein Preis allein bringt ein BLS-Lebensmittel nicht in die Lebensmittel-Liste; 0 € ist ein bekannter Preis, erscheint aber nicht unter „Teuerste Lebensmittel“; Hinweis „x Einträge ohne Preis“ unter Preis-Leistung; Rezept-Hinweis ergänzt („nur die Kosten rechnen immer mit dem aktuellen Rezept“).
+- Umbauten: `KcalChart` → `BarChart` (Titel, Zeitraum, optionale Ziellinie), Balken in `stats.ts` über eine Metrik (`StatsBar.value`), `dayState` herausgezogen; Export-Funktionen nehmen `{ weight, cost }` statt `weightEnabled`.
 
 **28.10.2026 · Anleitung „Kamera dauerhaft erlauben“** – iOS fragt in der Home-Bildschirm-App bei jedem Start nach der Kamera. Lösung (von Jan gefunden): in Safari Seitenmenü (drei Striche) → Website-Einstellungen → Kamera „Erlauben“, erst danach zum Home-Bildschirm hinzufügen. Anleitung `docs/kamera-erlaubnis.md` und in der App unter Einstellungen › Hilfe (`src/screens/einstellungen/CameraGuideSheet.tsx`); Begriffe nach iOS 27.2, von Jan am iPhone bestätigt. Neue Gruppe „Hilfe“ vor „Über“ (nicht im Prototyp, mit Jan abgestimmt). 936 Tests grün, Build und Lint sauber, im Headless-Chrome bei 390 px geprüft (Hell/Dunkel). Als Version 1.3.0 deployt, iPhone-Test bestanden, alle Begriffe passen (Jan, 28.10.2026).
 

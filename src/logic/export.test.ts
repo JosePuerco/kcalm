@@ -91,9 +91,14 @@ function input(extra: Partial<ExportInput> = {}): ExportInput {
     assignments: [assign('2026-01-05', 'v1')],
     versions: [version('v1', 19600)],
     weights: [],
+    prices: () => null,
     ...extra,
   }
 }
+
+/** Gewicht an, Kosten aus (Stand vor Phase 13) bzw. beides aus */
+const WEIGHT = { weight: true, cost: false }
+const NONE = { weight: false, cost: false }
 
 const cols = (...keys: ExportColumn[]) => new Set<ExportColumn>(keys)
 const nutrientCols = cols('date', 'complete', 'kcal', 'protein', 'fiber', 'salt')
@@ -146,24 +151,24 @@ describe('Zeitraum', () => {
 
 describe('Spalten', () => {
   it('je Ebene nur passende Spalten', () => {
-    expect(columnsFor('entries', true)).toEqual([
+    expect(columnsFor('entries', WEIGHT)).toEqual([
       'date', 'complete', 'slot', 'name', 'amount',
       'kcal', 'protein', 'carbs', 'fat', 'satFat', 'sugar', 'fiber', 'salt',
     ])
-    expect(columnsFor('slots', true)).not.toContain('name')
-    expect(columnsFor('slots', true)).toContain('slot')
-    expect(columnsFor('days', true)).toEqual([
+    expect(columnsFor('slots', WEIGHT)).not.toContain('name')
+    expect(columnsFor('slots', WEIGHT)).toContain('slot')
+    expect(columnsFor('days', WEIGHT)).toEqual([
       'date', 'complete', 'kcal', 'protein', 'carbs', 'fat', 'satFat', 'sugar', 'fiber', 'salt', 'budget', 'weight',
     ])
   })
 
   it('ohne Verbrauchsschätzung kein Gewicht', () => {
-    expect(columnsFor('days', false)).not.toContain('weight')
-    expect(columnsFor('weeks', false)).toContain('budget')
+    expect(columnsFor('days', NONE)).not.toContain('weight')
+    expect(columnsFor('weeks', NONE)).toContain('budget')
   })
 
   it('Schlüssel in fester Reihenfolge, Wochen mit Zeitraum und Anzahl', () => {
-    const all = new Set(columnsFor('weeks', true))
+    const all = new Set(columnsFor('weeks', WEIGHT))
     expect(exportKeys('weeks', all)).toEqual([
       'week', 'from', 'to', 'days', 'complete_days',
       'kcal', 'protein_g', 'carbs_g', 'fat_g', 'satfat_g', 'sugar_g', 'fiber_g', 'salt_g',
@@ -174,11 +179,78 @@ describe('Spalten', () => {
 
   it('nicht passende gewählte Spalten werden ignoriert', () => {
     expect(exportKeys('days', cols('date', 'slot', 'name', 'kcal'))).toEqual(['date', 'kcal', 'partial'])
-    expect(exportKeys('days', cols('date', 'weight'), false)).toEqual(['date'])
+    expect(exportKeys('days', cols('date', 'weight'), NONE)).toEqual(['date'])
   })
 
   it('ohne Nährwerte kein partial', () => {
     expect(exportKeys('days', cols('date', 'budget'))).toEqual(['date', 'budget_kcal'])
+  })
+})
+
+describe('Spalte Kosten', () => {
+  const COST = { weight: true, cost: true }
+  // 1 € je 100 g; „ohne“ hat keinen Preis
+  const prices = (ref: string) => (ref === 'product:hafer' ? 0.01 : null)
+  const costEntries = [
+    entry('2026-09-01', 'fr', 'Hafer', { kcal: 372 }, { ref: 'product:hafer', amount: 60 }),
+    entry('2026-09-01', 'fr', 'Ohne', { kcal: 100 }, { ref: 'product:ohne', amount: 50 }),
+    entry('2026-09-01', 'abend', 'Kantine', { kcal: 850 }, { kind: 'quick', ref: null, amount: null, unit: null, cost: 7.456 }),
+    entry('2026-09-02', 'fr', 'Hafer', { kcal: 372 }, { ref: 'product:hafer', amount: 100 }),
+  ]
+
+  it('nur bei aktiver Kostenauswertung, auf allen Ebenen, nach den Nährwerten', () => {
+    expect(columnsFor('entries', WEIGHT)).not.toContain('cost')
+    for (const level of ['entries', 'slots', 'days', 'weeks'] as const) expect(columnsFor(level, COST)).toContain('cost')
+    expect(exportKeys('days', cols('date', 'kcal', 'cost', 'budget'), COST)).toEqual([
+      'date', 'kcal', 'cost_eur', 'budget_kcal', 'partial',
+    ])
+    expect(exportKeys('days', cols('date', 'cost'), WEIGHT)).toEqual(['date'])
+  })
+
+  it('ohne Nährwerte trotzdem partial, weil Kosten fehlen können', () => {
+    expect(exportKeys('slots', cols('slot', 'cost'), COST)).toEqual(['slot', 'cost_eur', 'partial'])
+    expect(exportKeys('entries', cols('name', 'cost'), COST)).toEqual(['name', 'cost_eur'])
+  })
+
+  it('Einträge: aktueller Preis × Menge bzw. Preis des Schnelleintrags, 2 Stellen, unbekannt = null', () => {
+    const t = exportTable('entries', cols('name', 'cost'), input({ entries: costEntries, prices }), COST)
+    expect(t.rows).toEqual([
+      ['Hafer', 0.6],
+      ['Ohne', null],
+      ['Kantine', 7.46],
+      ['Hafer', 1],
+    ])
+  })
+
+  it('Tage: Summe, unbekannte Teile in partial, Tag ohne Einträge null', () => {
+    const t = exportTable('days', cols('date', 'cost'), input({ entries: costEntries, prices }), COST)
+    expect(t.rows.slice(0, 3)).toEqual([
+      ['2026-09-01', 8.06, ['cost_eur']],
+      ['2026-09-02', 1, []],
+      ['2026-09-03', null, []],
+    ])
+  })
+
+  it('Wochen und Slots summieren ebenso', () => {
+    const weeks = exportTable('weeks', cols('cost'), input({ entries: costEntries, prices }), COST)
+    expect(weeks.rows[0]).toEqual([9.06, ['cost_eur']])
+    const slotsTable = exportTable('slots', cols('slot', 'cost'), input({ entries: costEntries, prices }), COST)
+    expect(slotsTable.rows).toEqual([
+      ['Frühstück', 0.6, ['cost_eur']],
+      ['Abend', 7.46, []],
+      ['Frühstück', 1, []],
+    ])
+  })
+
+  it('Kostenauswertung aus: keine Spalte, auch wenn sie gewählt ist', () => {
+    const t = exportTable('days', cols('date', 'cost'), input({ entries: costEntries, prices }), WEIGHT)
+    expect(t.keys).toEqual(['date'])
+  })
+
+  it('Vorlage bleibt Vorlage, Kosten gehören nicht dazu', () => {
+    const tpl: ExportSettings = { ...CLAUDE_TEMPLATE, columns: new Set(CLAUDE_TEMPLATE.columns) }
+    expect(isTemplate(tpl, COST)).toBe(true)
+    expect(isTemplate({ ...tpl, columns: new Set([...tpl.columns, 'cost']) }, COST)).toBe(false)
   })
 })
 
@@ -479,24 +551,24 @@ describe('Vorlage', () => {
   })
 
   it('genau die Vorlage → erkannt', () => {
-    expect(isTemplate(tpl, true)).toBe(true)
+    expect(isTemplate(tpl, WEIGHT)).toBe(true)
   })
 
   it('eine Spalte mehr, weniger oder andere Einstellung → nicht', () => {
-    expect(isTemplate({ ...tpl, columns: new Set([...tpl.columns, 'salt']) }, true)).toBe(false)
-    expect(isTemplate({ ...tpl, columns: new Set([...tpl.columns].filter((c) => c !== 'fat')) }, true)).toBe(false)
-    expect(isTemplate({ ...tpl, format: 'csv' }, true)).toBe(false)
-    expect(isTemplate({ ...tpl, range: 'weeks4' }, true)).toBe(false)
-    expect(isTemplate({ ...tpl, level: 'weeks' }, true)).toBe(false)
+    expect(isTemplate({ ...tpl, columns: new Set([...tpl.columns, 'salt']) }, WEIGHT)).toBe(false)
+    expect(isTemplate({ ...tpl, columns: new Set([...tpl.columns].filter((c) => c !== 'fat')) }, WEIGHT)).toBe(false)
+    expect(isTemplate({ ...tpl, format: 'csv' }, WEIGHT)).toBe(false)
+    expect(isTemplate({ ...tpl, range: 'weeks4' }, WEIGHT)).toBe(false)
+    expect(isTemplate({ ...tpl, level: 'weeks' }, WEIGHT)).toBe(false)
   })
 
   it('ohne Verbrauchsschätzung zählt Gewicht nicht', () => {
-    expect(isTemplate({ ...tpl, columns: new Set([...tpl.columns].filter((c) => c !== 'weight')) }, false)).toBe(true)
-    expect(isTemplate(tpl, false)).toBe(true)
+    expect(isTemplate({ ...tpl, columns: new Set([...tpl.columns].filter((c) => c !== 'weight')) }, NONE)).toBe(true)
+    expect(isTemplate(tpl, NONE)).toBe(true)
   })
 
   it('auf anderen Ebenen gewählte Spalten (Slot, Name) stören nicht', () => {
-    expect(isTemplate({ ...tpl, columns: new Set([...tpl.columns, 'slot', 'name']) }, true)).toBe(true)
+    expect(isTemplate({ ...tpl, columns: new Set([...tpl.columns, 'slot', 'name']) }, WEIGHT)).toBe(true)
   })
 })
 

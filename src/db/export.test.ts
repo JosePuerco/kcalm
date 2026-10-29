@@ -1,7 +1,9 @@
 import 'fake-indexeddb/auto' // IndexedDB in Node nachbilden, vor dem Import von db
 import { beforeEach, describe, expect, it } from 'vitest'
+import { setCostsEnabled } from './costs.ts'
 import { db } from './db.ts'
 import { loadExportData } from './export.ts'
+import { createProduct, saveProductPrice } from './products.ts'
 import { newRecord, softDelete, unknownNutrients } from './records.ts'
 import type { Day, Entry, Weight } from './types.ts'
 import { setEstimateEnabled } from './weights.ts'
@@ -50,7 +52,7 @@ describe('loadExportData', () => {
     await db.entries.bulkAdd([entry('2026-09-10'), entry('2026-11-01')])
     await db.weights.bulkAdd([weight('2026-08-30'), softDelete(weight('2026-08-01'))])
     const data = await loadExportData('2026-10-25')
-    expect(data.weightEnabled).toBe(true)
+    expect(data.features).toEqual({ weight: true, cost: false })
     expect(data.firstDate).toBe('2026-08-30')
     expect(data.input.weights).toHaveLength(1)
   })
@@ -58,8 +60,17 @@ describe('loadExportData', () => {
   it('ohne Verbrauchsschätzung keine Gewichte, auch nicht für „Alles“', async () => {
     await db.weights.bulkAdd([weight('2026-08-30')])
     const data = await loadExportData('2026-10-25')
-    expect(data.weightEnabled).toBe(false)
+    expect(data.features.weight).toBe(false)
     expect(data.input.weights).toEqual([])
     expect(data.firstDate).toBeNull()
+  })
+
+  it('Kostenauswertung an: Spalte Kosten wählbar, Preise aus den aktuellen Produkten', async () => {
+    await setCostsEnabled(true)
+    const p = await createProduct({ name: 'Skyr', brand: null, barcode: null, unit: 'g', per100: unknownNutrients(), portions: [] })
+    await saveProductPrice(p.id, { amount: 1.49, per: 450 })
+    const data = await loadExportData('2026-10-25')
+    expect(data.features.cost).toBe(true)
+    expect(data.input.prices(`product:${p.id}`)).toBeCloseTo(1.49 / 450, 12)
   })
 })

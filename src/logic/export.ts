@@ -4,6 +4,7 @@
 // Gerundet wird wie in der Anzeige; unbekannte Werte bleiben null, Summen mit Lücken stehen in `partial`.
 
 import type { Entry, LocalDate, NutrientKey, ProfileAssignment, ProfileVersion, Slot, Weight } from '../db/types.ts'
+import { entryCost, sumCosts, type CostSum, type UnitPriceLookup } from './cost.ts'
 import { addDays, daysBetween, isoWeek, weekStart } from './dates.ts'
 import { slotsForDay } from './diary.ts'
 import { firstPerDay } from './estimate.ts'
@@ -23,6 +24,7 @@ export type ExportColumn =
   | 'amount'
   | 'budget'
   | 'weight'
+  | 'cost'
   | NutrientKey
 
 /** Version des Exportformats; steigt, wenn sich Schlüssel oder Bedeutung ändern */
@@ -45,6 +47,9 @@ const NUTRIENT_COLUMNS: readonly NutrientColumn[] = [
   { key: 'salt', label: 'Salz', field: 'salt_g', decimals: 2 },
 ]
 
+/** Kosten in €, zwei Stellen (Phase 13) */
+const COST_FIELD = 'cost_eur'
+
 export interface ExportColumnInfo {
   key: ExportColumn
   label: string
@@ -59,15 +64,24 @@ export const EXPORT_COLUMNS: readonly ExportColumnInfo[] = [
   { key: 'name', label: 'Name', levels: ['entries'] },
   { key: 'amount', label: 'Menge', levels: ['entries'] },
   ...NUTRIENT_COLUMNS.map((c) => ({ key: c.key, label: c.label, levels: ALL })),
+  { key: 'cost', label: 'Kosten', levels: ALL },
   { key: 'budget', label: 'Budget', levels: AGGREGATED },
   { key: 'weight', label: 'Gewicht', levels: AGGREGATED },
 ]
 
-/** Spalten, die auf der Ebene wählbar sind; Gewicht nur bei aktiver Verbrauchsschätzung */
-export function columnsFor(level: ExportLevel, weightEnabled: boolean): ExportColumn[] {
-  return EXPORT_COLUMNS.filter((c) => c.levels.includes(level) && (weightEnabled || c.key !== 'weight')).map(
-    (c) => c.key,
-  )
+/** Zuschaltbare Spalten: Gewicht bei aktiver Verbrauchsschätzung, Kosten bei aktiver Kostenauswertung */
+export interface ExportFeatures {
+  weight: boolean
+  cost: boolean
+}
+
+export const ALL_FEATURES: ExportFeatures = { weight: true, cost: true }
+
+/** Spalten, die auf der Ebene wählbar sind */
+export function columnsFor(level: ExportLevel, features: ExportFeatures): ExportColumn[] {
+  return EXPORT_COLUMNS.filter(
+    (c) => c.levels.includes(level) && (features.weight || c.key !== 'weight') && (features.cost || c.key !== 'cost'),
+  ).map((c) => c.key)
 }
 
 // ---------- Zeitraum ----------
@@ -168,6 +182,8 @@ export interface ExportInput {
   versions: readonly Pick<ProfileVersion, 'id' | 'weeklyKcal'>[]
   /** nicht gelöschte Wiegungen; mehrere an einem Tag → die erste zählt */
   weights: readonly Pick<Weight, 'date' | 'kg' | 'measuredAt'>[]
+  /** Aktueller Preis je g/ml für die Spalte Kosten (immer aktueller Preis, PLAN.md 7) */
+  prices: UnitPriceLookup
 }
 
 /** Wie in der Anzeige gerundet, aber mit Punkt: 223,2 kcal → 223, 0,125 g Salz → 0.13 */
@@ -187,8 +203,12 @@ function chosenNutrients(columns: ReadonlySet<ExportColumn>): NutrientColumn[] {
 }
 
 /** Schlüssel der Datei in fester Reihenfolge, abhängig von Ebene und Spalten */
-export function exportKeys(level: ExportLevel, columns: ReadonlySet<ExportColumn>, weightEnabled = true): string[] {
-  const on = new Set(columnsFor(level, weightEnabled).filter((c) => columns.has(c)))
+export function exportKeys(
+  level: ExportLevel,
+  columns: ReadonlySet<ExportColumn>,
+  features: ExportFeatures = ALL_FEATURES,
+): string[] {
+  const on = new Set(columnsFor(level, features).filter((c) => columns.has(c)))
   const keys: string[] = []
   if (on.has('date')) keys.push(...(level === 'weeks' ? ['week', 'from', 'to', 'days'] : ['date']))
   if (on.has('complete')) keys.push(level === 'weeks' ? 'complete_days' : 'complete')
@@ -197,17 +217,26 @@ export function exportKeys(level: ExportLevel, columns: ReadonlySet<ExportColumn
   if (on.has('amount')) keys.push('amount', 'unit')
   const nutrients = chosenNutrients(on)
   keys.push(...nutrients.map((c) => c.field))
+  if (on.has('cost')) keys.push(COST_FIELD)
   if (on.has('budget')) keys.push('budget_kcal')
   if (on.has('weight')) keys.push('weight_kg')
   // Bei Einträgen zeigen die leeren Felder schon, was fehlt
-  if (level !== 'entries' && nutrients.length > 0) keys.push('partial')
+  if (level !== 'entries' && (nutrients.length > 0 || on.has('cost'))) keys.push('partial')
   return keys
 }
 
 type Sums = Record<NutrientKey, NutrientSum>
 
-/** Werte einer Summe; null, wenn es gar keine Einträge gibt (= nicht getrackt) */
-function sumCells(sums: Sums | null, nutrients: readonly NutrientColumn[]): Record<string, ExportCell> {
+/**
+ * Werte einer Summe von Einträgen; leer = nicht getrackt (null). Kosten nur, wenn prices gesetzt ist
+ * (Spalte gewählt), auf 2 Stellen; unbekannte Teile stehen wie bei den Nährwerten in `partial`.
+ */
+function sumCells(
+  list: readonly Entry[],
+  nutrients: readonly NutrientColumn[],
+  prices: UnitPriceLookup | null,
+): Record<string, ExportCell> {
+  const sums: Sums | null = list.length > 0 ? sumNutrients(list.map((e) => e.nutrients)) : null
   const cells: Record<string, ExportCell> = {}
   const partial: string[] = []
   for (const c of nutrients) {
@@ -215,7 +244,12 @@ function sumCells(sums: Sums | null, nutrients: readonly NutrientColumn[]): Reco
     cells[c.field] = sum ? roundOrNull(sum.value, c.decimals) : null
     if (sum?.atLeast) partial.push(c.field)
   }
-  if (nutrients.length > 0) cells.partial = partial
+  if (prices) {
+    const cost: CostSum | null = list.length > 0 ? sumCosts(list.map((e) => entryCost(e, prices))) : null
+    cells[COST_FIELD] = cost ? roundOrNull(cost.value, 2) : null
+    if (cost?.atLeast) partial.push(COST_FIELD)
+  }
+  if (nutrients.length > 0 || prices) cells.partial = partial
   return cells
 }
 
@@ -261,10 +295,12 @@ export function exportTable(
   level: ExportLevel,
   columns: ReadonlySet<ExportColumn>,
   input: ExportInput,
-  weightEnabled = true,
+  features: ExportFeatures = ALL_FEATURES,
 ): ExportTable {
-  const keys = exportKeys(level, columns, weightEnabled)
-  const nutrients = chosenNutrients(new Set(columnsFor(level, weightEnabled).filter((c) => columns.has(c))))
+  const keys = exportKeys(level, columns, features)
+  const on = new Set(columnsFor(level, features).filter((c) => columns.has(c)))
+  const nutrients = chosenNutrients(on)
+  const prices = on.has('cost') ? input.prices : null
   const entries = byDate(input.entries, input.range)
   const weights = new Map(firstPerDay(input.weights).map((w) => [w.date, w.kg]))
   const isComplete = (date: LocalDate) => input.completeDates.has(date) && entries.has(date)
@@ -276,7 +312,7 @@ export function exportTable(
       records.push({
         date,
         complete: isComplete(date),
-        ...sumCells(list.length > 0 ? sumNutrients(list.map((e) => e.nutrients)) : null, nutrients),
+        ...sumCells(list, nutrients, prices),
         budget_kcal: roundOrNull(dayBudget(input, date), 0),
         weight_kg: roundOrNull(weights.get(date) ?? null, 1),
       })
@@ -290,7 +326,7 @@ export function exportTable(
           date,
           complete: isComplete(date),
           slot: slot.name,
-          ...sumCells(sumNutrients(slotEntries.map((e) => e.nutrients)), nutrients),
+          ...sumCells(slotEntries, nutrients, prices),
         })
         continue
       }
@@ -304,6 +340,7 @@ export function exportTable(
           unit: e.unit,
         }
         for (const c of nutrients) cells[c.field] = roundOrNull(e.nutrients[c.key], c.decimals)
+        if (prices) cells[COST_FIELD] = roundOrNull(entryCost(e, prices), 2)
         records.push(cells)
       }
     }
@@ -325,7 +362,7 @@ export function exportTable(
         to: dates[dates.length - 1] as LocalDate,
         days: dates.length,
         complete_days: dates.filter(isComplete).length,
-        ...sumCells(list.length > 0 ? sumNutrients(list.map((e) => e.nutrients)) : null, nutrients),
+        ...sumCells(list, nutrients, prices),
         budget_kcal: roundOrNull(weekBudget(input, dates), 0),
         weight_kg: kgs.length > 0 ? roundTo(kgs.reduce((a, b) => a + b, 0) / kgs.length, 1) : null,
       })
@@ -445,9 +482,9 @@ export const CLAUDE_TEMPLATE: ExportSettings = {
 
 /**
  * Entsprechen die Einstellungen genau der Vorlage? Verglichen werden nur die auf der Ebene wählbaren
- * Spalten; ohne Verbrauchsschätzung fehlt Gewicht also auf beiden Seiten.
+ * Spalten; ohne Verbrauchsschätzung fehlt Gewicht also auf beiden Seiten. Kosten gehören nicht zur Vorlage.
  */
-export function isTemplate(settings: ExportSettings, weightEnabled: boolean): boolean {
+export function isTemplate(settings: ExportSettings, features: ExportFeatures): boolean {
   if (
     settings.range !== CLAUDE_TEMPLATE.range ||
     settings.level !== CLAUDE_TEMPLATE.level ||
@@ -455,7 +492,7 @@ export function isTemplate(settings: ExportSettings, weightEnabled: boolean): bo
   ) {
     return false
   }
-  return columnsFor(settings.level, weightEnabled).every(
+  return columnsFor(settings.level, features).every(
     (c) => settings.columns.has(c) === CLAUDE_TEMPLATE.columns.has(c),
   )
 }

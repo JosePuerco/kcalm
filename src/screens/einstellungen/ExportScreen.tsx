@@ -83,10 +83,10 @@ function ExportBody({ data, today }: { data: ExportData; today: LocalDate }) {
 
   const { level, format, columns } = settings
   const range = exportRange(settings.range, today, { firstDate: data.firstDate, ...free })
-  const available = columnsFor(level, data.weightEnabled)
+  const available = columnsFor(level, data.features)
   const chosen = available.filter((c) => columns.has(c))
   const table = useMemo(
-    () => (range ? exportTable(level, columns, { ...data.input, range }, data.weightEnabled) : null),
+    () => (range ? exportTable(level, columns, { ...data.input, range }, data.features) : null),
     // range ist je Render ein neues Objekt; seine Werte reichen als Abhängigkeit
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, level, columns, range?.from, range?.to],
@@ -130,7 +130,7 @@ function ExportBody({ data, today }: { data: ExportData; today: LocalDate }) {
         ? toCsv(table, PREVIEW_ROWS.csv)
         : toJson(table, { range: range!, exportedAt: new Date().toISOString() }, PREVIEW_ROWS.json)
 
-  const isTpl = isTemplate(settings, data.weightEnabled)
+  const isTpl = isTemplate(settings, data.features)
 
   return (
     <>
@@ -149,7 +149,7 @@ function ExportBody({ data, today }: { data: ExportData; today: LocalDate }) {
           <span className="flex flex-1 flex-col gap-0.5">
             <span className="text-body font-semibold">Vorlage: Monatsauswertung Claude</span>
             <span className="text-small text-muted">
-              Letzter Monat · Tage · JSON · kcal, Makros, Ballaststoffe, Budget{data.weightEnabled ? ', Gewicht' : ''}
+              Letzter Monat · Tage · JSON · kcal, Makros, Ballaststoffe, Budget{data.features.weight ? ', Gewicht' : ''}
             </span>
           </span>
         </button>
