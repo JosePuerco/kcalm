@@ -19,3 +19,11 @@ export const SCHEMA_V1 = {
 } as const
 
 export type TableName = keyof typeof SCHEMA_V1
+
+/**
+ * Quittungsliste für den Push (Phase 14, Datenbank-Version 7). Bewusst nicht in SCHEMA_V1:
+ * kein sync-fähiger Datensatz, nicht im Backup, nicht übertragen. Schlüssel = Tabelle + id.
+ */
+export const SCHEMA_PUSH = {
+  pushState: '[table+id]',
+} as const

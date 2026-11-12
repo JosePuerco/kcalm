@@ -2,7 +2,8 @@
 // alle anderen Felder werden trotzdem gespeichert.
 // archived und deletedAt sind kein Index: IndexedDB kann nicht nach true/false oder null suchen.
 
-import { Dexie, type EntityTable } from 'dexie'
+import { Dexie, type EntityTable, type Table } from 'dexie'
+import type { PushReceipt } from '../logic/push.ts'
 import type {
   BlsPref,
   Day,
@@ -36,6 +37,8 @@ export const db = new Dexie('kcalm') as Dexie & {
   weights: EntityTable<Weight, 'id'>
   pendingScans: EntityTable<PendingScan, 'id'>
   settings: EntityTable<Setting, 'id'>
+  /** Quittungsliste für den Push; nicht im Backup (Phase 14) */
+  pushState: Table<PushReceipt, [string, string]>
 }
 
 defineVersions(db)

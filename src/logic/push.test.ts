@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { newRecord, softDelete, touch } from '../db/records.ts'
 import type { Day, Entry, Setting, Weight } from '../db/types.ts'
 import {
+  DEFAULT_PUSH_CONFIG,
+  DEFAULT_PUSH_STATE,
+  needsFullSync,
+  parsePushConfig,
+  parsePushState,
+  readyConfig,
   allRecords,
   applyReceipts,
   checkToken,
@@ -364,5 +370,44 @@ describe('pushErrorMessage', () => {
     expect(pushErrorMessage({ kind: 'http', status: 429 })).toBe('Zu viele Anfragen, später erneut')
     expect(pushErrorMessage({ kind: 'http', status: 502 })).toBe('Serverfehler (502)')
     expect(pushErrorMessage({ kind: 'http', status: 418 })).toBe('Unerwartete Antwort (418)')
+  })
+})
+
+describe('Einstellungen und Zustand', () => {
+  it('fehlend oder kaputt → Push aus bzw. leerer Zustand', () => {
+    expect(parsePushConfig(null)).toEqual(DEFAULT_PUSH_CONFIG)
+    expect(parsePushConfig('{kaputt')).toEqual(DEFAULT_PUSH_CONFIG)
+    expect(parsePushConfig('{"enabled":"ja"}')).toEqual(DEFAULT_PUSH_CONFIG)
+    expect(parsePushState(null)).toEqual(DEFAULT_PUSH_STATE)
+    expect(parsePushState('[]')).toEqual(DEFAULT_PUSH_STATE)
+  })
+
+  it('liest Gespeichertes zurück', () => {
+    const config = { enabled: true, serverUrl: 'https://a.example', token: 'x'.repeat(20) }
+    expect(parsePushConfig(JSON.stringify(config))).toEqual(config)
+    const state = { ...DEFAULT_PUSH_STATE, receiptsFor: 'https://a.example', lastError: 'Server nicht erreichbar' }
+    expect(parsePushState(JSON.stringify(state))).toEqual(state)
+  })
+
+  it('readyConfig: aus → null, unvollständig → Fehler, vollständig → geprüfte Werte', () => {
+    expect(readyConfig(DEFAULT_PUSH_CONFIG)).toBeNull()
+    expect(readyConfig({ enabled: true, serverUrl: '', token: '' })).toEqual({ ok: false, error: 'Bitte Server-Adresse eingeben' })
+    expect(readyConfig({ enabled: true, serverUrl: 'https://a.example', token: '' })).toEqual({
+      ok: false,
+      error: 'Bitte Token eingeben',
+    })
+    expect(readyConfig({ enabled: true, serverUrl: 'https://a.example/ ', token: ' abcdefghijklmnopq ' })).toEqual({
+      ok: true,
+      serverUrl: 'https://a.example',
+      token: 'abcdefghijklmnopq',
+    })
+  })
+
+  it('Vollabgleich bei neuer oder anderer Adresse und nach Abbruch', () => {
+    const synced = { ...DEFAULT_PUSH_STATE, receiptsFor: 'https://a.example' }
+    expect(needsFullSync(DEFAULT_PUSH_STATE, 'https://a.example')).toBe(true)
+    expect(needsFullSync(synced, 'https://a.example')).toBe(false)
+    expect(needsFullSync(synced, 'https://b.example')).toBe(true)
+    expect(needsFullSync({ ...synced, fullSyncId: 'voll-1' }, 'https://a.example')).toBe(true)
   })
 })

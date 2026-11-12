@@ -5,8 +5,9 @@
 // die lokal nicht mehr existieren (echtes Löschen beim Backup-Import), werden als „entfernt“ gemeldet.
 // So entsteht kein eigener Zustand, der verloren gehen kann: Die Daten selbst sind die Merkliste.
 
+import { z } from 'zod'
 import type { TableName } from '../db/schema.ts'
-import type { SyncFields } from '../db/types.ts'
+import type { SyncFields, Timestamp } from '../db/types.ts'
 import { TABLE_NAMES, type BackupTables } from './backup.ts'
 
 /** Version des Datenformats zwischen App und Server; bei Änderung beide Seiten anpassen */
@@ -248,4 +249,80 @@ export function pushErrorMessage(failure: PushFailure): string {
       return `Unerwartete Antwort (${s})`
     }
   }
+}
+
+// --- Einstellungen und Zustand (localStorage, nicht im Backup) ----------------------------------
+
+export interface PushConfig {
+  enabled: boolean
+  /** wie eingegeben; geprüft wird mit normalizeServerUrl */
+  serverUrl: string
+  token: string
+}
+
+export interface PushState {
+  /** Für welche Server-Adresse die Quittungsliste gilt; andere Adresse → Vollabgleich */
+  receiptsFor: string | null
+  /** Laufender (ggf. unterbrochener) Vollabgleich; gesetzt → beim nächsten Mal Vollabgleich */
+  fullSyncId: string | null
+  lastSuccessAt: Timestamp | null
+  lastAttemptAt: Timestamp | null
+  lastError: string | null
+}
+
+export const DEFAULT_PUSH_CONFIG: PushConfig = { enabled: false, serverUrl: '', token: '' }
+
+export const DEFAULT_PUSH_STATE: PushState = {
+  receiptsFor: null,
+  fullSyncId: null,
+  lastSuccessAt: null,
+  lastAttemptAt: null,
+  lastError: null,
+}
+
+const configSchema = z.object({ enabled: z.boolean(), serverUrl: z.string(), token: z.string() })
+const nullableText = z.string().nullable()
+const stateSchema = z.object({
+  receiptsFor: nullableText,
+  fullSyncId: nullableText,
+  lastSuccessAt: nullableText,
+  lastAttemptAt: nullableText,
+  lastError: nullableText,
+})
+
+function parseStored<T>(text: string | null, schema: z.ZodType<T>, fallback: T): T {
+  if (text === null) return fallback
+  try {
+    const result = schema.safeParse(JSON.parse(text))
+    return result.success ? result.data : fallback
+  } catch {
+    return fallback
+  }
+}
+
+/** Kaputtes oder fehlendes Gespeichertes → Push aus */
+export function parsePushConfig(text: string | null): PushConfig {
+  return parseStored(text, configSchema, DEFAULT_PUSH_CONFIG)
+}
+
+/** Kaputtes oder fehlendes Gespeichertes → Vollabgleich beim nächsten Mal (sichere Richtung) */
+export function parsePushState(text: string | null): PushState {
+  return parseStored(text, stateSchema, DEFAULT_PUSH_STATE)
+}
+
+export type ReadyConfig = { ok: true; serverUrl: string; token: string } | { ok: false; error: string }
+
+/** Eingeschaltet und vollständig? Liefert die geprüfte Adresse und das Token */
+export function readyConfig(config: PushConfig): ReadyConfig | null {
+  if (!config.enabled) return null
+  const url = normalizeServerUrl(config.serverUrl)
+  if (!url.ok) return { ok: false, error: url.error }
+  const token = checkToken(config.token)
+  if (!token.ok) return { ok: false, error: token.error }
+  return { ok: true, serverUrl: url.value, token: token.value }
+}
+
+/** Vollabgleich nötig: noch nie für diese Adresse abgeglichen, oder ein Vollabgleich wurde unterbrochen */
+export function needsFullSync(state: PushState, serverUrl: string): boolean {
+  return state.receiptsFor !== serverUrl || state.fullSyncId !== null
 }

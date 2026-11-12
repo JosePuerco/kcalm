@@ -55,7 +55,7 @@ describe('Datenbank-Version 2', () => {
     defineVersions(db)
     await db.open()
 
-    expect(db.verno).toBe(6)
+    expect(db.verno).toBe(7)
     expect(await db.table('products').get('p1')).toMatchObject({ per100: { kcal: 42 } })
     expect((await db.table('products').get('p1')).per100).not.toHaveProperty('alcohol')
     expect((await db.table('productOverrides').get('o1')).per100).toEqual({})
@@ -78,7 +78,7 @@ describe('Datenbank-Version 2', () => {
     const db = new Dexie(NAME)
     defineVersions(db)
     await db.open()
-    expect(db.verno).toBe(6)
+    expect(db.verno).toBe(7)
     db.close()
   })
 })
@@ -162,6 +162,25 @@ describe('Datenbank-Version 6', () => {
     expect(await db.table('blsPrefs').get('b1')).toMatchObject({ price: null, updatedAt: T0 })
     expect(await db.table('entries').get('e1')).toMatchObject({ cost: null, updatedAt: T0 })
     expect(await db.table('settings').get('s1')).not.toHaveProperty('price')
+    db.close()
+  })
+})
+
+describe('Datenbank-Version 7', () => {
+  it('legt die leere Quittungsliste pushState an; alle Daten bleiben unverändert', async () => {
+    const old = new Dexie(NAME)
+    old.version(6).stores(SCHEMA_V1)
+    const e1 = { id: 'e1', ...sync, date: '2026-11-12', kind: 'quick', cost: null }
+    await old.table('entries').add(e1)
+    await old.table('settings').add({ id: 's1', ...sync, key: 'theme', value: 'dark' })
+    old.close()
+    const db = await openCurrent()
+    expect(db.verno).toBe(7)
+    expect(await db.table('entries').get('e1')).toEqual(e1)
+    expect(await db.table('settings').count()).toBe(1)
+    expect(await db.table('pushState').count()).toBe(0)
+    await db.table('pushState').put({ table: 'entries', id: 'e1', hash: 'h' })
+    expect(await db.table('pushState').get(['entries', 'e1'])).toEqual({ table: 'entries', id: 'e1', hash: 'h' })
     db.close()
   })
 })

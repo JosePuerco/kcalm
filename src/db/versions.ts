@@ -11,7 +11,7 @@ import {
   removeWater,
   WATER_SETTING_KEY,
 } from '../logic/backup.ts'
-import { SCHEMA_V1 } from './schema.ts'
+import { SCHEMA_PUSH, SCHEMA_V1 } from './schema.ts'
 
 export function defineVersions(db: Dexie): void {
   db.version(1).stores(SCHEMA_V1)
@@ -82,4 +82,7 @@ export function defineVersions(db: Dexie): void {
           .modify((record: unknown) => addPriceFields(table, record))
       }
     })
+
+  // Push auf den Pi (Jan, 12.11.2026): Quittungsliste pushState, startet leer; keine Datenänderung
+  db.version(7).stores({ ...SCHEMA_V1, ...SCHEMA_PUSH })
 }
