@@ -45,3 +45,19 @@ Vorher einmal mit Netz öffnen, damit alles im Cache liegt. Dann Flugmodus an (W
 ## E. Ergebnis
 
 Alles abgehakt → Claude Code Bescheid geben; dann wird Phase 11 abgeschlossen und Version 1.0.0 veröffentlicht. Auffälligkeiten mit Schritt und Bildschirmfoto melden.
+
+## E. Server-Push (ab 1.5.0)
+
+Token vorher auf dem Laptop holen (PowerShell) und aufs iPhone bringen, z. B. über eine Notiz auf icloud.com, die du danach löschst:
+`ssh jan@pi.local "grep -oP '(?<=KCALM_API_TOKEN=).*' ~/kcalm-server/.env" | Set-Clipboard`
+
+- [ ] Einstellungen › Daten: Zeile „Server-Push“ zeigt „Aus“; unter „Über“ steht „alle Daten bleiben auf diesem Gerät“
+- [ ] Server-Push öffnen: Adresse `https://kcalm-api.dunkleschokola.de`, Token einfügen, „Sichern“ → Hinweis „Gesichert“ (iOS zoomt beim Tippen nicht)
+- [ ] Schalter „Automatisch übertragen“ an → nach wenigen Sekunden „Letzte Übertragung heute, …“, „0 Änderungen“, kein Fehler
+- [ ] Unter „Über“ steht jetzt „Daten liegen auf diesem Gerät und deinem eigenen Server“
+- [ ] Claude prüft auf dem Pi: Anzahl Einträge, Tagesziele, Profile wie in der App
+- [ ] Eintrag anlegen, einen ändern, einen löschen → nach ca. 3 s „0 Änderungen“; Claude prüft auf dem Pi
+- [ ] Flugmodus an, Eintrag anlegen → Status „1 Änderung“, „Letzter Fehler: Server nicht erreichbar“, Zeile unter „Daten“ orange; App läuft normal weiter
+- [ ] Flugmodus aus, App in den Vordergrund holen → Fehler weg, „0 Änderungen“ (sonst „Jetzt übertragen“)
+- [ ] App ganz schließen und neu öffnen: Adresse und Token sind noch da, Push läuft beim Start
+- [ ] Backup sichern: Die Datei enthält kein Token (Claude kann sie prüfen)
