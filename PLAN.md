@@ -452,6 +452,8 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
+**12.11.2026 · Phase 14 (Push auf den Pi), Version 1.5.0 deployt** – 14a–14f je ein Commit, 1101 Tests grün, Build und Lint sauber; Server `JosePuerco/kcalm-server` (53 Tests) läuft auf dem Pi unter `kcalm-api.dunkleschokola.de`, von außen geprüft. Ende-zu-Ende im Headless-Chrome gegen den echten Server bestanden. Nächster Schritt: Jans iPhone-Test (Checkliste `docs/iphone-test.md` Teil E), danach 14g abhaken und Phase 14 abschließen.
+
 **29.10.2026 · Korrigieren heißt prüfen, Version 1.4.1** – Umschalter Meine/Original entfernt, „Werte bearbeiten“ prüft beim Sichern mit (Regeln in Abschnitt 7). 1000 Tests grün, Build und Lint sauber, Produktdetail im Headless-Chrome geprüft (Hell/Dunkel). Deployt, iPhone-Test bestanden (Jan, 29.10.2026).
 
 **29.10.2026 · Phase 13 (Kostenauswertung) abgeschlossen, Version 1.4.0** – 13a–13f je ein Commit, 1002 Tests grün, Build und Lint sauber. Im Headless-Chrome bei 390 px geprüft (Hell/Dunkel): Schalter, Preis-Karte bei eigenem, OFF- und BLS-Lebensmittel, Rezept und Mahlzeit mit „Preis fehlt bei“, Schnelleintrag mit Preis, Statistik (alle Zeiträume), Export CSV/JSON. Als Version 1.4.0 deployt (29.10.2026, Datenbank-Version 6, Backup-Format 6). iPhone-Test bestanden, alles läuft (Jan, 29.10.2026). Phase 13 abgeschlossen.
