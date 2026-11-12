@@ -22,16 +22,22 @@ export const PUSH_TABLES: readonly TableName[] = TABLE_NAMES.filter((t) => !PUSH
 
 export type PushTables = Pick<BackupTables, (typeof PUSH_TABLES)[number]>
 
+/** Berechnete Tagesziele (Phase 14b) laufen über dieselbe Quittungsliste; id = Datum */
+export const TARGETS_TABLE = 'dailyTargets'
+
+/** Tabellen der Datenbank plus die berechneten Tagesziele */
+export type PushTable = TableName | typeof TARGETS_TABLE
+
 /** Vom Server bestätigter Stand eines Datensatzes */
 export interface PushReceipt {
-  table: TableName
+  table: PushTable
   id: string
   hash: string
 }
 
 export type PushChange =
-  | { op: 'upsert'; table: TableName; id: string; hash: string; record: SyncFields }
-  | { op: 'remove'; table: TableName; id: string }
+  | { op: 'upsert'; table: PushTable; id: string; hash: string; record: object }
+  | { op: 'remove'; table: PushTable; id: string }
 
 // --- Prüfsumme ---------------------------------------------------------------------------------
 
@@ -83,21 +89,39 @@ const receiptKey = (table: string, id: string) => `${table}\u0000${id}`
  * Reihenfolge: Tabellen wie PUSH_TABLES, darin wie gespeichert; Entfernungen zuletzt.
  */
 export function pendingChanges(tables: PushTables, receipts: readonly PushReceipt[]): PushChange[] {
+  return diffRows(
+    PUSH_TABLES.map((table) => ({ table, rows: tables[table as keyof PushTables] as SyncFields[] })),
+    receipts,
+    (r) => (r as SyncFields).id,
+  )
+}
+
+/**
+ * Abgleich beliebiger Zeilen mit der Quittungsliste, nur für die genannten Tabellen.
+ * Quittungen anderer Tabellen bleiben unberührt (z. B. Tagesziele beim Abgleich der Datensätze).
+ */
+export function diffRows(
+  groups: readonly { table: PushTable; rows: readonly object[] }[],
+  receipts: readonly PushReceipt[],
+  idOf: (row: object) => string,
+): PushChange[] {
   const confirmed = new Map<string, string>()
   for (const r of receipts) confirmed.set(receiptKey(r.table, r.id), r.hash)
+  const tables = new Set(groups.map((g) => g.table))
 
   const changes: PushChange[] = []
   const present = new Set<string>()
-  for (const table of PUSH_TABLES) {
-    for (const record of tables[table as keyof PushTables] as SyncFields[]) {
-      const key = receiptKey(table, record.id)
+  for (const { table, rows } of groups) {
+    for (const record of rows) {
+      const id = idOf(record)
+      const key = receiptKey(table, id)
       present.add(key)
       const hash = recordHash(record)
-      if (confirmed.get(key) !== hash) changes.push({ op: 'upsert', table, id: record.id, hash, record })
+      if (confirmed.get(key) !== hash) changes.push({ op: 'upsert', table, id, hash, record })
     }
   }
   for (const r of receipts) {
-    if (!PUSH_TABLES.includes(r.table)) continue
+    if (!tables.has(r.table)) continue
     const key = receiptKey(r.table, r.id)
     if (!present.has(key)) {
       present.add(key) // doppelte Quittungen nur einmal melden
@@ -135,8 +159,8 @@ export function chunk<T>(items: readonly T[], size = PUSH_BATCH_SIZE): T[][] {
 
 export interface PushBody {
   formatVersion: typeof PUSH_FORMAT_VERSION
-  upserts: { table: TableName; id: string; record: SyncFields }[]
-  removals: { table: TableName; id: string }[]
+  upserts: { table: PushTable; id: string; record: object }[]
+  removals: { table: PushTable; id: string }[]
   /** Nur beim Vollabgleich: gleiche id für alle Pakete; `last` beim letzten Paket */
   fullSync?: { id: string; last: boolean }
 }
