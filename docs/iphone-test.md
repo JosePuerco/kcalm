@@ -42,10 +42,6 @@ Vorher einmal mit Netz öffnen, damit alles im Cache liegt. Dann Flugmodus an (W
 - [ ] Darstellung, Verbrauchsschätzung an/aus und „Letztes Backup“ sind wie vorher
 - [ ] Testdaten aus Teil C wieder löschen
 
-## E. Ergebnis
-
-Alles abgehakt → Claude Code Bescheid geben; dann wird Phase 11 abgeschlossen und Version 1.0.0 veröffentlicht. Auffälligkeiten mit Schritt und Bildschirmfoto melden.
-
 ## E. Server-Push (ab 1.5.0)
 
 Token vorher auf dem Laptop holen (PowerShell) und aufs iPhone bringen, z. B. über eine Notiz auf icloud.com, die du danach löschst:
@@ -61,3 +57,7 @@ Token vorher auf dem Laptop holen (PowerShell) und aufs iPhone bringen, z. B. ü
 - [ ] Flugmodus aus, App in den Vordergrund holen → Fehler weg, „0 Änderungen“ (sonst „Jetzt übertragen“)
 - [ ] App ganz schließen und neu öffnen: Adresse und Token sind noch da, Push läuft beim Start
 - [ ] Backup sichern: Die Datei enthält kein Token (Claude kann sie prüfen)
+
+## F. Ergebnis
+
+Alles abgehakt → Claude Code Bescheid geben; dann wird Phase 11 abgeschlossen und Version 1.0.0 veröffentlicht. Auffälligkeiten mit Schritt und Bildschirmfoto melden.
