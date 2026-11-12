@@ -372,6 +372,19 @@ Mit Jan abgestimmt am 29.10.2026. Optional, Schalter in den Einstellungen; aus =
 
 - [x] Korrigieren heißt prüfen: Umschalter Meine/Original entfällt, „Werte bearbeiten“ prüft beim Sichern mit (Jan, 29.10.2026; Regeln in Abschnitt 7)
 
+### Phase 14 – Push auf den Pi (Version 1.5.0)
+
+Mit Jan abgestimmt am 12.11.2026. Einweg-Push iPhone → Raspberry Pi, damit ein späteres Dashboard (Setlog, Garmin, Kcalm) die Ernährungsdaten ohne Import lesen kann. Das iPhone bleibt maßgeblich, Kcalm funktioniert ohne Pi weiter wie bisher. Kein Download vom Server, keine Konfliktlösung. Regeln in Abschnitt 7 „Push: …“.
+
+- [ ] 14a Rechenlogik `src/logic/push.ts` mit Tests: Prüfsumme je Datensatz, Abgleich mit der Quittungsliste (neu, geändert, Löschmarker, echt entfernt, unverändert), Pakete à 500, ausgeschlossene Tabellen (`pendingScans`, `settings`), URL-Prüfung (nur https), Fehlertexte
+- [ ] 14b Tagesziele als Ansicht `src/logic/pushTargets.ts` mit Tests: betroffene Wochen, Tagesziel fest/dynamisch, Wochenbudget, Makroziele in g je Tag; nutzt `goals.ts`/`profiles.ts`, keine zweite Rechnung
+- [ ] 14c Server im privaten Repo `JosePuerco/kcalm-server`: Node 24, Hono, Zod, `node:sqlite`, Docker; `POST /v1/push`, `GET /v1/health`; Token, CORS, Größenlimit; Tabellen `records` und `daily_targets`, Views fürs Dashboard; Tests (Token, CORS, doppelt senden, ändern, löschen, entfernen, Vollabgleich, ungültige Daten, `formatVersion`)
+- [ ] 14d Push-Ablauf `src/db/push.ts`: Datenbank-Version 7 mit Tabelle `pushState` (nicht im Backup), Senden in Paketen, Quittung nach 200, Sperre gegen gleichzeitige Läufe; Tests mit gespieltem Server (Erst-Upload, anlegen, ändern, löschen, doppelt senden, offline → wieder online, Abbruch mitten im Upload, Backup ersetzen, Token nicht im Backup, Upgrade v6 → v7)
+- [ ] 14e Auslöser (nach dem Speichern gebündelt, Start, Rückkehr in die App, Netz zurück) und Screen Einstellungen › Daten › „Server-Push“: Schalter, Server-URL, Token, Status (letzter Push, ausstehend, letzter Fehler), „Jetzt übertragen“; Entwurf vor dem Bau mit Jan abstimmen (kein Prototyp)
+- [ ] 14f Betrieb auf dem Pi: Container im Netz `cloudflare-tunnel`, Route `kcalm-api.dunkleschokola.de` im Tunnel, nächtliches SQLite-Backup (lokal, 14 Tage), Wiederherstellung einmal geprobt; End-to-End-Test, dann Version 1.5.0 und iPhone-Test
+
+Später als eigene Phase (Jan, 12.11.2026): Umzug der App von GitHub Pages zu Cloudflare Pages unter `kcalm.dunkleschokola.de` (neue Domain = neue IndexedDB, Umzug per Backup).
+
 ## 7. Entscheidungen zu früher offenen Fragen
 
 | Frage | Entscheidung |
@@ -422,6 +435,12 @@ Mit Jan abgestimmt am 29.10.2026. Optional, Schalter in den Einstellungen; aus =
 | Kosten: unbekannt | Ohne Preis sind die Kosten `null`, nie 0; Summen zeigen „mind. …“. Rezept ohne Preis bei einer Zutat → Rezeptpreis unbekannt (Jan, 29.10.2026) |
 | Kosten: Statistik | Ø €/Tag nur über vollständige Tage (wie Ø kcal), Summe über alle Tage mit Einträgen bis heute. Preis-Leistung (€ pro 1.000 kcal, € pro 100 g Eiweiß) nur aus Einträgen mit bekanntem Preis und bekanntem Nährwert. Teuerste Lebensmittel: Top 5, Schnelleinträge zusammen als eine Zeile. Im Tagebuch keine Kosten (Jan, 29.10.2026) |
 | Kosten: Export | Spalte „Kosten“ (`cost_eur`, 2 Stellen) auf allen Ebenen, nur bei aktiver Kostenauswertung; aktueller Preis wie in der Statistik; unbekannte Teile in `partial`. Nicht Teil der Vorlage „Monatsauswertung Claude“. `exportVersion` bleibt 1, weil nur ein wählbarer Schlüssel dazukommt und alle bisherigen gleich bleiben (29.10.2026) |
+| Push: Prinzip | Einweg iPhone → Pi, iPhone maßgeblich, kein Download, keine Konfliktlösung, ein Nutzer, ein Gerät. Rohdaten aller Tabellen außer `pendingScans` und `settings`, inkl. Löschmarker; Wasser bleibt gestrichen (Jan, 12.11.2026) |
+| Push: was ausstehend ist | Quittungsliste `pushState` (Tabelle, id, Prüfsumme des zuletzt bestätigten Stands) statt `updatedAt`-Cursor: erfasst auch Backup-Import, Migrationen und Uhrsprünge. Lokal fehlende, aber quittierte Datensätze werden als „entfernt“ gemeldet. Quittiert wird erst nach Antwort 200 (Jan, 12.11.2026) |
+| Push: Server | Upsert je (Tabelle, id) ohne `updatedAt`-Vergleich, damit auch „Alles ersetzen“ mit älterem Backup ankommt; doppelt gesendet = überschrieben. Nur aktueller Stand, keine Historie. Entfernte Datensätze bekommen `deletedAt`. Eigene SQLite-Datenbank, eigenes privates Repo `kcalm-server`, API unter `kcalm-api.dunkleschokola.de` über den bestehenden Cloudflare Tunnel, ohne Cloudflare Access (Jan, 12.11.2026) |
+| Push: Tagesziele | Bewusste Ausnahme von „nur Rohdaten“: Zusätzlich zu Profilen und Zuweisungen sendet Kcalm je Tag die berechneten Ziele (Profilversion, Wochenbudget, festes und dynamisches Tagesziel, Makroziele in g), damit das Dashboard die Rechnung nicht nachbauen muss. Lokal wird nichts davon gespeichert (Jan, 12.11.2026) |
+| Push: Token und Einstellungen | Server-URL, Token, Schalter und Status nur in `localStorage`, nicht in `settings` und nicht im Backup; nach Neuinstallation neu eingeben. Token nie im Code oder Build (Repo öffentlich) (Jan, 12.11.2026) |
+| Push: Datenbank-Backup | Nächtlich per SQLite-Backup, 14 Tage, vorerst nur lokal auf dem Pi; notfalls lässt sich alles per Neu-Upload vom iPhone wiederherstellen (Jan, 12.11.2026) |
 | Splashscreen | Startbilder aus den Tokens per `npm run splash` (eigenes Skript, keine Abhängigkeit), nur für das iPhone 16e (1170 × 2532), hell und dunkel; ob iOS die Dunkel-Variante nutzt, zeigt der iPhone-Test (25.10.2026) |
 
 Offen nur noch:
