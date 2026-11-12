@@ -8,6 +8,14 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 1.5.0 – 12.11.2026
+
+- Neu: Server-Push unter Einstellungen › Daten. Kcalm überträgt deine Daten automatisch an deinen eigenen Server (nach dem Speichern, beim Öffnen, wenn das Netz zurückkommt)
+- Übertragen werden Einträge mit Nährwerten, eigene Lebensmittel, Mahlzeiten, Rezepte, Gewichte, Profile, vollständige Tage und die Tagesziele, auch Änderungen und Löschungen
+- Ohne Server oder offline läuft alles wie bisher; ausstehende Änderungen werden später nachgeholt
+- Adresse und Token bleiben auf dem Gerät und kommen nicht ins Backup
+- Datenbank-Version 7 (neue interne Liste für den Push); vorhandene Daten bleiben unverändert
+
 ## 1.4.1 – 29.10.2026
 
 - Geänderte Werte gelten immer: Der Umschalter „Meine Werte nutzen / Original nutzen“ entfällt, das Original steht nur noch zum Vergleich daneben
