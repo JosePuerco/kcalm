@@ -326,3 +326,26 @@ export function readyConfig(config: PushConfig): ReadyConfig | null {
 export function needsFullSync(state: PushState, serverUrl: string): boolean {
   return state.receiptsFor !== serverUrl || state.fullSyncId !== null
 }
+
+// --- Auslöser ------------------------------------------------------------------------------------
+
+/** Verzögerung nach dem Speichern: mehrere schnelle Änderungen gehen in einem Push */
+export const PUSH_DEBOUNCE_MS = 3000
+
+/** Änderungen an diesen Tabellen lösen keinen Push aus (Quittungen selbst, gemerkte Scans) */
+const QUIET_TABLES = ['pushState', 'pendingScans']
+
+/**
+ * Dexie meldet geänderte Bereiche als Schlüssel „idb://<Datenbank>/<Tabelle>/<Index>“.
+ * true, wenn mindestens eine Tabelle betroffen ist, die zum Push gehört (oder ihn beeinflusst, z. B. settings
+ * für die Verbrauchsschätzung). Ohne diesen Filter würde jede Quittung den nächsten Push anstoßen.
+ */
+export function isPushRelevantChange(parts: Iterable<string>, dbName = 'kcalm'): boolean {
+  const prefix = `idb://${dbName}/`
+  for (const part of parts) {
+    if (!part.startsWith(prefix)) continue
+    const table = part.slice(prefix.length).split('/')[0] ?? ''
+    if (table !== '' && !QUIET_TABLES.includes(table)) return true
+  }
+  return false
+}

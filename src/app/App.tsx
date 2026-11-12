@@ -13,6 +13,7 @@ import { useLiveQuery } from '../db/live.ts'
 import { isSetupDone } from '../db/setup.ts'
 import { openAddSheet } from './diaryState.ts'
 import { usePendingSyncTriggers } from './pendingSync.ts'
+import { usePushTriggers } from './pushSync.ts'
 import { Navigation } from './Navigation.tsx'
 import { useRoute, useSubPath, type Route } from './router.ts'
 import { initTheme } from './theme.ts'
@@ -32,6 +33,7 @@ const screens: Record<Route, ComponentType | null> = {
 /** Gemerkte Scans im Hintergrund nachladen (erst nach der Ersteinrichtung) */
 function PendingSync() {
   usePendingSyncTriggers()
+  usePushTriggers()
   return null
 }
 

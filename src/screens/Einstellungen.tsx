@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { version } from '../../package.json'
 import { href, useSubPath } from '../app/router.ts'
 import { THEME_OPTIONS, setThemePref, useThemePref } from '../app/theme.ts'
@@ -16,11 +16,15 @@ import { BackupCard } from './BackupCard.tsx'
 import { CameraGuideSheet } from './einstellungen/CameraGuideSheet.tsx'
 import { EstimateScreen } from './einstellungen/EstimateScreen.tsx'
 import { ExportScreen } from './einstellungen/ExportScreen.tsx'
+import { Group } from './einstellungen/Group.tsx'
+import { PushScreen } from './einstellungen/PushScreen.tsx'
 import { ProfilesScreen } from './einstellungen/ProfilesScreen.tsx'
 import { SlotsScreen } from './einstellungen/SlotsScreen.tsx'
 import { useToday } from '../app/diaryState.ts'
 import { loadProfiles } from '../db/profiles.ts'
 import { profileStatus } from '../logic/profiles.ts'
+import { dataLocationText } from '../logic/pushView.ts'
+import { usePushView } from '../app/pushSync.ts'
 
 // Einstellungen und Unterseiten über den Hash-Pfad
 //  #/einstellungen          Übersicht
@@ -28,12 +32,14 @@ import { profileStatus } from '../logic/profiles.ts'
 //  #/einstellungen/slots    Mahlzeiten-Slots
 //  #/einstellungen/schaetzung  Verbrauchsschätzung
 //  #/einstellungen/export   Export
+//  #/einstellungen/push     Server-Push
 export function Einstellungen() {
   const [view] = useSubPath()
   if (view === 'slots') return <SlotsScreen />
   if (view === 'profile') return <ProfilesScreen />
   if (view === 'schaetzung') return <EstimateScreen />
   if (view === 'export') return <ExportScreen />
+  if (view === 'push') return <PushScreen />
   return <Overview />
 }
 
@@ -45,6 +51,7 @@ function Overview() {
   const estimate = useLiveQuery(getEstimateEnabled, [])
   const costs = useLiveQuery(getCostsEnabled, [])
   const theme = useThemePref()
+  const push = usePushView()
   const [cameraGuide, setCameraGuide] = useState(false)
   const activeId = profiles && profileStatus(profiles.assignments, profiles.versions, today).activeProfileId
   const activeName = profiles?.profiles.find((p) => p.id === activeId)?.name ?? ''
@@ -115,7 +122,7 @@ function Overview() {
         {/* Version aus package.json (beim Build eingesetzt); Quellenhinweise für OFF (ODbL) und BLS */}
         <Card padded={false} className="px-card-padding text-secondary text-muted flex flex-col gap-2 py-3.5 leading-[1.45]">
           <span>
-            <span className="text-text font-semibold">Kcalm</span> · Version {version} · alle Daten bleiben auf diesem Gerät
+            <span className="text-text font-semibold">Kcalm</span> · Version {version} · {dataLocationText(push.config)}
           </span>
           <span>Produktdaten: Open Food Facts, Lizenz ODbL</span>
           <span>Grundlebensmittel: Max Rubner-Institut (2025), Bundeslebensmittelschlüssel 4.0</span>
@@ -145,11 +152,3 @@ function LinkRow({ to, label, meta, border }: { to: string; label: string; meta?
   )
 }
 
-function Group({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="flex flex-col gap-1.5">
-      <h2 className="text-small text-muted px-1 pt-2.5 tracking-[0.6px] uppercase">{title}</h2>
-      {children}
-    </section>
-  )
-}

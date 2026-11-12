@@ -3,6 +3,7 @@ import { newRecord, softDelete, touch } from '../db/records.ts'
 import type { Day, Entry, Setting, Weight } from '../db/types.ts'
 import {
   DEFAULT_PUSH_CONFIG,
+  isPushRelevantChange,
   DEFAULT_PUSH_STATE,
   needsFullSync,
   parsePushConfig,
@@ -409,5 +410,27 @@ describe('Einstellungen und Zustand', () => {
     expect(needsFullSync(synced, 'https://a.example')).toBe(false)
     expect(needsFullSync(synced, 'https://b.example')).toBe(true)
     expect(needsFullSync({ ...synced, fullSyncId: 'voll-1' }, 'https://a.example')).toBe(true)
+  })
+})
+
+describe('isPushRelevantChange', () => {
+  it('Einträge, Profile, Einstellungen → ja', () => {
+    expect(isPushRelevantChange(['idb://kcalm/entries/', 'idb://kcalm/entries/:dels'])).toBe(true)
+    expect(isPushRelevantChange(['idb://kcalm/profileAssignments/validFrom'])).toBe(true)
+    expect(isPushRelevantChange(['idb://kcalm/settings/key'])).toBe(true)
+  })
+
+  it('nur Quittungen oder gemerkte Scans → nein (keine Endlosschleife)', () => {
+    expect(isPushRelevantChange(['idb://kcalm/pushState/', 'idb://kcalm/pushState/:dels'])).toBe(false)
+    expect(isPushRelevantChange(['idb://kcalm/pendingScans/barcode'])).toBe(false)
+    expect(isPushRelevantChange([])).toBe(false)
+  })
+
+  it('andere Datenbanken zählen nicht', () => {
+    expect(isPushRelevantChange(['idb://andere/entries/'])).toBe(false)
+  })
+
+  it('gemischt → ja', () => {
+    expect(isPushRelevantChange(['idb://kcalm/pushState/', 'idb://kcalm/days/date'])).toBe(true)
   })
 })

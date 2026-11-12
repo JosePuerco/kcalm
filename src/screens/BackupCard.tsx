@@ -1,6 +1,7 @@
 // Gruppe „Daten“ in den Einstellungen nach Einstellungen.dc.html: Backup-Zeile mit „Jetzt sichern“
-// „Backup importieren“ (Import-Sheet in BackupImport.tsx) und der Weg zum Export.
+// „Backup importieren“ (Import-Sheet in BackupImport.tsx), der Weg zum Export und zum Server-Push (Phase 14).
 import { useState } from 'react'
+import { usePendingPushCount, usePushView } from '../app/pushSync.ts'
 import { href } from '../app/router.ts'
 import { shareOrDownload } from '../app/share.ts'
 import { IconChevronRight } from '../components/icons/icons.tsx'
@@ -10,6 +11,7 @@ import { useToast } from '../components/ui/toastContext.ts'
 import { createBackup, getLastBackupAt, markBackedUp } from '../db/backup.ts'
 import { useLiveQuery } from '../db/live.ts'
 import { backupFileName, backupStatus, serializeBackup } from '../logic/backup.ts'
+import { pushRowMeta } from '../logic/pushView.ts'
 import { useBackupImport } from './useBackupImport.tsx'
 
 export function BackupCard() {
@@ -17,6 +19,9 @@ export function BackupCard() {
   const lastBackupAt = useLiveQuery(getLastBackupAt, [])
   const [saving, setSaving] = useState(false)
   const backupImport = useBackupImport()
+  const push = usePushView()
+  const pending = usePendingPushCount(push)
+  const pushMeta = pushRowMeta(push.config, push.state, pending)
 
   const status = lastBackupAt === undefined ? null : backupStatus(lastBackupAt)
 
@@ -62,6 +67,16 @@ export function BackupCard() {
       >
         <span className="text-body flex-1">Export</span>
         <span className="text-label text-muted">CSV, JSON</span>
+        <IconChevronRight className="text-chevron-muted" />
+      </a>
+      <a
+        href={href('einstellungen', 'push')}
+        className="border-line text-text flex min-h-[52px] items-center gap-2.5 border-t pr-3 pl-4"
+      >
+        <span className="text-body flex-1">Server-Push</span>
+        <span className={`text-label max-w-[60%] truncate ${pushMeta.warn ? 'text-warn-text' : 'text-muted'}`}>
+          {pushMeta.text}
+        </span>
         <IconChevronRight className="text-chevron-muted" />
       </a>
       {backupImport.element}
