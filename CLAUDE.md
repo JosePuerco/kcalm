@@ -38,7 +38,7 @@ Kcalm ist eine minimalistische Kalorien-Tracking-PWA fürs iPhone. Alle Daten bl
 - Prototypen sind Vorlage, nicht Code zum Kopieren: Layout, Texte, Abstände und Verhalten übernehmen, sauber in React-Komponenten neu bauen.
 
 ### Plattform
-- GitHub Pages unter Unterpfad `/kcalm/`: Vite `base`, Manifest `scope` und `start_url` passend.
+- Cloudflare Workers (nur statische Dateien) unter der eigenen Domain `https://kcalm.dunkleschokola.de/`, Wurzelpfad `/`: Vite `base`, Manifest `id`, `scope` und `start_url` passend. Konfiguration in `wrangler.jsonc`; für dieses Repo daher Wrangler statt `cf`. Deploy nur über GitHub Actions, nie lokal.
 - Teilen (Backup, Export) über die Web-Share-Schnittstelle, immer mit Ersatz per Download, falls Teilen fehlschlägt (Lehre aus Mixli).
 - Kamera nur nach Tipp starten (iOS).
 - Schrift Geist lokal bündeln (@fontsource), nichts zur Laufzeit von Google Fonts laden.
@@ -52,7 +52,7 @@ Kcalm ist eine minimalistische Kalorien-Tracking-PWA fürs iPhone. Alle Daten bl
 - Rechenlogik: erst Funktionen mit Tests zeigen, dann Oberfläche.
 - Nach jedem Schritt Tests laufen lassen, dann selbst lokal committen (klare Nachricht) und den Commit nennen.
 - Pushen nur nach Jans ausdrücklichem OK (jeder Push deployt). Nicht mitten in einer Phase auf `main` pushen, außer Jan braucht den Stand zum Testen auf dem iPhone.
-- Nach jedem Push das Deployment mit der GitHub-Kommandozeile prüfen (`gh run watch`, Repo `JosePuerco/kcalm`) und das Ergebnis melden.
+- Nach jedem Push das Deployment mit der GitHub-Kommandozeile prüfen (`gh run watch`, Repo `JosePuerco/kcalm`), danach `curl -I https://kcalm.dunkleschokola.de/` (Status 200), und das Ergebnis melden.
 
 ### Versionen
 

@@ -35,7 +35,7 @@ Vorher einmal mit Netz öffnen, damit alles im Cache liegt. Dann Flugmodus an (W
 ## D. Neu installieren und zurückspielen
 
 - [ ] App vom Home-Bildschirm löschen (löscht alle Daten auf dem Gerät)
-- [ ] In Safari `josepuerco.github.io/kcalm/` öffnen → Seitenmenü (drei Striche) → Website-Einstellungen → Kamera „Erlauben“ (siehe `docs/kamera-erlaubnis.md`), dann Teilen → „Zum Home-Bildschirm“
+- [ ] In Safari `kcalm.dunkleschokola.de` öffnen → Seitenmenü (drei Striche) → Website-Einstellungen → Kamera „Erlauben“ (siehe `docs/kamera-erlaubnis.md`), dann Teilen → „Zum Home-Bildschirm“
 - [ ] Neu installierte App zeigt Icon „Kcalm“ und startet mit dem Willkommensbildschirm (Ring zeichnet sich)
 - [ ] „Aus Backup laden“ → Datei aus iCloud Drive wählen → „Ersetzen“ → „Alles ersetzen“ → direkt ins Tagebuch
 - [ ] Tagebuch zeigt alle Tage, auch den Eintrag „Backup-Test“; Profile, Slots, Produkte, Mahlzeiten, Rezepte, Gewichte sind da
@@ -57,6 +57,20 @@ Token vorher auf dem Laptop holen (PowerShell) und aufs iPhone bringen, z. B. ü
 - [ ] Flugmodus aus, App in den Vordergrund holen → Fehler weg, „0 Änderungen“ (sonst „Jetzt übertragen“)
 - [ ] App ganz schließen und neu öffnen: Adresse und Token sind noch da, Push läuft beim Start
 - [ ] Backup sichern: Die Datei enthält kein Token (Claude kann sie prüfen)
+
+## G. Umzug zu kcalm.dunkleschokola.de (2.0.0)
+
+Einmalig beim Umzug von `josepuerco.github.io/kcalm/`. Die alte und die neue App haben getrennte Daten; nichts wird automatisch übernommen.
+
+- [ ] Alte App: Einstellungen › Daten › Server-Push → Schalter aus
+- [ ] Alte App: Einstellungen › Backup › „Jetzt sichern“ → „In Dateien sichern“ → iCloud Drive
+- [ ] In Safari `kcalm.dunkleschokola.de` öffnen → Seitenmenü (drei Striche) → Website-Einstellungen → Kamera „Erlauben“, dann Teilen → „Zum Home-Bildschirm“
+- [ ] Neue App: „Aus Backup laden“ → Datei aus iCloud Drive → „Ersetzen“ → „Alles ersetzen“
+- [ ] Neue App: Server-Push mit Adresse `https://kcalm-api.dunkleschokola.de` und Token einrichten, Schalter an → „0 Änderungen“, kein Fehler (Token holen wie in Teil E)
+- [ ] Claude prüft auf dem Pi: Anzahl Einträge iPhone = Pi, keine Datensätze fälschlich als gelöscht markiert
+- [ ] Stichproben: Darstellung, Profile, Gewichte, Verbrauchsschätzung wie vorher
+- [ ] Flugmodus an, neue App öffnen, BLS-Suche „Apfel“ → Treffer
+- [ ] Alte App vom Home-Bildschirm löschen
 
 ## F. Ergebnis
 
