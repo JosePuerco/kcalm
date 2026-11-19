@@ -1,0 +1,20 @@
+// Cloudflare-Konfiguration für Kcalm: ein Worker ohne eigenen Code, der nur die
+// gebauten Dateien aus dist/ ausliefert (Workers Static Assets).
+// Deployt wird ausschließlich aus GitHub Actions (.github/workflows/deploy.yml).
+{
+  "$schema": "https://unpkg.com/wrangler@4.158.0/config-schema.json",
+  // Name des Workers im Cloudflare-Konto
+  "name": "kcalm",
+  // Stand der Laufzeit-Regeln, auf den sich der Worker verlässt
+  "compatibility_date": "2026-11-19",
+  // Keine zweite Adresse unter *.workers.dev – Kcalm gibt es nur unter der eigenen Domain
+  "workers_dev": false,
+  // Eigene Domain; Cloudflare legt DNS-Eintrag und Zertifikat selbst an
+  "routes": [{ "pattern": "kcalm.dunkleschokola.de", "custom_domain": true }],
+  "assets": {
+    // Ordner mit der gebauten App (npm run build)
+    "directory": "./dist",
+    // Unbekannte Pfade liefern index.html statt 404 (Neu laden auf jeder Seite geht)
+    "not_found_handling": "single-page-application"
+  }
+}
