@@ -4,8 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import tokens from './design/tokens.json' with { type: 'json' }
 
-// GitHub Pages liegt unter https://josepuerco.github.io/kcalm/
-const base = '/kcalm/'
+// Die App liegt unter https://kcalm.dunkleschokola.de/ (Cloudflare Workers, Wurzelpfad)
+const base = '/'
 
 export default defineConfig({
   base,

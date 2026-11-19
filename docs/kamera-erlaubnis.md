@@ -8,7 +8,7 @@ Begriffe nach iOS 27.2 (von Jan am iPhone geprüft, 28.10.2026).
 
 ## Neu einrichten
 
-1. In Safari `josepuerco.github.io/kcalm/` öffnen.
+1. In Safari `kcalm.dunkleschokola.de` öffnen.
 2. Links neben der Adressleiste auf das **Seitenmenü** tippen (drei Striche). Oben im Menü steht die Adresse der Website. Nach unten scrollen zu **Website-Einstellungen**.
 3. **Kamera** auf **Erlauben** stellen (Optionen: Fragen, Verweigern, Erlauben).
 4. Erst jetzt: **Seitenmenü** → **Teilen** → **Zum Home-Bildschirm**. Den Schalter **Als Web-App öffnen** eingeschaltet lassen → **Hinzufügen**.

@@ -6,7 +6,7 @@ import { Sheet } from '../../components/ui/Sheet.tsx'
 
 const setupSteps: ReactNode[] = [
   <>
-    In Safari <Code>josepuerco.github.io/kcalm</Code> öffnen.
+    In Safari <Code>kcalm.dunkleschokola.de</Code> öffnen.
   </>,
   <>
     Links neben der Adressleiste auf das <B>Seitenmenü</B> (drei Striche) tippen, nach unten scrollen zu{' '}
