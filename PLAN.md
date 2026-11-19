@@ -386,6 +386,31 @@ Mit Jan abgestimmt am 12.11.2026. Einweg-Push iPhone → Raspberry Pi, damit ein
 
 Später als eigene Phase (Jan, 12.11.2026): Umzug der App von GitHub Pages zu Cloudflare Pages unter `kcalm.dunkleschokola.de` (neue Domain = neue IndexedDB, Umzug per Backup).
 
+### Phase 16 – Vorschläge aus Fitboard (geplant, noch nicht abgestimmt)
+
+Festgehalten am 19.11.2026 aus Fitboard Plan 6 (Fitboard v0.6.0). Kommt nach Phase 15 (Umzug zu Cloudflare), weil Domain und CORS sich dort ändern. Vor dem Start mit Jan abstimmen (Design, dann Umsetzungsplan).
+
+**Worum es geht:** Claude (Claude-App, z. B. per Foto) legt über Fitboards MCP-Server Mahlzeiten als **Vorschläge** ab. Fitboard speichert sie nur; sie erscheinen erst in Kcalm, wenn Kcalm sie abholt und Jan jeden einzeln bestätigt. Kcalm bleibt maßgeblich und funktioniert ohne Fitboard weiter wie bisher. Stand 19.11.2026: Fitboard nimmt Vorschläge an, Kcalm holt noch nicht ab.
+
+**Was Fitboard bereitstellt** (Tabelle `meal_suggestions` in Fitboard, je Lebensmittel ein Vorschlag):
+- `id` (UUIDv7), `date` (JJJJ-MM-TT, Europe/Berlin; von heute − 7 bis morgen), `slot` (Kcalm-Slotname oder `null`)
+- `name`, `amount`, `unit`, `kcal`, `protein`, `carbs`, `fat`, `fiber`, `sugar` – unbekannt ist `null`, nie 0
+- `status`: `open` (neu) → `fetched` (von Kcalm abgeholt) → `accepted` (Jan hat übernommen) oder `rejected` (abgelehnt oder von Claude zurückgezogen)
+- `createdAt`, `updatedAt` (ISO-8601, UTC)
+
+**Ablauf (Entwurf):**
+- [ ] 16a Fitboard: Abholweg für Kcalm (eigener Plan in Fitboard) – offene Vorschläge lesen, Stand auf `fetched`/`accepted`/`rejected` setzen. Fitboard ist sonst nur hinter Cloudflare Access erreichbar; Weg und Anmeldung klären (siehe Fragen).
+- [ ] 16b Kcalm Rechenlogik `src/logic/` mit Tests: Vorschlag → Tagebucheintrag (Snapshot der Nährwerte, `null` bleibt `null`), Slot-Zuordnung (unbekannt/`null` → Jan wählt), Doppelte erkennen (gleiche `id` nie zweimal)
+- [ ] 16c Kcalm Abholen und Anzeigen: Hinweis „n Vorschläge aus Fitboard“, Liste je Tag, je Vorschlag Übernehmen (mit Menge/Slot anpassen) oder Ablehnen; nichts landet ohne Jans Tipp im Tagebuch
+- [ ] 16d Einstellungen: Schalter (Standard aus), Adresse, Token wie beim Server-Push; offline und ohne Fitboard keine Fehler im Alltag
+- [ ] 16e Version deployen, iPhone-Test
+
+**Offene Fragen für Jan:**
+- Wie kommt Kcalm an Fitboard heran? Fitboard liegt hinter Cloudflare Access. Möglich: eigener Hostname mit eigenem Token (wie `kcalm-api`, ohne Access), ein Access-Service-Token, oder der Umweg über `kcalm-server` (Fitboard legt ab, Kcalm holt dort).
+- Das ändert die Regel „Netzzugriff nur auf OFF und Jans Server (Einweg-Push)“ – Kcalm würde erstmals vom eigenen Server **lesen**. Ausdrücklich freigeben.
+- Gewichte: Das Fitboard-Design nennt zusätzlich „Gewichte für Kcalm“ (Garmin-Gewicht statt Kurzbefehl). In dieser Phase mit erledigen oder getrennt?
+- Was passiert mit Vorschlägen, die nie abgeholt werden (z. B. nach 7 Tagen verwerfen)?
+
 ## 7. Entscheidungen zu früher offenen Fragen
 
 | Frage | Entscheidung |
