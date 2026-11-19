@@ -488,6 +488,8 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
+**19.11.2026 · Phase 15 (Umzug zu Cloudflare), 15a–15d erledigt** – je ein Commit (App auf `/`, `wrangler.jsonc` + Workflow, Doku; Server-Repo `kcalm-server` Commit „CORS: nur noch kcalm.dunkleschokola.de“, nicht gepusht). 1101 Tests grün, Build und Lint sauber, Server 54 Tests grün, `wrangler deploy --dry-run` ohne Fehler, Headless-Chrome unter `/` inkl. offline geprüft. Nächster Schritt: 15e – Jan legt API-Token an und setzt die Secrets `CLOUDFLARE_API_TOKEN` und `CLOUDFLARE_ACCOUNT_ID`, dann Version 2.0.0 nach Jans OK pushen.
+
 **12.11.2026 · Phase 14 (Push auf den Pi) abgeschlossen, Version 1.5.0** – iPhone-Test bestanden (Jan, 12.11.2026). Daten kommen auf dem Pi an (`kcalm-api.dunkleschokola.de`, Ansichten fürs Dashboard in `kcalm-server/src/db.ts`), nächtliches Backup läuft per Cron. Später als eigene Phase: Umzug der App zu Cloudflare Pages.
 
 **12.11.2026 · Phase 14 (Push auf den Pi), Version 1.5.0 deployt** – 14a–14f je ein Commit, 1101 Tests grün, Build und Lint sauber; Server `JosePuerco/kcalm-server` (53 Tests) läuft auf dem Pi unter `kcalm-api.dunkleschokola.de`, von außen geprüft. Ende-zu-Ende im Headless-Chrome gegen den echten Server bestanden. Nächster Schritt: Jans iPhone-Test (Checkliste `docs/iphone-test.md` Teil E), danach 14g abhaken und Phase 14 abschließen.
