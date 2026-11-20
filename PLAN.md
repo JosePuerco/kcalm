@@ -396,8 +396,8 @@ Mit Jan abgestimmt am 15.11.2026 (Design `docs/superpowers/specs/2026-11-15-clou
 - [x] 15c `kcalm-server`: CORS-Standard `https://kcalm.dunkleschokola.de`, Test „alte Adresse bekommt keine Freigabe“
 - [x] 15d Doku: PLAN.md, `CLAUDE.md`, `docs/iphone-test.md` Teil G „Umzug“ (für den Pi-Weg in 15b2 nachziehen: `CLAUDE.md` Plattform/Versionen/Deploy-Prüfung, neu `docs/ops.md`)
 - [x] 15e Rollout (20.11.2026): Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80` (Jan), Version 2.0.0 pushen und deployen, neue Adresse von außen prüfen (Seite, Manifest, `sw.js`/`index.html` ohne Caching auch bei Cloudflare, Neu laden auf Unterpfad), Server-CORS auf dem Pi umstellen
-- [ ] 15f Umzug auf dem iPhone (Checkliste `docs/iphone-test.md` Teil G), Anzahl Einträge iPhone = Pi, keine Datensätze fälschlich gelöscht
-- [ ] 15g GitHub Pages abschalten (nach Jans OK), Release v2.0.0
+- [x] 15f (20.11.2026) Umzug auf dem iPhone (Checkliste `docs/iphone-test.md` Teil G), Anzahl Einträge iPhone = Pi, keine Datensätze fälschlich gelöscht
+- [x] 15g GitHub Pages abschalten (nach Jans OK), Release v2.0.0 – Pages und Umgebung `github-pages` gelöscht, alte Adresse 404 (20.11.2026)
 
 ### Phase 16 – Vorschläge aus Fitboard (geplant, noch nicht abgestimmt)
 
@@ -490,6 +490,8 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**20.11.2026 · Phase 15 (Umzug auf eigene Domain, Hosting auf dem Pi) abgeschlossen, Version 2.0.0** – Jan ist auf dem iPhone umgezogen (Backup, Push wieder an). Auf dem Pi geprüft: Vollabgleich mit allen 190 Datensätzen, nichts als entfernt markiert, 75 Einträge (74 vom 12.11. + 1 vom 19.11.; einzige Löschung beim Umzug war ein Testeintrag von Jan). Stichproben (Darstellung, Profile, Gewichte, Schätzung, BLS offline) von Jan bestätigt. GitHub Pages und Umgebung `github-pages` gelöscht, `josepuerco.github.io/kcalm/` gibt 404. Nächster Schritt: Phase 16 (Vorschläge aus Fitboard) mit Jan abstimmen.
 
 **20.11.2026 · Version 2.0.0 auf dem Pi deployt (15e erledigt)** – Tunnel-Route von Jan angelegt, `npm run deploy` ok (463917b), von außen geprüft: Seite, Unterpfad, Manifest (`application/manifest+json`), `bls.json`, Version 2.0.0 im Bundle. `index.html`, Manifest und `bls.json` mit `no-cache` (Cloudflare `DYNAMIC`); `/assets/*` ein Jahr. Cloudflare setzt bei `sw.js` und `registerSW.js` die Browser-Cachezeit auf 4 h (Zonen-Einstellung „Browser Cache TTL“) und prüft am Rand nach (`REVALIDATED`); unkritisch, weil der Browser `sw.js` beim Update-Check am HTTP-Cache vorbei lädt. `kcalm-server` gepusht, auf dem Pi `ALLOWED_ORIGIN=https://kcalm.dunkleschokola.de` (Sicherung `.env.bak-2026-11-20`), CORS geprüft: neue Adresse frei, alte nicht. Release v2.0.0 angelegt. GitHub Pages bleibt bis 15g auf 1.5.0. Nächster Schritt: 15f – Jan zieht auf dem iPhone um (Checkliste `docs/iphone-test.md` Teil G).
 

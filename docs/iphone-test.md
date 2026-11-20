@@ -62,15 +62,15 @@ Token vorher auf dem Laptop holen (PowerShell) und aufs iPhone bringen, z. B. ü
 
 Einmalig beim Umzug von `josepuerco.github.io/kcalm/`. Die alte und die neue App haben getrennte Daten; nichts wird automatisch übernommen.
 
-- [ ] Alte App: Einstellungen › Daten › Server-Push → Schalter aus
-- [ ] Alte App: Einstellungen › Backup › „Jetzt sichern“ → „In Dateien sichern“ → iCloud Drive
-- [ ] In Safari `kcalm.dunkleschokola.de` öffnen → Seitenmenü (drei Striche) → Website-Einstellungen → Kamera „Erlauben“, dann Teilen → „Zum Home-Bildschirm“
-- [ ] Neue App: „Aus Backup laden“ → Datei aus iCloud Drive → „Ersetzen“ → „Alles ersetzen“
-- [ ] Neue App: Server-Push mit Adresse `https://kcalm-api.dunkleschokola.de` und Token einrichten, Schalter an → „0 Änderungen“, kein Fehler (Token holen wie in Teil E)
-- [ ] Claude prüft auf dem Pi: Anzahl Einträge iPhone = Pi, keine Datensätze fälschlich als gelöscht markiert
-- [ ] Stichproben: Darstellung, Profile, Gewichte, Verbrauchsschätzung wie vorher
-- [ ] Flugmodus an, neue App öffnen, BLS-Suche „Apfel“ → Treffer
-- [ ] Alte App vom Home-Bildschirm löschen
+- [x] Alte App: Einstellungen › Daten › Server-Push → Schalter aus
+- [x] Alte App: Einstellungen › Backup › „Jetzt sichern“ → „In Dateien sichern“ → iCloud Drive
+- [x] In Safari `kcalm.dunkleschokola.de` öffnen → Seitenmenü (drei Striche) → Website-Einstellungen → Kamera „Erlauben“, dann Teilen → „Zum Home-Bildschirm“
+- [x] Neue App: „Aus Backup laden“ → Datei aus iCloud Drive → „Ersetzen“ → „Alles ersetzen“
+- [x] Neue App: Server-Push mit Adresse `https://kcalm-api.dunkleschokola.de` und Token einrichten, Schalter an → „0 Änderungen“, kein Fehler (Token holen wie in Teil E)
+- [x] Claude prüft auf dem Pi: Anzahl Einträge iPhone = Pi, keine Datensätze fälschlich als gelöscht markiert
+- [x] Stichproben: Darstellung, Profile, Gewichte, Verbrauchsschätzung wie vorher
+- [x] Flugmodus an, neue App öffnen, BLS-Suche „Apfel“ → Treffer
+- [x] Alte App vom Home-Bildschirm löschen
 
 ## F. Ergebnis
 
