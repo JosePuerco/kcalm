@@ -18,7 +18,21 @@ export const SCHEMA_V1 = {
   settings: 'id, &key, updatedAt',
 } as const
 
-export type TableName = keyof typeof SCHEMA_V1
+/**
+ * Sync-fähige Tabellen ab Datenbank-Version 8 (Phase 16): dazu Jans Entscheidungen zu Vorschlägen.
+ * SCHEMA_V1 bleibt für die älteren Versionen unverändert.
+ */
+export const SCHEMA_SYNC = {
+  ...SCHEMA_V1,
+  inboxDecisions: 'id, updatedAt',
+} as const
+
+export type TableName = keyof typeof SCHEMA_SYNC
+
+/** Abgeholte Vorschläge aus Fitboard (Phase 16), nur lokal: nicht sync-fähig, nicht im Backup, nicht im Push */
+export const SCHEMA_INBOX = {
+  inbox: 'id, date',
+} as const
 
 /**
  * Quittungsliste für den Push (Phase 14, Datenbank-Version 7). Bewusst nicht in SCHEMA_V1:

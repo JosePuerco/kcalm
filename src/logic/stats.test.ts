@@ -52,6 +52,7 @@ function entry(date: LocalDate, kcal: number | null, more: Partial<Nutrients> = 
     mealGroupId: null,
     mealName: null,
     cost: null,
+    estimated: false,
   })
 }
 

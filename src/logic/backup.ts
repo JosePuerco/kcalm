@@ -3,12 +3,13 @@
 // Inhalte großzügig – alles, was die App selbst speichern kann, muss wieder importierbar sein.
 
 import { z } from 'zod'
-import { SCHEMA_V1, type TableName } from '../db/schema.ts'
+import { SCHEMA_SYNC, type TableName } from '../db/schema.ts'
 import type {
   BlsPref,
   Day,
   Entry,
   FoodRef,
+  InboxDecision,
   Meal,
   PendingScan,
   Product,
@@ -26,7 +27,7 @@ import type {
 import { formatTime } from './format.ts'
 
 export const BACKUP_APP = 'kcalm'
-export const BACKUP_FORMAT_VERSION = 6
+export const BACKUP_FORMAT_VERSION = 7
 /** Ab so vielen Tagen ohne Backup warnt die Einstellungsseite */
 export const BACKUP_REMINDER_DAYS = 14
 
@@ -45,6 +46,7 @@ export interface BackupTables {
   weights: Weight[]
   pendingScans: PendingScan[]
   settings: Setting[]
+  inboxDecisions: InboxDecision[]
 }
 
 export interface Backup {
@@ -54,12 +56,12 @@ export interface Backup {
   tables: BackupTables
 }
 
-export const TABLE_NAMES = Object.keys(SCHEMA_V1) as TableName[]
+export const TABLE_NAMES = Object.keys(SCHEMA_SYNC) as TableName[]
 
 /** Tabellen mit eindeutigem Schlüssel (im Schema mit „&“), z. B. days → date */
 export const UNIQUE_KEYS: Partial<Record<TableName, string>> = Object.fromEntries(
   TABLE_NAMES.flatMap((table) => {
-    const unique = SCHEMA_V1[table].split(',').map((s) => s.trim()).find((s) => s.startsWith('&'))
+    const unique = SCHEMA_SYNC[table].split(',').map((s) => s.trim()).find((s) => s.startsWith('&'))
     return unique ? [[table, unique.slice(1)]] : []
   }),
 )
@@ -169,6 +171,7 @@ const entry = z.object({
   mealGroupId: z.uuid().nullable(),
   mealName: z.string().nullable(),
   cost: z.number().nullable(),
+  estimated: z.boolean(),
 })
 
 const day = z.object({ ...sync, date: localDate, complete: z.boolean() })
@@ -211,6 +214,12 @@ const pendingScan = z.object({
 
 const setting = z.object({ ...sync, key: z.string().min(1), value: z.unknown() })
 
+const inboxDecision = z.object({
+  ...sync,
+  decision: z.enum(['accepted', 'rejected']),
+  entryIds: z.array(z.uuid()),
+})
+
 // Der Typ stellt sicher, dass Schema und types.ts zusammenpassen (sonst meldet TypeScript einen Fehler).
 const tableSchemas: { [K in TableName]: z.ZodType<BackupTables[K][number]> } = {
   products: product,
@@ -227,6 +236,7 @@ const tableSchemas: { [K in TableName]: z.ZodType<BackupTables[K][number]> } = {
   weights: weight,
   pendingScans: pendingScan,
   settings: setting,
+  inboxDecisions: inboxDecision,
 }
 
 export const backupSchema = z.object({
@@ -248,6 +258,7 @@ export const backupSchema = z.object({
     weights: z.array(tableSchemas.weights),
     pendingScans: z.array(tableSchemas.pendingScans),
     settings: z.array(tableSchemas.settings),
+    inboxDecisions: z.array(tableSchemas.inboxDecisions),
   }),
 })
 
@@ -314,6 +325,18 @@ export const MIGRATIONS: Record<number, (data: Record<string, unknown>) => Recor
     }
     return { ...data, formatVersion: 6 }
   },
+  6: (data) => {
+    // Format 7: Vorschläge aus Fitboard (Jan, 20.11.2026)
+    const tables = isObject(data.tables) ? data.tables : {}
+    if (Array.isArray(tables.entries)) tables.entries.forEach(addEstimated)
+    if (!('inboxDecisions' in tables)) tables.inboxDecisions = []
+    return { ...data, tables, formatVersion: 7 }
+  },
+}
+
+/** Ergänzt estimated = false bei Einträgen, falls es fehlt (verändert record). Auch für das Datenbank-Update. */
+export function addEstimated(record: unknown): void {
+  if (isObject(record) && !('estimated' in record)) record.estimated = false
 }
 
 /** Neue Felder der Kostenauswertung je Tabelle (Phase 13) */

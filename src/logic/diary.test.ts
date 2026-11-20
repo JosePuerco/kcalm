@@ -39,6 +39,7 @@ function entry(slotId: string, n: Partial<Nutrients>, date = '2026-10-22', creat
       mealGroupId: null,
       mealName: null,
       cost: null,
+      estimated: false,
     }),
     createdAt,
   }

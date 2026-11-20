@@ -22,6 +22,7 @@ function entry(date: string) {
     mealGroupId: null,
     mealName: null,
     cost: null,
+    estimated: false,
   })
 }
 

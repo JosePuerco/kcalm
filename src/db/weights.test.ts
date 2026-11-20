@@ -171,6 +171,7 @@ describe('Trend für g/kg-Ziele', () => {
         mealGroupId: null,
         mealName: null,
         cost: null,
+        estimated: false,
       }),
     )
     await db.days.add(newRecord<Day>({ date: '2026-10-21', complete: true }))

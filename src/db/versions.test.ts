@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto' // IndexedDB in Node nachbilden
 import { Dexie } from 'dexie'
 import { afterEach, describe, expect, it } from 'vitest'
-import { SCHEMA_V1 } from './schema.ts'
+import { SCHEMA_PUSH, SCHEMA_V1 } from './schema.ts'
 import { defineVersions } from './versions.ts'
 
 const NAME = 'kcalm-versions-test'
@@ -55,7 +55,7 @@ describe('Datenbank-Version 2', () => {
     defineVersions(db)
     await db.open()
 
-    expect(db.verno).toBe(7)
+    expect(db.verno).toBe(8)
     expect(await db.table('products').get('p1')).toMatchObject({ per100: { kcal: 42 } })
     expect((await db.table('products').get('p1')).per100).not.toHaveProperty('alcohol')
     expect((await db.table('productOverrides').get('o1')).per100).toEqual({})
@@ -78,7 +78,7 @@ describe('Datenbank-Version 2', () => {
     const db = new Dexie(NAME)
     defineVersions(db)
     await db.open()
-    expect(db.verno).toBe(7)
+    expect(db.verno).toBe(8)
     db.close()
   })
 })
@@ -108,7 +108,7 @@ describe('Datenbank-Version 4', () => {
       useOverride: true,
       price: null,
     })
-    expect(await db.table('entries').get('e1')).toEqual({ id: 'e1', ...sync, date: '2026-10-01', nutrients: { kcal: 210 }, cost: null })
+    expect(await db.table('entries').get('e1')).toEqual({ id: 'e1', ...sync, date: '2026-10-01', nutrients: { kcal: 210 }, cost: null, estimated: false })
     expect(await db.table('profileVersions').get('v1')).toEqual({ id: 'v1', ...sync, profileId: 'x', weeklyKcal: 14000 })
     db.close()
   })
@@ -175,12 +175,27 @@ describe('Datenbank-Version 7', () => {
     await old.table('settings').add({ id: 's1', ...sync, key: 'theme', value: 'dark' })
     old.close()
     const db = await openCurrent()
-    expect(db.verno).toBe(7)
-    expect(await db.table('entries').get('e1')).toEqual(e1)
+    expect(db.verno).toBe(8)
+    expect(await db.table('entries').get('e1')).toEqual({ ...e1, estimated: false })
     expect(await db.table('settings').count()).toBe(1)
     expect(await db.table('pushState').count()).toBe(0)
     await db.table('pushState').put({ table: 'entries', id: 'e1', hash: 'h' })
     expect(await db.table('pushState').get(['entries', 'e1'])).toEqual({ table: 'entries', id: 'e1', hash: 'h' })
+    db.close()
+  })
+})
+
+describe('Datenbank-Version 8', () => {
+  it('Einträge bekommen estimated = false (updatedAt bleibt), inboxDecisions und inbox starten leer', async () => {
+    const old = new Dexie(NAME)
+    old.version(7).stores({ ...SCHEMA_V1, ...SCHEMA_PUSH })
+    await old.table('entries').add({ id: 'e1', ...sync, date: '2026-11-12', kind: 'quick', cost: null })
+    old.close()
+    const db = await openCurrent()
+    expect(db.verno).toBe(8)
+    expect(await db.table('entries').get('e1')).toMatchObject({ estimated: false, updatedAt: T0 })
+    expect(await db.table('inboxDecisions').count()).toBe(0)
+    expect(await db.table('inbox').count()).toBe(0)
     db.close()
   })
 })

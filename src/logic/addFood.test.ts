@@ -107,6 +107,7 @@ describe('recentRefs', () => {
       mealGroupId: null,
       mealName: null,
       cost: null,
+      estimated: false,
     }),
     createdAt,
   })

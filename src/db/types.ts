@@ -142,6 +142,8 @@ export interface Entry extends SyncFields {
   mealName: string | null
   /** Preis in €, nur beim Schnelleintrag; sonst null, Kosten kommen dann aus dem aktuellen Preis */
   cost: number | null
+  /** Aus einem geschätzten Vorschlag (Fitboard, Phase 16); nur ein Hinweis, zählt wie jeder Eintrag */
+  estimated: boolean
 }
 
 /** Nur Tage mit Markierung; Datum eindeutig */
@@ -193,6 +195,25 @@ export interface PendingScan extends SyncFields {
   scannedAt: Timestamp
   slotId: string | null
   date: LocalDate | null
+}
+
+/**
+ * Jans Entscheidung zu einem Vorschlag aus Fitboard (Phase 16); id = id des Vorschlags.
+ * Geht mit dem Push zum Server und ins Backup, damit kein Vorschlag zweimal erscheint.
+ */
+export interface InboxDecision extends SyncFields {
+  decision: 'accepted' | 'rejected'
+  /** Einträge, die beim Übernehmen entstanden sind */
+  entryIds: string[]
+}
+
+/** Abgeholter Vorschlag, nur lokal (nicht im Push, nicht im Backup); Form wie GET /v1/inbox */
+export interface InboxItem {
+  id: string
+  kind: string
+  date: LocalDate
+  payload: unknown
+  createdAt: Timestamp
 }
 
 /** Schlüssel eindeutig */

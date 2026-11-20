@@ -22,6 +22,7 @@ function entry(date: string, fields: Partial<Entry>) {
     mealGroupId: null,
     mealName: null,
     cost: null,
+    estimated: false,
     ...fields,
   })
 }

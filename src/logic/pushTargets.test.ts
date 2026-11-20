@@ -59,6 +59,7 @@ function eat(date: LocalDate, kcal: number | null): Entry {
       mealGroupId: null,
       mealName: null,
       cost: null,
+      estimated: false,
     },
     t0,
   )

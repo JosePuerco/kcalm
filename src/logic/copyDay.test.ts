@@ -18,6 +18,7 @@ function entry(slotId: string, kcal: number | null, createdAt: string, extra: Pa
       mealGroupId: null,
       mealName: null,
       cost: null,
+      estimated: false,
     }),
     createdAt,
     ...extra,
@@ -74,6 +75,11 @@ describe('copiedEntries', () => {
     const r = copiedEntries(meal, '2026-10-21', { newId: () => `neu${++n}` })
     expect(r.map((e) => e.mealGroupId)).toEqual(['neu1', 'neu1', 'neu2'])
     expect(r[0]?.mealName).toBe('Müsli')
+  })
+
+  it('Kopie behält die Markierung „geschätzt“', () => {
+    const copies = copiedEntries([entry('frueh', 610, '2026-10-20T08:00:00Z', { kind: 'quick', ref: null, estimated: true })], '2026-10-21')
+    expect(copies[0]!.estimated).toBe(true)
   })
 
   it('leerer Quelltag: nichts', () => {

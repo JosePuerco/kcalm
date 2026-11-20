@@ -122,6 +122,7 @@ export function foodEntry(
     mealGroupId: null,
     mealName: null,
     cost: null,
+    estimated: false,
   }
 }
 

@@ -91,6 +91,7 @@ function entry(date = '2026-11-12', kcal = 300): Entry {
       mealGroupId: null,
       mealName: null,
       cost: null,
+      estimated: false,
     },
     NOW,
   )

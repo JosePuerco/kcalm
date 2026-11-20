@@ -51,6 +51,7 @@ function entry(kcal: number | null = 250): Entry {
       mealGroupId: null,
       mealName: null,
       cost: null,
+      estimated: false,
     },
     t0,
   )
@@ -111,7 +112,12 @@ describe('Tabellen', () => {
     expect(PUSH_TABLES).toContain('profileAssignments')
     expect(PUSH_TABLES).not.toContain('settings')
     expect(PUSH_TABLES).not.toContain('pendingScans')
-    expect(PUSH_TABLES).toHaveLength(12)
+    expect(PUSH_TABLES).toHaveLength(13)
+  })
+
+  it('Entscheidungen zu Vorschlägen gehen mit, der abgeholte Briefkasten nicht', () => {
+    expect(PUSH_TABLES).toContain('inboxDecisions')
+    expect(PUSH_TABLES).not.toContain('inbox')
   })
 })
 

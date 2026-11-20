@@ -37,6 +37,7 @@ function entry(date: string, kcal: number) {
     mealGroupId: null,
     mealName: null,
     cost: null,
+    estimated: false,
   })
 }
 

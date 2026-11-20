@@ -8,6 +8,8 @@ import type {
   BlsPref,
   Day,
   Entry,
+  InboxDecision,
+  InboxItem,
   Meal,
   PendingScan,
   Product,
@@ -39,6 +41,10 @@ export const db = new Dexie('kcalm') as Dexie & {
   settings: EntityTable<Setting, 'id'>
   /** Quittungsliste für den Push; nicht im Backup (Phase 14) */
   pushState: Table<PushReceipt, [string, string]>
+  /** Jans Entscheidungen zu Vorschlägen aus Fitboard (Phase 16), sync-fähig */
+  inboxDecisions: EntityTable<InboxDecision, 'id'>
+  /** Abgeholte Vorschläge, nur lokal (Phase 16) */
+  inbox: EntityTable<InboxItem, 'id'>
 }
 
 defineVersions(db)

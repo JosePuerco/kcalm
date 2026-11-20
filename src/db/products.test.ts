@@ -47,6 +47,7 @@ function entryFor(ref: Entry['ref']) {
     mealGroupId: null,
     mealName: null,
     cost: null,
+    estimated: false,
   })
 }
 

@@ -43,6 +43,7 @@ export function copiedEntries(
         mealGroupId,
         mealName: e.mealName,
         cost: e.cost,
+        estimated: e.estimated,
       }
     })
 }

@@ -4,6 +4,7 @@
 import type { Dexie } from 'dexie'
 import {
   addBlsUseOverride,
+  addEstimated,
   addOverrideUnit,
   addPriceFields,
   NUTRIENT_FIELDS,
@@ -11,7 +12,7 @@ import {
   removeWater,
   WATER_SETTING_KEY,
 } from '../logic/backup.ts'
-import { SCHEMA_PUSH, SCHEMA_V1 } from './schema.ts'
+import { SCHEMA_INBOX, SCHEMA_PUSH, SCHEMA_SYNC, SCHEMA_V1 } from './schema.ts'
 
 export function defineVersions(db: Dexie): void {
   db.version(1).stores(SCHEMA_V1)
@@ -85,4 +86,15 @@ export function defineVersions(db: Dexie): void {
 
   // Push auf den Pi (Jan, 12.11.2026): Quittungsliste pushState, startet leer; keine Datenänderung
   db.version(7).stores({ ...SCHEMA_V1, ...SCHEMA_PUSH })
+
+  // Vorschläge aus Fitboard (Jan, 20.11.2026): Entscheidungen (sync-fähig) und abgeholter Briefkasten (lokal);
+  // Einträge bekommen estimated = false, updatedAt bleibt
+  db.version(8)
+    .stores({ ...SCHEMA_SYNC, ...SCHEMA_PUSH, ...SCHEMA_INBOX })
+    .upgrade(async (tx) => {
+      await tx
+        .table('entries')
+        .toCollection()
+        .modify((record: unknown) => addEstimated(record))
+    })
 }

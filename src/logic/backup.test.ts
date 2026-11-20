@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { newRecord, softDelete, touch, unknownNutrients } from '../db/records.ts'
-import type { BlsPref, Day, Entry, Product, ProductOverride, Setting } from '../db/types.ts'
+import type { BlsPref, Day, Entry, InboxDecision, Product, ProductOverride, Setting } from '../db/types.ts'
 import {
   backupFileName,
   backupStatus,
@@ -61,6 +61,7 @@ function entry(productId: string, now = T0): Entry {
       mealGroupId: null,
       mealName: null,
       cost: null,
+      estimated: false,
     },
     now,
   )
@@ -94,7 +95,7 @@ describe('buildBackup / serializeBackup', () => {
   it('erzeugt app, formatVersion, exportedAt und alle Tabellen', () => {
     const backup = buildBackup(sampleTables(), T2)
     expect(backup.app).toBe('kcalm')
-    expect(backup.formatVersion).toBe(6)
+    expect(backup.formatVersion).toBe(7)
     expect(backup.exportedAt).toBe('2026-10-09T10:00:00.000Z')
     expect(Object.keys(backup.tables).sort()).toEqual([...TABLE_NAMES].sort())
   })
@@ -146,7 +147,7 @@ describe('parseBackup – Ablehnung', () => {
   })
 
   it('neuere formatVersion als die App', () => {
-    expect(parse({ ...valid(), formatVersion: 7 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
+    expect(parse({ ...valid(), formatVersion: 8 })).toEqual({ ok: false, error: ERROR_NEWER_VERSION })
   })
 
   it('fehlende Tabelle', () => {
@@ -250,7 +251,7 @@ describe('parseBackup – Migration Format 1 → 2', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     const { tables } = result.backup
-    expect(result.backup.formatVersion).toBe(6)
+    expect(result.backup.formatVersion).toBe(7)
     expect(tables.products.every((p) => !('alcohol' in p.per100))).toBe(true)
     expect(tables.entries.every((e) => !('alcohol' in e.nutrients))).toBe(true)
     expect(tables.productOverrides[0]!.per100).toEqual({ kcal: 40 })
@@ -336,7 +337,7 @@ describe('parseBackup – Migration Format 3 → 4', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     const { tables } = result.backup
-    expect(result.backup.formatVersion).toBe(6)
+    expect(result.backup.formatVersion).toBe(7)
     expect(tables.products[0]).not.toHaveProperty('isDrink')
     expect(tables.products[0]).not.toHaveProperty('countsAsWater')
     expect(tables.products[0]!.per100).not.toHaveProperty('water')
@@ -380,7 +381,7 @@ describe('parseBackup – Migration Format 4 → 5', () => {
     const result = parseBackup(JSON.stringify(v4Backup([withoutUnit()])))
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.backup.formatVersion).toBe(6)
+    expect(result.backup.formatVersion).toBe(7)
     expect(result.backup.tables.productOverrides[0]).toMatchObject({ unit: null, per100: { kcal: 64 }, updatedAt: T0.toISOString() })
   })
 
@@ -410,6 +411,8 @@ describe('parseBackup – Migration Format 5 → 6', () => {
     data.formatVersion = 5
     for (const p of data.tables.products!) delete p.price
     for (const e of data.tables.entries!) delete e.cost
+    for (const e of data.tables.entries!) delete e.estimated
+    delete data.tables.inboxDecisions
     data.tables.blsPrefs = [{ ...newRecord<BlsPref>({ blsCode: 'F503100', portions: [], useOverride: true, price: null }, T0) }]
     delete data.tables.blsPrefs[0]!.price
     return data
@@ -419,7 +422,7 @@ describe('parseBackup – Migration Format 5 → 6', () => {
     const result = parseBackup(JSON.stringify(v5Backup()))
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.backup.formatVersion).toBe(6)
+    expect(result.backup.formatVersion).toBe(7)
     expect(result.backup.tables.products.every((p) => p.price === null)).toBe(true)
     expect(result.backup.tables.entries.every((e) => e.cost === null)).toBe(true)
     expect(result.backup.tables.blsPrefs[0]).toMatchObject({ price: null, updatedAt: T0.toISOString() })
@@ -651,5 +654,49 @@ describe('lastBackupAfterImport', () => {
     expect(lastBackupAfterImport(null, T1.toISOString())).toBe(T1.toISOString())
     expect(lastBackupAfterImport(T2.toISOString(), T1.toISOString())).toBe(T2.toISOString())
     expect(lastBackupAfterImport(T0.toISOString(), T1.toISOString())).toBe(T1.toISOString())
+  })
+})
+
+describe('parseBackup – Migration Format 6 → 7', () => {
+  // Backup aus der Zeit vor den Vorschlägen aus Fitboard (Phase 16)
+  function v6Backup() {
+    const data = JSON.parse(serializeBackup(buildBackup(sampleTables(), T2))) as {
+      formatVersion: number
+      tables: Record<string, Record<string, unknown>[]>
+    }
+    data.formatVersion = 6
+    for (const e of data.tables.entries!) delete e.estimated
+    delete data.tables.inboxDecisions
+    return data
+  }
+
+  it('Einträge bekommen estimated = false, inboxDecisions ist leer, updatedAt bleibt', () => {
+    const result = parseBackup(JSON.stringify(v6Backup()))
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.backup.formatVersion).toBe(7)
+    expect(result.backup.tables.entries[0]).toMatchObject({ estimated: false, updatedAt: T0.toISOString() })
+    expect(result.backup.tables.inboxDecisions).toEqual([])
+  })
+
+  it('Format 7 ohne estimated ist beschädigt', () => {
+    const data = { ...v6Backup(), formatVersion: 7, tables: { ...v6Backup().tables, inboxDecisions: [] } }
+    expect(parseBackup(JSON.stringify(data))).toEqual({ ok: false, error: 'Backup ist beschädigt (entries[0].estimated)' })
+  })
+
+  it('Entscheidungen zu Vorschlägen übersteht den Weg Datei → Einlesen', () => {
+    const tables = sampleTables()
+    tables.inboxDecisions = [
+      newRecord<InboxDecision>({ decision: 'accepted', entryIds: [tables.entries[0]!.id] }, T1),
+      softDelete(newRecord<InboxDecision>({ decision: 'rejected', entryIds: [] }, T1), T2),
+    ]
+    const result = parseBackup(serializeBackup(buildBackup(tables, T2)))
+    expect(result.ok && result.backup.tables.inboxDecisions).toEqual(tables.inboxDecisions)
+  })
+
+  it('unbekannte Entscheidung ist beschädigt', () => {
+    const tables = sampleTables()
+    tables.inboxDecisions = [{ ...newRecord<InboxDecision>({ decision: 'accepted', entryIds: [] }, T1), decision: 'vielleicht' as never }]
+    expect(parseBackup(serializeBackup(buildBackup(tables, T2)))).toEqual({ ok: false, error: 'Backup ist beschädigt (inboxDecisions[0].decision)' })
   })
 })
