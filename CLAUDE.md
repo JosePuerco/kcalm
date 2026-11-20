@@ -38,7 +38,7 @@ Kcalm ist eine minimalistische Kalorien-Tracking-PWA fürs iPhone. Alle Daten bl
 - Prototypen sind Vorlage, nicht Code zum Kopieren: Layout, Texte, Abstände und Verhalten übernehmen, sauber in React-Komponenten neu bauen.
 
 ### Plattform
-- Cloudflare Workers (nur statische Dateien) unter der eigenen Domain `https://kcalm.dunkleschokola.de/`, Wurzelpfad `/`: Vite `base`, Manifest `id`, `scope` und `start_url` passend. Konfiguration in `wrangler.jsonc`; für dieses Repo daher Wrangler statt `cf`. Deploy nur über GitHub Actions, nie lokal.
+- Container `kcalm-web` (nginx, nur statische Dateien) auf Jans Pi hinter dem Cloudflare-Tunnel, wie Setlog, unter der eigenen Domain `https://kcalm.dunkleschokola.de/`, Wurzelpfad `/`: Vite `base`, Manifest `id`, `scope` und `start_url` passend. Deploy nur per `npm run deploy` (`scripts/deploy.ts`, Details `docs/ops.md`), nie von Hand auf dem Pi. Ein Push auf GitHub deployt nichts.
 - Teilen (Backup, Export) über die Web-Share-Schnittstelle, immer mit Ersatz per Download, falls Teilen fehlschlägt (Lehre aus Mixli).
 - Kamera nur nach Tipp starten (iOS).
 - Schrift Geist lokal bündeln (@fontsource), nichts zur Laufzeit von Google Fonts laden.
@@ -51,8 +51,8 @@ Kcalm ist eine minimalistische Kalorien-Tracking-PWA fürs iPhone. Alle Daten bl
 - Bei Unklarheit nachfragen statt raten. Entscheidungen, die vom Plan abweichen, nie still treffen.
 - Rechenlogik: erst Funktionen mit Tests zeigen, dann Oberfläche.
 - Nach jedem Schritt Tests laufen lassen, dann selbst lokal committen (klare Nachricht) und den Commit nennen.
-- Pushen nur nach Jans ausdrücklichem OK (jeder Push deployt). Nicht mitten in einer Phase auf `main` pushen, außer Jan braucht den Stand zum Testen auf dem iPhone.
-- Nach jedem Push das Deployment mit der GitHub-Kommandozeile prüfen (`gh run watch`, Repo `JosePuerco/kcalm`), danach `curl -I https://kcalm.dunkleschokola.de/` (Status 200), und das Ergebnis melden.
+- Pushen und Deployen nur nach Jans ausdrücklichem OK (beides gehört zusammen: Push, dann sofort Deploy). Nicht mitten in einer Phase auf `main` pushen, außer Jan braucht den Stand zum Testen auf dem iPhone.
+- Nach jedem Deploy die Ausgabe von `npm run deploy` prüfen („Deploy ok“), danach `curl -I https://kcalm.dunkleschokola.de/` (Status 200), und das Ergebnis melden.
 
 ### Versionen
 
@@ -62,9 +62,10 @@ Kcalm ist eine minimalistische Kalorien-Tracking-PWA fürs iPhone. Alle Daten bl
   2. Abschnitt `## X.Y.Z – TT.MM.JJJJ` oben in `CHANGELOG.md`, kurz und auf Deutsch
   3. Commit „Version X.Y.Z“, dann `git tag -a vX.Y.Z -m "Version X.Y.Z"`
   4. `git push --atomic origin main vX.Y.Z` (Commit und Tag zusammen)
-  5. Nach erfolgreichem Deploy `gh release create vX.Y.Z --title "Version X.Y.Z" --notes "<Abschnitt aus CHANGELOG.md>"`
-- Der Deploy-Workflow bricht ab, wenn der Tag `v<Version>` fehlt oder nicht auf den gepushten Commit zeigt. Lokale Commits zwischen zwei Pushes bekommen keine eigene Nummer. Bestehende Tags nie verschieben.
-- Nach dem Push Jan Version und Deploy-Ergebnis nennen.
+  5. `npm run deploy`
+  6. Nach erfolgreichem Deploy `gh release create vX.Y.Z --title "Version X.Y.Z" --notes "<Abschnitt aus CHANGELOG.md>"`
+- Das Deploy-Skript bricht ab, wenn es nicht committete Änderungen gibt, der Tag `v<Version>` nicht auf `HEAD` zeigt, `HEAD` nicht auf GitHub ist oder Tests bzw. Lint fehlschlagen. Lokale Commits zwischen zwei Versionen bekommen keine eigene Nummer. Bestehende Tags nie verschieben.
+- Nach dem Deploy Jan Version und Ergebnis nennen.
 - Erledigte Punkte in `PLAN.md` abhaken. Beim Pausieren den Zwischenstand in Abschnitt 8 von `PLAN.md` eintragen und lokal committen.
 - Befehle für Windows PowerShell angeben. Pfade mit Leerzeichen in Anführungszeichen.
 - Keine neuen Abhängigkeiten ohne kurze Begründung.

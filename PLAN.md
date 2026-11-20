@@ -190,7 +190,7 @@ Der Stack entspricht Mixli, ergänzt um Scanner, Diagramme und ein Build-Skript 
 ### Entwicklung und Hosting
 
 - Entwicklung lokal auf dem Windows-Laptop mit Claude Code, Projektordner `C:\Users\Jan\Documents\Claude Projekte\kcalm`
-- Container `kcalm-web` auf dem Pi (`Dockerfile`: node baut, nginx liefert aus; `compose.yaml` im Netz `cloudflare-tunnel`, ohne Port), Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80`. Deploy per `bash scripts/deploy.sh` nach dem Push: prüft Tag, `origin/main`, Test und Lint, überträgt `HEAD` per `git archive` und baut auf dem Pi (Details in `docs/ops.md`)
+- Container `kcalm-web` auf dem Pi (`Dockerfile`: node baut, nginx liefert aus; `compose.yaml` im Netz `cloudflare-tunnel`, ohne Port), Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80`. Deploy per `npm run deploy` nach dem Push: prüft Tag, `origin/main`, Test und Lint, überträgt `HEAD` per `git archive` und baut auf dem Pi (Details in `docs/ops.md`)
 - Wurzelpfad: Vite `base: '/'`, Manifest `id`, `scope` und `start_url` = `/` (bis 1.5.0 Unterpfad `/kcalm/` auf GitHub Pages)
 - Test auf dem iPhone 16e: installieren, Flugmodus-Test, Scanner-Test im Supermarkt
 - Feste App-Hülle gegen Gummiband-Scrollen und Zoomen (Lehre aus Mixli)
@@ -388,11 +388,11 @@ Mit Jan abgestimmt am 12.11.2026. Einweg-Push iPhone → Raspberry Pi, damit ein
 
 Mit Jan abgestimmt am 15.11.2026 (Design `docs/superpowers/specs/2026-11-15-cloudflare-umzug-design.md`, Umsetzungsplan `docs/superpowers/plans/2026-11-15-cloudflare-umzug.md`). Kcalm zieht von `josepuerco.github.io/kcalm/` nach `https://kcalm.dunkleschokola.de/`. Neue Domain = neue IndexedDB, daher Umzug per Backup. Keine Änderung an Funktionen, Datenmodell oder Backup-Format.
 
-**Geändert am 20.11.2026 (Jan):** Statt Cloudflare Workers läuft Kcalm wie Setlog als Container (`kcalm-web`, nginx) auf dem Pi hinter dem Cloudflare-Tunnel; Deploy per `scripts/deploy.sh`, nicht mehr über GitHub Actions. Keine Tokens, keine Secrets.
+**Geändert am 20.11.2026 (Jan):** Statt Cloudflare Workers läuft Kcalm wie Setlog als Container (`kcalm-web`, nginx) auf dem Pi hinter dem Cloudflare-Tunnel; Deploy per `scripts/deploy.ts` (`npm run deploy`), nicht mehr über GitHub Actions. Keine Tokens, keine Secrets.
 
 - [x] 15a App auf Wurzelpfad `/`: Vite `base`, `index.html`, Kamera-Anleitung in App und `docs/kamera-erlaubnis.md`; im Headless-Chrome unter `/` geprüft (Service Worker, Icons, Startbilder, offline neu laden, `bls.json` offline aus dem Cache)
 - [x] ~~15b `wrangler.jsonc` und Deploy-Workflow für Cloudflare Workers~~ (am 20.11.2026 ersetzt durch 15b2)
-- [ ] 15b2 Container und Deploy: `Dockerfile` (node → nginx), `deploy/nginx.conf` (SPA-Fallback, Caching, `.wasm`, Health-Check), `compose.yaml` (Netz `cloudflare-tunnel`, ohne Port), `scripts/deploy.sh` (wie Setlog, Tag-Prüfung hart, `HEAD` in `origin/main`, Test und Lint vorher), `wrangler.jsonc` und `deploy.yml` entfernen; Container lokal gebaut und geprüft
+- [x] 15b2 Container und Deploy: `Dockerfile` (node → nginx), `deploy/nginx.conf` (SPA-Fallback, Caching, `.wasm`, Health-Check), `compose.yaml` (Netz `cloudflare-tunnel`, ohne Port), `scripts/deploy.ts` = `npm run deploy` (wie Setlog, in Node statt Bash, Tag-Prüfung hart, `HEAD` in `origin/main`, Test und Lint vorher), `wrangler.jsonc` und `deploy.yml` entfernen; Container auf dem Pi unter Testnamen gebaut und geprüft (lokal kein Docker)
 - [x] 15c `kcalm-server`: CORS-Standard `https://kcalm.dunkleschokola.de`, Test „alte Adresse bekommt keine Freigabe“
 - [x] 15d Doku: PLAN.md, `CLAUDE.md`, `docs/iphone-test.md` Teil G „Umzug“ (für den Pi-Weg in 15b2 nachziehen: `CLAUDE.md` Plattform/Versionen/Deploy-Prüfung, neu `docs/ops.md`)
 - [ ] 15e Rollout: Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80` (Jan), Version 2.0.0 pushen und deployen, neue Adresse von außen prüfen (Seite, Manifest, `sw.js`/`index.html` ohne Caching auch bei Cloudflare, Neu laden auf Unterpfad), Server-CORS auf dem Pi umstellen
@@ -491,7 +491,7 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
-**20.11.2026 · Phase 15: Hosting auf dem Pi statt Cloudflare Workers** – auf Jans Wunsch, gleicher Weg wie Setlog (Container hinter dem Tunnel, Deploy per Skript). Design und Plan angepasst. Nächster Schritt: 15b2 Container und Deploy-Skript.
+**20.11.2026 · Phase 15: Hosting auf dem Pi statt Cloudflare Workers** – auf Jans Wunsch, gleicher Weg wie Setlog (Container hinter dem Tunnel, Deploy per Skript). 15b2 erledigt: `Dockerfile`, `deploy/nginx.conf`, `compose.yaml`, `scripts/deploy.ts` (`npm run deploy`), `docs/ops.md`, `CLAUDE.md`; `wrangler.jsonc` und `deploy.yml` entfernt. 1101 Tests grün, Lint und Typen sauber. Testcontainer auf dem Pi gebaut (nginx 1.30.7) und wieder entfernt: gesund, Caching-Header, SPA-Fallback, `.wasm`- und Manifest-Typ, gzip, 404 für fehlende Assets; Schutz „nicht committet“ und „kein Tag“ greifen. Nächster Schritt: 15e – Jan legt die Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80` an, dann Version 2.0.0 nach Jans OK pushen und deployen.
 
 **19.11.2026 · Phase 15 (Umzug zu Cloudflare), 15a–15d erledigt** – je ein Commit (App auf `/`, `wrangler.jsonc` + Workflow, Doku; Server-Repo `kcalm-server` Commit „CORS: nur noch kcalm.dunkleschokola.de“, nicht gepusht). 1101 Tests grün, Build und Lint sauber, Server 54 Tests grün, `wrangler deploy --dry-run` ohne Fehler, Headless-Chrome unter `/` inkl. offline geprüft. Nächster Schritt: 15e – Jan legt API-Token an und setzt die Secrets `CLOUDFLARE_API_TOKEN` und `CLOUDFLARE_ACCOUNT_ID`, dann Version 2.0.0 nach Jans OK pushen.
 

@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import tokens from './design/tokens.json' with { type: 'json' }
 
-// Die App liegt unter https://kcalm.dunkleschokola.de/ (Cloudflare Workers, Wurzelpfad)
+// Die App liegt unter https://kcalm.dunkleschokola.de/ (Container auf dem Pi, Wurzelpfad)
 const base = '/'
 
 export default defineConfig({

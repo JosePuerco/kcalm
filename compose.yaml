@@ -1,0 +1,21 @@
+# Auf dem Pi unter ~/kcalm-web/src, gestartet von scripts/deploy.ts (npm run deploy).
+# Kein Port nach außen: erreichbar nur über cloudflared im Netz cloudflare-tunnel
+# (Route im Cloudflare-Dashboard: kcalm.dunkleschokola.de → http://kcalm-web:80)
+name: kcalm-web
+services:
+  kcalm-web:
+    build: .
+    container_name: kcalm-web
+    restart: unless-stopped
+    networks:
+      - tunnel
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "3"
+
+networks:
+  tunnel:
+    external: true
+    name: cloudflare-tunnel

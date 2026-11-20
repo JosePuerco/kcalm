@@ -55,7 +55,7 @@ Jan hat D gewählt (20.11.2026).
 - Vor dem Abschluss mit `curl -I` prüfen, dass `sw.js` und `index.html` nicht gecacht werden (auch nicht von Cloudflare: `cf-cache-status`).
 
 ### Deploy
-- `scripts/deploy.sh` nach dem Vorbild von Setlog, Aufruf `bash scripts/deploy.sh`, Ziel `jan@pi.local` (überschreibbar per `PI_HOST`).
+- `scripts/deploy.ts` nach dem Vorbild von Setlog, Aufruf `npm run deploy` (Node statt Bash, weil `bash` in PowerShell auf WSL zeigt, nicht auf Git Bash), Ziel `jan@pi.local` (überschreibbar per `PI_HOST`).
 - Bricht ab, wenn: Änderungen nicht committet sind; Tag `v<Version>` nicht auf `HEAD` zeigt (hart, nicht nur Warnung); `HEAD` nicht in `origin/main` enthalten ist (was live läuft, steht auch auf GitHub).
 - Dann `npm test` und `npm run lint` auf dem Laptop, `git archive HEAD` per SSH nach `~/kcalm-web/src`, `docker compose up -d --build`, warten bis der Container gesund ist (sonst Logs zeigen, Abbruch).
 - Kein Backup nötig (der Container hat keine Daten).
@@ -70,7 +70,7 @@ Jan hat D gewählt (20.11.2026).
 ### Reihenfolge des Umzugs
 1. Code-Änderungen (App, Container, Skript, Texte) lokal, Tests/Lint/Build grün, im Headless-Chrome unter `/` geprüft.
 2. Jan legt die Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80` an.
-3. Push als neue Version, dann `scripts/deploy.sh` → erster Deploy auf den Pi. GitHub Pages bleibt dabei unverändert auf 1.5.0 stehen (es gibt keinen Workflow mehr, der dorthin deployt), die alte App funktioniert weiter.
+3. Push als neue Version, dann `scripts/deploy.ts` (`npm run deploy`) → erster Deploy auf den Pi. GitHub Pages bleibt dabei unverändert auf 1.5.0 stehen (es gibt keinen Workflow mehr, der dorthin deployt), die alte App funktioniert weiter.
 4. Prüfen von außen: Seite, Manifest, `sw.js`, Offline, Header.
 5. Server-CORS auf neue Domain umstellen (ab jetzt kann die alte App nicht mehr pushen).
 6. Jan auf dem iPhone, Checkliste: alte App → Push aus, Backup teilen → neue Adresse in Safari, Kamera erlauben, zum Home-Bildschirm → „Aus Backup laden“ → Push mit Adresse und Token einschalten → Vollabgleich, Anzahl Einträge iPhone = Pi → Theme, Profile, Gewichte stichprobenartig → alte App vom Home-Bildschirm löschen.
