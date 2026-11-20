@@ -395,7 +395,7 @@ Mit Jan abgestimmt am 15.11.2026 (Design `docs/superpowers/specs/2026-11-15-clou
 - [x] 15b2 Container und Deploy: `Dockerfile` (node → nginx), `deploy/nginx.conf` (SPA-Fallback, Caching, `.wasm`, Health-Check), `compose.yaml` (Netz `cloudflare-tunnel`, ohne Port), `scripts/deploy.ts` = `npm run deploy` (wie Setlog, in Node statt Bash, Tag-Prüfung hart, `HEAD` in `origin/main`, Test und Lint vorher), `wrangler.jsonc` und `deploy.yml` entfernen; Container auf dem Pi unter Testnamen gebaut und geprüft (lokal kein Docker)
 - [x] 15c `kcalm-server`: CORS-Standard `https://kcalm.dunkleschokola.de`, Test „alte Adresse bekommt keine Freigabe“
 - [x] 15d Doku: PLAN.md, `CLAUDE.md`, `docs/iphone-test.md` Teil G „Umzug“ (für den Pi-Weg in 15b2 nachziehen: `CLAUDE.md` Plattform/Versionen/Deploy-Prüfung, neu `docs/ops.md`)
-- [ ] 15e Rollout: Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80` (Jan), Version 2.0.0 pushen und deployen, neue Adresse von außen prüfen (Seite, Manifest, `sw.js`/`index.html` ohne Caching auch bei Cloudflare, Neu laden auf Unterpfad), Server-CORS auf dem Pi umstellen
+- [x] 15e Rollout (20.11.2026): Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80` (Jan), Version 2.0.0 pushen und deployen, neue Adresse von außen prüfen (Seite, Manifest, `sw.js`/`index.html` ohne Caching auch bei Cloudflare, Neu laden auf Unterpfad), Server-CORS auf dem Pi umstellen
 - [ ] 15f Umzug auf dem iPhone (Checkliste `docs/iphone-test.md` Teil G), Anzahl Einträge iPhone = Pi, keine Datensätze fälschlich gelöscht
 - [ ] 15g GitHub Pages abschalten (nach Jans OK), Release v2.0.0
 
@@ -490,6 +490,8 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**20.11.2026 · Version 2.0.0 auf dem Pi deployt (15e erledigt)** – Tunnel-Route von Jan angelegt, `npm run deploy` ok (463917b), von außen geprüft: Seite, Unterpfad, Manifest (`application/manifest+json`), `bls.json`, Version 2.0.0 im Bundle. `index.html`, Manifest und `bls.json` mit `no-cache` (Cloudflare `DYNAMIC`); `/assets/*` ein Jahr. Cloudflare setzt bei `sw.js` und `registerSW.js` die Browser-Cachezeit auf 4 h (Zonen-Einstellung „Browser Cache TTL“) und prüft am Rand nach (`REVALIDATED`); unkritisch, weil der Browser `sw.js` beim Update-Check am HTTP-Cache vorbei lädt. `kcalm-server` gepusht, auf dem Pi `ALLOWED_ORIGIN=https://kcalm.dunkleschokola.de` (Sicherung `.env.bak-2026-11-20`), CORS geprüft: neue Adresse frei, alte nicht. Release v2.0.0 angelegt. GitHub Pages bleibt bis 15g auf 1.5.0. Nächster Schritt: 15f – Jan zieht auf dem iPhone um (Checkliste `docs/iphone-test.md` Teil G).
 
 **20.11.2026 · Phase 15: Hosting auf dem Pi statt Cloudflare Workers** – auf Jans Wunsch, gleicher Weg wie Setlog (Container hinter dem Tunnel, Deploy per Skript). 15b2 erledigt: `Dockerfile`, `deploy/nginx.conf`, `compose.yaml`, `scripts/deploy.ts` (`npm run deploy`), `docs/ops.md`, `CLAUDE.md`; `wrangler.jsonc` und `deploy.yml` entfernt. 1101 Tests grün, Lint und Typen sauber. Testcontainer auf dem Pi gebaut (nginx 1.30.7) und wieder entfernt: gesund, Caching-Header, SPA-Fallback, `.wasm`- und Manifest-Typ, gzip, 404 für fehlende Assets; Schutz „nicht committet“ und „kein Tag“ greifen. Nächster Schritt: 15e – Jan legt die Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80` an, dann Version 2.0.0 nach Jans OK pushen und deployen.
 
