@@ -4,10 +4,12 @@ import type { BlsPref, Entry, Product, ProductOverride } from '../db/types.ts'
 import {
   addedMessage,
   amountToKeypad,
+  canEditAsEstimate,
   canEditAsFood,
   choiceFromBls,
   choiceFromEntry,
   editedEntry,
+  estimateChoiceFromEntry,
   choiceFromProduct,
   foodEntry,
   needsCheck,
@@ -256,3 +258,40 @@ describe('needsCheck', () => {
     expect(needsCheck(choiceFromBls(food))).toBe(false)
   })
 })
+
+describe('geschätzte Einträge bearbeiten (Phase 16)', () => {
+  function estimated(changes: Partial<Entry> = {}): Entry {
+    return newRecord<Entry>({
+      date: '2026-11-20',
+      slotId: 's1',
+      kind: 'quick',
+      ref: null,
+      nameSnapshot: 'Chili',
+      amount: 450,
+      unit: 'g',
+      portionLabel: null,
+      nutrients: { ...unknownNutrients(), kcal: 610, protein: 38 },
+      mealGroupId: null,
+      mealName: null,
+      cost: null,
+      estimated: true,
+      ...changes,
+    })
+  }
+
+  it('canEditAsEstimate nur mit Schätzung, Menge und g/ml', () => {
+    expect(canEditAsEstimate(estimated())).toBe(true)
+    expect(canEditAsEstimate(estimated({ estimated: false }))).toBe(false)
+    expect(canEditAsEstimate(estimated({ amount: null, unit: null }))).toBe(false)
+  })
+
+  it('estimateChoiceFromEntry rechnet pro 100 aus dem Snapshot; 300 g = zwei Drittel', () => {
+    const food = estimateChoiceFromEntry(estimated())
+    expect(food).toMatchObject({ name: 'Chili', unit: 'g', verified: false })
+    const changes = editedEntry(food, 300, '2026-11-20', 's1')
+    expect(changes.amount).toBe(300)
+    expect(changes.nutrients.kcal).toBeCloseTo(406.6667, 4)
+    expect(changes.nutrients.carbs).toBeNull()
+  })
+})
+

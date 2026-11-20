@@ -31,10 +31,12 @@ import { getSlots } from '../../db/slots.ts'
 import type { Entry, LocalDate, Meal, Slot } from '../../db/types.ts'
 import {
   addedMessage,
+  canEditAsEstimate,
   canEditAsFood,
   choiceFromEntry,
   choiceFromProduct,
   editedEntry,
+  estimateChoiceFromEntry,
   foodEntry,
   needsCheck,
   type FoodChoice,
@@ -442,7 +444,8 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
           />
         )}
 
-        {step.kind === 'edit' && step.entry.kind === 'quick' && (
+        {/* Geschätzte Einträge mit Menge in g/ml (Fitboard, Phase 16) bearbeiten sich wie ein Lebensmittel */}
+        {step.kind === 'edit' && step.entry.kind === 'quick' && !canEditAsEstimate(step.entry) && (
           <QuickStep
             values={quick}
             onChange={setQuick}
@@ -459,9 +462,13 @@ function AddFlow({ slots, initialSlotId, editing, scan, onHeader }: FlowProps) {
           />
         )}
 
-        {step.kind === 'edit' && step.entry.kind !== 'quick' && (
+        {step.kind === 'edit' && (step.entry.kind !== 'quick' || canEditAsEstimate(step.entry)) && (
           <EditStep
-            food={choiceFromEntry(step.entry, step.entry.ref ? resolver.resolve(step.entry.ref) : undefined)}
+            food={
+              canEditAsEstimate(step.entry)
+                ? estimateChoiceFromEntry(step.entry)
+                : choiceFromEntry(step.entry, step.entry.ref ? resolver.resolve(step.entry.ref) : undefined)
+            }
             input={input}
             onInput={setInput}
             busy={busy}

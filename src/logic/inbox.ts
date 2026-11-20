@@ -5,7 +5,9 @@
 import { z } from 'zod'
 import { NUTRIENT_KEYS, unknownNutrients } from '../db/records.ts'
 import type { FoodRef, InboxItem, LocalDate, Meal, Nutrients, Slot, Unit } from '../db/types.ts'
-import { foodEntry, type FoodChoice, type NewEntryFields } from './addFood.ts'
+import { ESTIMATE_REF, ESTIMATE_SOURCE, foodEntry, type FoodChoice, type NewEntryFields } from './addFood.ts'
+
+export { ESTIMATE_SOURCE }
 import { addDays } from './dates.ts'
 import { initialMealLines, mealEntries, type MealLine } from './meal.ts'
 import { nutrientsForAmount } from './nutrients.ts'
@@ -166,6 +168,21 @@ export function resolvePart(
   return estimateOf(s)
 }
 
+/** Schätzung mit g/ml als Lebensmittel für den Mengen-Schritt (nur Anzeige, wird nie gespeichert); sonst null */
+export function estimateFood(part: Extract<ResolvedPart, { kind: 'estimate' }>): FoodChoice | null {
+  if (!part.per100 || part.unit === null) return null
+  return {
+    ref: ESTIMATE_REF,
+    name: part.name,
+    source: ESTIMATE_SOURCE,
+    verified: false,
+    unit: part.unit,
+    per100: part.per100,
+    portions: [],
+    archived: false,
+  }
+}
+
 /** Menge einer Schätzung ändern: Werte linear umrechnen, unbekannt bleibt unbekannt */
 export function scaleEstimate(part: Extract<ResolvedPart, { kind: 'estimate' }>, amount: number): Extract<ResolvedPart, { kind: 'estimate' }> {
   if (!part.per100) return part
@@ -227,10 +244,10 @@ export function suggestionEntries(
 }
 
 /** Bester Treffer für eine Schätzung, nur wenn jedes Wort als ganzes Wort im Namen vorkommt */
-export function bestMatch(name: string, index: SearchIndex<FoodChoice>): FoodChoice | null {
+export function bestMatch<T>(name: string, index: SearchIndex<T>, getName: (item: T) => string): T | null {
   const [hit] = search(index, name, 1)
-  if (!hit) return null
-  const words = new Set(normalize(hit.name).split(' '))
+  if (hit === undefined) return null
+  const words = new Set(normalize(getName(hit)).split(' '))
   return normalize(name)
     .split(' ')
     .filter(Boolean)

@@ -4,6 +4,8 @@ import type { FoodRef, Meal, Slot } from '../db/types.ts'
 import type { FoodChoice } from './addFood.ts'
 import {
   bestMatch,
+  ESTIMATE_SOURCE,
+  estimateFood,
   estimatePer100,
   parseInbox,
   resolvePart,
@@ -183,6 +185,21 @@ describe('scaleEstimate', () => {
   })
 })
 
+describe('estimateFood', () => {
+  it('Schätzung in g als Lebensmittel für den Mengen-Schritt (nur zur Anzeige)', () => {
+    const part = resolvePart(payload(), resolve, findMeal)
+    if (part.kind !== 'estimate') throw new Error('erwartet Schätzung')
+    expect(estimateFood(part)).toMatchObject({ name: 'Chili', source: ESTIMATE_SOURCE, verified: false, unit: 'g', portions: [] })
+    expect(estimateFood(part)!.per100.kcal).toBeCloseTo(135.5556, 4)
+  })
+
+  it('ohne g/ml → null (Menge nicht änderbar)', () => {
+    const part = resolvePart(payload({ unit: 'Stück', amount: 1 }), resolve, findMeal)
+    if (part.kind !== 'estimate') throw new Error('erwartet Schätzung')
+    expect(estimateFood(part)).toBeNull()
+  })
+})
+
 describe('slotIdFor', () => {
   const slots = [
     newRecord<Slot>({ name: 'Frühstück', order: 1, timeFrom: null, timeTo: null, archived: false }),
@@ -250,11 +267,11 @@ describe('bestMatch', () => {
   const index = createSearchIndex([reis, teig], (f) => f.name)
 
   it('„Reis gekocht“ findet „Reis, gekocht“', () => {
-    expect(bestMatch('Reis gekocht', index)).toBe(reis)
+    expect(bestMatch('Reis gekocht', index, (f) => f.name)).toBe(reis)
   })
 
   it('„Pizza“ findet „Pizzateig“ nicht (ganze Wörter)', () => {
-    expect(bestMatch('Pizza', index)).toBeNull()
+    expect(bestMatch('Pizza', index, (f) => f.name)).toBeNull()
   })
 })
 

@@ -162,6 +162,41 @@ export function choiceFromEntry(entry: Entry, current?: FoodChoice): FoodChoice 
   }
 }
 
+/** Quelle einer Schätzung aus Fitboard (Phase 16), z. B. „Schätzung · 136 kcal/100 g“ */
+export const ESTIMATE_SOURCE = 'Schätzung'
+/**
+ * Platzhalter-Verweis, nur damit eine Schätzung im Mengen-Schritt angezeigt werden kann. Wird nie gespeichert:
+ * Geschätzte Einträge bleiben Schnelleinträge ohne Verweis (ref null, estimated true).
+ */
+export const ESTIMATE_REF: FoodRef = 'product:schaetzung'
+
+/** Geschätzter Eintrag mit Menge in g/ml: Menge änderbar wie bei einem Lebensmittel */
+export function canEditAsEstimate(entry: Entry): boolean {
+  return entry.kind === 'quick' && entry.estimated && entry.unit !== null && entry.amount !== null && entry.amount > 0
+}
+
+/** Wie choiceFromEntry, für geschätzte Einträge: Werte pro 100 aus dem Snapshot */
+export function estimateChoiceFromEntry(entry: Entry): FoodChoice {
+  if (!canEditAsEstimate(entry) || entry.amount === null || entry.unit === null) {
+    throw new RangeError('Nur geschätzte Einträge mit Menge in g oder ml lassen sich so bearbeiten')
+  }
+  const per100 = {} as Nutrients
+  for (const key of NUTRIENT_KEYS) {
+    const v = entry.nutrients[key]
+    per100[key] = v === null ? null : (v / entry.amount) * 100
+  }
+  return {
+    ref: ESTIMATE_REF,
+    name: entry.nameSnapshot,
+    source: ESTIMATE_SOURCE,
+    verified: false,
+    unit: entry.unit,
+    per100,
+    portions: [],
+    archived: false,
+  }
+}
+
 export type EntryChanges = Pick<Entry, 'date' | 'slotId' | 'amount' | 'portionLabel' | 'nutrients'>
 
 /** Änderungen beim Speichern: Menge (Werte skaliert), Slot und Tag (Verschieben) */
