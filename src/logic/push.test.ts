@@ -390,7 +390,7 @@ describe('Einstellungen und Zustand', () => {
   })
 
   it('liest Gespeichertes zurück', () => {
-    const config = { enabled: true, serverUrl: 'https://a.example', token: 'x'.repeat(20) }
+    const config = { enabled: true, serverUrl: 'https://a.example', token: 'x'.repeat(20), suggestions: true }
     expect(parsePushConfig(JSON.stringify(config))).toEqual(config)
     const state = { ...DEFAULT_PUSH_STATE, receiptsFor: 'https://a.example', lastError: 'Server nicht erreichbar' }
     expect(parsePushState(JSON.stringify(state))).toEqual(state)
@@ -398,12 +398,12 @@ describe('Einstellungen und Zustand', () => {
 
   it('readyConfig: aus → null, unvollständig → Fehler, vollständig → geprüfte Werte', () => {
     expect(readyConfig(DEFAULT_PUSH_CONFIG)).toBeNull()
-    expect(readyConfig({ enabled: true, serverUrl: '', token: '' })).toEqual({ ok: false, error: 'Bitte Server-Adresse eingeben' })
-    expect(readyConfig({ enabled: true, serverUrl: 'https://a.example', token: '' })).toEqual({
+    expect(readyConfig({ enabled: true, serverUrl: '', token: '', suggestions: false })).toEqual({ ok: false, error: 'Bitte Server-Adresse eingeben' })
+    expect(readyConfig({ enabled: true, serverUrl: 'https://a.example', token: '', suggestions: false })).toEqual({
       ok: false,
       error: 'Bitte Token eingeben',
     })
-    expect(readyConfig({ enabled: true, serverUrl: 'https://a.example/ ', token: ' abcdefghijklmnopq ' })).toEqual({
+    expect(readyConfig({ enabled: true, serverUrl: 'https://a.example/ ', token: ' abcdefghijklmnopq ', suggestions: false })).toEqual({
       ok: true,
       serverUrl: 'https://a.example',
       token: 'abcdefghijklmnopq',

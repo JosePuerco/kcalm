@@ -26,6 +26,9 @@ function set(next: Partial<PushView>) {
 
 const refresh = () => set({ config: storage.loadConfig(), state: storage.loadState() })
 
+/** Nach dem Abholen der Vorschläge (eigener Zustand im selben Speicher) */
+export const refreshPushView = refresh
+
 export function getPushStorage() {
   return storage
 }

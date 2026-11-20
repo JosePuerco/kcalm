@@ -12,6 +12,7 @@ import { AddSheet } from '../screens/add/AddSheet.tsx'
 import { useLiveQuery } from '../db/live.ts'
 import { isSetupDone } from '../db/setup.ts'
 import { openAddSheet } from './diaryState.ts'
+import { useInboxTriggers } from './inboxSync.ts'
 import { usePendingSyncTriggers } from './pendingSync.ts'
 import { usePushTriggers } from './pushSync.ts'
 import { Navigation } from './Navigation.tsx'
@@ -34,6 +35,7 @@ const screens: Record<Route, ComponentType | null> = {
 function PendingSync() {
   usePendingSyncTriggers()
   usePushTriggers()
+  useInboxTriggers()
   return null
 }
 

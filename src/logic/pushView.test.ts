@@ -12,7 +12,7 @@ import {
 // Lokale Zeit wie in der App (Tests laufen in der Zeitzone des Rechners)
 const now = new Date(2026, 10, 12, 19, 5)
 const at = (d: number, h: number, m: number) => new Date(2026, 10, d, h, m).toISOString()
-const on: PushConfig = { enabled: true, serverUrl: 'https://kcalm-api.dunkleschokola.de', token: 'x'.repeat(32) }
+const on: PushConfig = { enabled: true, serverUrl: 'https://kcalm-api.dunkleschokola.de', token: 'x'.repeat(32), suggestions: false }
 
 describe('relativeTime', () => {
   it('heute mit Uhrzeit, gestern, vor n Tagen, noch nie', () => {
