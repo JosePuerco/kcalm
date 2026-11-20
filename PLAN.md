@@ -399,30 +399,20 @@ Mit Jan abgestimmt am 15.11.2026 (Design `docs/superpowers/specs/2026-11-15-clou
 - [x] 15f (20.11.2026) Umzug auf dem iPhone (Checkliste `docs/iphone-test.md` Teil G), Anzahl Einträge iPhone = Pi, keine Datensätze fälschlich gelöscht
 - [x] 15g GitHub Pages abschalten (nach Jans OK), Release v2.0.0 – Pages und Umgebung `github-pages` gelöscht, alte Adresse 404 (20.11.2026)
 
-### Phase 16 – Vorschläge aus Fitboard (geplant, noch nicht abgestimmt)
+### Phase 16 – Vorschläge aus Fitboard
 
-Festgehalten am 19.11.2026 aus Fitboard Plan 6 (Fitboard v0.6.0). Kommt nach Phase 15 (Umzug zu Cloudflare), weil Domain und CORS sich dort ändern. Vor dem Start mit Jan abstimmen (Design, dann Umsetzungsplan).
+Mit Jan abgestimmt am 20.11.2026 (Design `docs/superpowers/specs/2026-11-20-fitboard-vorschlaege-design.md`, Umsetzungsplan 16.1 `docs/superpowers/plans/2026-11-20-fitboard-vorschlaege-16-1.md`). Claude (Claude-App: Foto, Sprache, Text) legt über Fitboard Vorschläge in einen **Briefkasten in `kcalm-server`**; Kcalm holt ihn ab, Jan übernimmt oder lehnt ab. Nichts landet ohne Jans Tipp im Tagebuch. Weg wie bei Setlog: Fitboard schreibt mit eigenem Token in den Server, Kcalm liest mit vorhandener Adresse und Token; Entscheidungen gehen mit dem normalen Push zurück. Lesen vom eigenen Server von Jan freigegeben.
 
-**Worum es geht:** Claude (Claude-App, z. B. per Foto) legt über Fitboards MCP-Server Mahlzeiten als **Vorschläge** ab. Fitboard speichert sie nur; sie erscheinen erst in Kcalm, wenn Kcalm sie abholt und Jan jeden einzeln bestätigt. Kcalm bleibt maßgeblich und funktioniert ohne Fitboard weiter wie bisher. Stand 19.11.2026: Fitboard nimmt Vorschläge an, Kcalm holt noch nicht ab.
+Fälle (alle von Jan aufgenommen): großes Rezept, Sprache, das Übliche („wie immer Magerquark“), Teller-Foto, Nährwerttabelle, Rezept-Foto, Kassenbon, Nachtragen, Planen, Gewicht von Garmin.
 
-**Was Fitboard bereitstellt** (Tabelle `meal_suggestions` in Fitboard, je Lebensmittel ein Vorschlag):
-- `id` (UUIDv7), `date` (JJJJ-MM-TT, Europe/Berlin; von heute − 7 bis morgen), `slot` (Kcalm-Slotname oder `null`)
-- `name`, `amount`, `unit`, `kcal`, `protein`, `carbs`, `fat`, `fiber`, `sugar` – unbekannt ist `null`, nie 0
-- `status`: `open` (neu) → `fetched` (von Kcalm abgeholt) → `accepted` (Jan hat übernommen) oder `rejected` (abgelehnt oder von Claude zurückgezogen)
-- `createdAt`, `updatedAt` (ISO-8601, UTC)
-
-**Ablauf (Entwurf):**
-- [ ] 16a Fitboard: Abholweg für Kcalm (eigener Plan in Fitboard) – offene Vorschläge lesen, Stand auf `fetched`/`accepted`/`rejected` setzen. Fitboard ist sonst nur hinter Cloudflare Access erreichbar; Weg und Anmeldung klären (siehe Fragen).
-- [ ] 16b Kcalm Rechenlogik `src/logic/` mit Tests: Vorschlag → Tagebucheintrag (Snapshot der Nährwerte, `null` bleibt `null`), Slot-Zuordnung (unbekannt/`null` → Jan wählt), Doppelte erkennen (gleiche `id` nie zweimal)
-- [ ] 16c Kcalm Abholen und Anzeigen: Hinweis „n Vorschläge aus Fitboard“, Liste je Tag, je Vorschlag Übernehmen (mit Menge/Slot anpassen) oder Ablehnen; nichts landet ohne Jans Tipp im Tagebuch
-- [ ] 16d Einstellungen: Schalter (Standard aus), Adresse, Token wie beim Server-Push; offline und ohne Fitboard keine Fehler im Alltag
-- [ ] 16e Version deployen, iPhone-Test
-
-**Offene Fragen für Jan:**
-- Wie kommt Kcalm an Fitboard heran? Fitboard liegt hinter Cloudflare Access. Möglich: eigener Hostname mit eigenem Token (wie `kcalm-api`, ohne Access), ein Access-Service-Token, oder der Umweg über `kcalm-server` (Fitboard legt ab, Kcalm holt dort).
-- Das ändert die Regel „Netzzugriff nur auf OFF und Jans Server (Einweg-Push)“ – Kcalm würde erstmals vom eigenen Server **lesen**. Ausdrücklich freigeben.
-- Gewichte: Das Fitboard-Design nennt zusätzlich „Gewichte für Kcalm“ (Garmin-Gewicht statt Kurzbefehl). In dieser Phase mit erledigen oder getrennt?
-- Was passiert mit Vorschlägen, die nie abgeholt werden (z. B. nach 7 Tagen verwerfen)?
+- [ ] 16.1 Fundament (Version 2.1.0): Briefkasten (`kcalm-server`), Fitboard-Werkzeuge schreiben dorthin (Verweis auf Kcalm-Lebensmittel/Mahlzeiten/Rezepte oder freie Werte, Gruppe je Foto/Nachricht, `fitboard_kcalm_foods` zum Nachschlagen), Kcalm: Schalter, Abholen, Zeile und Sheet im Tagebuch mit „Alle übernehmen“, Teile bearbeiten, Treffer statt Schätzung, „geschätzt“ im Tagebuch. Deckt Teller-Foto, das Übliche, Sprache, Nachtragen, Planen ab.
+  - [x] Teil A `kcalm-server`: Tabelle `inbox`, `/v1/inbox` mit getrennten Tokens, Entscheidungen aus dem Push
+  - [x] Teil B Fitboard (Branch `kcalm-briefkasten`): Schreibclient, Werkzeuge über den Briefkasten, `fitboard_kcalm_foods`, `meal_suggestions` entfernt
+  - [x] Teil C Kcalm: Datenmodell (DB 8, Backup 7), Rechenlogik, Abholen/Entscheiden, Oberfläche, Doku
+  - [ ] Teil D Ausrollen (Server → Fitboard → Kcalm 2.1.0), Ende-zu-Ende, iPhone-Test Teil H
+- [ ] 16.2 Gewicht von Garmin: Fitboard liefert Garmin-Gewichte über den Briefkasten; danach entfallen in Kcalm Kurzbefehl-Import **und** manuelles Eintragen (Jan: Garmin ist die einzige Quelle, manuell trägt er in Garmin ein). Vorher eigenes kurzes Design.
+- [ ] 16.3 Neues anlegen: Vorschläge für neue eigene Lebensmittel (Nährwerttabelle) und Rezepte (großes Rezept = gespeichertes Kcalm-Rezept), öffnen die vorhandenen Formulare vorbefüllt. Vorher eigenes kurzes Design.
+- [ ] 16.4 Preise: Preise vom Kassenbon als Vorschlag für vorhandene Lebensmittel. Vorher eigenes kurzes Design.
 
 ## 7. Entscheidungen zu früher offenen Fragen
 
@@ -478,6 +468,7 @@ Festgehalten am 19.11.2026 aus Fitboard Plan 6 (Fitboard v0.6.0). Kommt nach Pha
 | Push: was ausstehend ist | Quittungsliste `pushState` (Tabelle, id, Prüfsumme des zuletzt bestätigten Stands) statt `updatedAt`-Cursor: erfasst auch Backup-Import, Migrationen und Uhrsprünge. Lokal fehlende, aber quittierte Datensätze werden als „entfernt“ gemeldet. Quittiert wird erst nach Antwort 200 (Jan, 12.11.2026) |
 | Push: Server | Upsert je (Tabelle, id) ohne `updatedAt`-Vergleich, damit auch „Alles ersetzen“ mit älterem Backup ankommt; doppelt gesendet = überschrieben. Nur aktueller Stand, keine Historie. Entfernte Datensätze bekommen `deletedAt`. Eigene SQLite-Datenbank, eigenes privates Repo `kcalm-server`, API unter `kcalm-api.dunkleschokola.de` über den bestehenden Cloudflare Tunnel, ohne Cloudflare Access (Jan, 12.11.2026) |
 | Hosting auf dem Pi | Kcalm läuft wie Setlog als Container auf dem Pi hinter dem Cloudflare-Tunnel, deployt per Skript vom Laptop (nur committeter, getaggter und gepushter Stand, Test und Lint vorher). Ersetzt am 20.11.2026 den Plan vom 15.11. (Cloudflare Workers aus GitHub Actions mit API-Token und Secrets), weil das ein Sonderweg im Ökosystem war. Kein Test-Workflow auf GitHub. Pi-Server erlaubt per CORS nur noch die neue Domain, keine Übergangszeit mit zwei (Jan, 15. und 20.11.2026) |
+| Vorschläge aus Fitboard | Briefkasten in `kcalm-server` wie bei Setlog (Fitboard schreibt mit eigenem Token, Kcalm liest; Entscheidungen über den Push, Tabelle `inboxDecisions` im Backup, damit nichts doppelt erscheint). Je Foto/Nachricht eine Gruppe mit „Alle übernehmen“, Teile vorher bearbeitbar. Verweis auf Kcalm-Lebensmittel rechnet mit Kcalms Werten; freie Werte werden Schnelleinträge mit Menge und Markierung „geschätzt“, die wie alle Einträge zählen; Menge ändern skaliert linear. Ohne passenden Slot fragt Kcalm einmal je Gruppe. Vorschläge älter als 7 Tage verfallen. Lesen vom eigenen Server freigegeben (Jan, 20.11.2026) |
 | Push: Tagesziele | Bewusste Ausnahme von „nur Rohdaten“: Zusätzlich zu Profilen und Zuweisungen sendet Kcalm je Tag die berechneten Ziele (Profilversion, Wochenbudget, festes und dynamisches Tagesziel, Makroziele in g), damit das Dashboard die Rechnung nicht nachbauen muss. Lokal wird nichts davon gespeichert (Jan, 12.11.2026) |
 | Push: Token und Einstellungen | Server-URL, Token, Schalter und Status nur in `localStorage`, nicht in `settings` und nicht im Backup; nach Neuinstallation neu eingeben. Token nie im Code oder Build (Repo öffentlich) (Jan, 12.11.2026) |
 | Push: Datenbank-Backup | Nächtlich per SQLite-Backup, 14 Tage, vorerst nur lokal auf dem Pi; notfalls lässt sich alles per Neu-Upload vom iPhone wiederherstellen (Jan, 12.11.2026) |
