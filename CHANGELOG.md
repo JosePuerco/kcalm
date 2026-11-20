@@ -8,6 +8,13 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 2.0.0 – 20.11.2026
+
+- Neue Adresse: Kcalm liegt jetzt unter https://kcalm.dunkleschokola.de/ (auf dem eigenen Pi) statt unter josepuerco.github.io/kcalm/
+- Umbruch: Die Daten kommen nicht automatisch mit. Umzug per Backup: in der alten App sichern, die neue App zum Home-Bildschirm hinzufügen und dort „Aus Backup laden“
+- Server-Push nimmt nur noch Daten von der neuen Adresse an; Push in der neuen App mit Adresse und Token wieder einschalten
+- Keine Änderung an Funktionen, Datenmodell oder Backup-Format
+
 ## 1.5.0 – 12.11.2026
 
 - Neu: Server-Push unter Einstellungen › Daten. Kcalm überträgt deine Daten automatisch an deinen eigenen Server (nach dem Speichern, beim Öffnen, wenn das Netz zurückkommt)
