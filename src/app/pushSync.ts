@@ -7,16 +7,18 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { db } from '../db/db.ts'
 import { useLiveQuery } from '../db/live.ts'
 import { browserPushStorage, pendingPushCount, pushNow, type PushOutcome } from '../db/push.ts'
-import { isPushRelevantChange, PUSH_DEBOUNCE_MS, type PushConfig, type PushState } from '../logic/push.ts'
+import { isPushRelevantChange, PUSH_DEBOUNCE_MS, type InboxState, type PushConfig, type PushState } from '../logic/push.ts'
 
 export interface PushView {
   config: PushConfig
   state: PushState
+  /** Briefkasten (Phase 16) */
+  inbox: InboxState
   running: boolean
 }
 
 const storage = browserPushStorage()
-let view: PushView = { config: storage.loadConfig(), state: storage.loadState(), running: false }
+let view: PushView = { config: storage.loadConfig(), state: storage.loadState(), inbox: storage.loadInboxState(), running: false }
 const listeners = new Set<() => void>()
 
 function set(next: Partial<PushView>) {
@@ -24,7 +26,7 @@ function set(next: Partial<PushView>) {
   for (const l of listeners) l()
 }
 
-const refresh = () => set({ config: storage.loadConfig(), state: storage.loadState() })
+const refresh = () => set({ config: storage.loadConfig(), state: storage.loadState(), inbox: storage.loadInboxState() })
 
 /** Nach dem Abholen der Vorschläge (eigener Zustand im selben Speicher) */
 export const refreshPushView = refresh

@@ -47,11 +47,11 @@ export async function fetchInbox(storage: PushStorage, net: PushNet = defaultPus
 
   const result = await get(net, ready.serverUrl, ready.token)
   if ('kind' in result) {
-    storage.saveState({ ...storage.loadState(), inboxLastError: pushErrorMessage(result) })
+    storage.saveInboxState({ ...storage.loadInboxState(), lastError: pushErrorMessage(result) })
     return 'failed'
   }
   if ((result.json as { ok?: unknown } | null)?.ok !== true) {
-    storage.saveState({ ...storage.loadState(), inboxLastError: pushErrorMessage({ kind: 'invalidResponse' }) })
+    storage.saveInboxState({ ...storage.loadInboxState(), lastError: pushErrorMessage({ kind: 'invalidResponse' }) })
     return 'failed'
   }
   const items = parseInbox(result.json)
@@ -59,7 +59,7 @@ export async function fetchInbox(storage: PushStorage, net: PushNet = defaultPus
     await db.inbox.clear()
     await db.inbox.bulkPut(items)
   })
-  storage.saveState({ ...storage.loadState(), inboxLastSuccessAt: now.toISOString(), inboxLastError: null })
+  storage.saveInboxState({ lastSuccessAt: now.toISOString(), lastError: null })
   return 'ok'
 }
 

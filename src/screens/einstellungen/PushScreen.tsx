@@ -1,7 +1,9 @@
 // Server-Push (Phase 14e, Entwurf mit Jan abgestimmt am 12.11.2026, kein Prototyp):
-// Schalter, Server (Adresse, Token, Sichern), Status (letzte Übertragung, ausstehend, letzter Fehler, Jetzt übertragen).
+// Schalter, Server (Adresse, Token, Sichern), Status (letzte Übertragung, ausstehend, letzter Fehler, Jetzt übertragen),
+// Fitboard (Phase 16): Schalter „Vorschläge aus Fitboard“ und wann zuletzt abgeholt.
 // Adresse und Token liegen nur in localStorage dieses Geräts, nie im Backup.
 import { useState } from 'react'
+import { runInboxFetch } from '../../app/inboxSync.ts'
 import { runPush, savePushConfig, usePendingPushCount, usePushView } from '../../app/pushSync.ts'
 import { href } from '../../app/router.ts'
 import { IconBack } from '../../components/icons/icons.tsx'
@@ -11,7 +13,7 @@ import { TextField } from '../../components/ui/TextField.tsx'
 import { ToggleRow } from '../../components/ui/ToggleRow.tsx'
 import { useToast } from '../../components/ui/toastContext.ts'
 import { checkToken, normalizeServerUrl } from '../../logic/push.ts'
-import { lastSuccessText, manualPushMessage, pendingText } from '../../logic/pushView.ts'
+import { inboxStatus, lastSuccessText, manualPushMessage, pendingText } from '../../logic/pushView.ts'
 import { Group } from './Group.tsx'
 
 const back = href('einstellungen')
@@ -55,6 +57,17 @@ function PushBody() {
     savePushConfig({ ...config, serverUrl: url.value, token: checked.value })
     toast('Gesichert')
   }
+
+  // Vorschläge nur mit eingerichtetem Push: Kcalm holt sie über dieselbe Adresse und denselben Token ab
+  const setSuggestions = (suggestions: boolean) => {
+    if (suggestions && !config.enabled) {
+      toast('Erst den Server-Push einrichten')
+      return
+    }
+    savePushConfig({ ...config, suggestions })
+    if (suggestions) void runInboxFetch()
+  }
+  const inbox = inboxStatus(push.inbox)
 
   const pushManually = async () => {
     const outcome = await runPush()
@@ -127,6 +140,22 @@ function PushBody() {
         >
           {push.running ? 'Überträgt …' : 'Jetzt übertragen'}
         </Button>
+      </Group>
+
+      <Group title="Fitboard">
+        <Card padded={false}>
+          <ToggleRow
+            label="Vorschläge aus Fitboard"
+            sub="Was Claude über Fitboard vorschlägt, erscheint im Tagebuch. Eingetragen wird nur, was du übernimmst."
+            checked={config.suggestions && config.enabled}
+            onChange={setSuggestions}
+          />
+          {config.suggestions && config.enabled && (
+            <div className="px-card-padding border-line border-t">
+              <StatusRow label="Vorschläge" value={inbox.text} warn={inbox.warn} />
+            </div>
+          )}
+        </Card>
       </Group>
     </>
   )

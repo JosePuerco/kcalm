@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_PUSH_STATE, type PushConfig } from './push.ts'
 import {
+  inboxStatus,
   dataLocationText,
   lastSuccessText,
   manualPushMessage,
@@ -78,5 +79,17 @@ describe('Status-Texte', () => {
     expect(manualPushMessage({ kind: 'failed', error: 'Token wird nicht akzeptiert' })).toBe('Token wird nicht akzeptiert')
     expect(manualPushMessage({ kind: 'invalidConfig', error: 'Bitte Token eingeben' })).toBe('Bitte Token eingeben')
     expect(manualPushMessage({ kind: 'disabled' })).toBe('Server-Push ist aus')
+  })
+})
+
+describe('inboxStatus (Phase 16)', () => {
+  const base = { lastSuccessAt: null, lastError: null }
+  it('noch nie, zuletzt abgeholt, Fehler', () => {
+    expect(inboxStatus(base, now)).toEqual({ text: 'Noch nie abgeholt', warn: false })
+    expect(inboxStatus({ ...base, lastSuccessAt: at(12, 18, 42) }, now)).toEqual({ text: 'Abgeholt heute, 18:42', warn: false })
+    expect(inboxStatus({ lastSuccessAt: at(12, 18, 42), lastError: 'Server nicht erreichbar' }, now)).toEqual({
+      text: 'Server nicht erreichbar',
+      warn: true,
+    })
   })
 })

@@ -1,5 +1,5 @@
 // Tagebuch nach Kern.dc.html und Leer.dc.html. Aufbau von oben: Tagesleiste · (Monatskalender) ·
-// Übersichtskarte · (gemerkte Scans) · (leerer Tag) · Slot-Karten · „vollständig getrackt“.
+// Übersichtskarte · (gemerkte Scans) · (Vorschläge aus Fitboard) · (leerer Tag) · Slot-Karten · „vollständig getrackt“.
 // Die Wasser-Kachel des Prototyps entfällt (kein Wasser-Tracking, Jan 22.10.2026).
 import { useCallback, useState } from 'react'
 import { openAddSheet, openEditSheet, setDiaryDate, setSlotOpen, useDiaryState, useToday } from '../app/diaryState.ts'
@@ -9,6 +9,7 @@ import { copyEntries, deleteEntry } from '../db/entries.ts'
 import type { Entry } from '../db/types.ts'
 import { loadDiary } from '../db/diary.ts'
 import { useLiveQuery } from '../db/live.ts'
+import { countSuggestions } from '../db/inbox.ts'
 import { loadPendingItems } from '../db/pendingScans.ts'
 import { addDays } from '../logic/dates.ts'
 import { canEditAsFood } from '../logic/addFood.ts'
@@ -22,6 +23,7 @@ import { MonthCalendar } from './tagebuch/MonthCalendar.tsx'
 import { OverviewCard } from './tagebuch/OverviewCard.tsx'
 import { PendingScansRow, PendingScansSheet } from './tagebuch/PendingScans.tsx'
 import { SlotCard } from './tagebuch/SlotCard.tsx'
+import { SuggestionsRow, SuggestionsSheet } from './tagebuch/Suggestions.tsx'
 
 export function Tagebuch() {
   const today = useToday()
@@ -34,10 +36,13 @@ export function Tagebuch() {
   const [swipedId, setSwipedId] = useState<string | null>(null)
   const [copyOpen, setCopyOpen] = useState(false)
   const [pendingOpen, setPendingOpen] = useState(false)
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const toast = useToast()
   const data = useLiveQuery(() => loadDiary(date, calendarMonth), [date, calendarMonth])
   const pending = useLiveQuery(loadPendingItems, [])
+  const suggestions = useLiveQuery(() => countSuggestions(date, today), [date, today])
+  const closeSuggestions = useCallback(() => setSuggestionsOpen(false), [])
 
   const goTo = (next: string) => {
     setDiaryDate(next, today)
@@ -120,6 +125,9 @@ export function Tagebuch() {
             {pending && pending.length > 0 && (
               <PendingScansRow count={pending.length} onOpen={() => setPendingOpen(true)} />
             )}
+            {suggestions !== undefined && suggestions > 0 && (
+              <SuggestionsRow count={suggestions} onOpen={() => setSuggestionsOpen(true)} />
+            )}
             {data.dayEntries.length === 0 && (
               <EmptyDayCard
                 label={date === today ? 'Gestern' : 'Vortag'}
@@ -159,6 +167,9 @@ export function Tagebuch() {
           slots={data.slots}
           today={today}
         />
+      )}
+      {data && (
+        <SuggestionsSheet open={suggestionsOpen} onClose={closeSuggestions} date={date} today={today} slots={data.slots} />
       )}
       {data && (
         <CopyDaySheet

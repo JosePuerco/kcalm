@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto' // IndexedDB in Node nachbilden, vor dem Import von db
 import { beforeEach, describe, expect, it } from 'vitest'
 import { unknownNutrients } from './records.ts'
-import { parsePushConfig, parsePushState } from '../logic/push.ts'
+import { DEFAULT_PUSH_STATE, parseInboxState, parsePushConfig } from '../logic/push.ts'
 import type { NewEntryFields } from '../logic/addFood.ts'
 import { createBackup, replaceWithBackup } from './backup.ts'
 import { db } from './db.ts'
@@ -78,10 +78,20 @@ beforeEach(async () => {
 })
 
 describe('Einstellungen', () => {
-  it('alter gespeicherter Push ohne suggestions → aus; alter Zustand ohne Briefkasten-Felder → null', () => {
+  it('alter gespeicherter Push ohne suggestions → aus; fehlender Briefkasten-Zustand → leer', () => {
     expect(parsePushConfig(JSON.stringify({ enabled: true, serverUrl: URL_A, token: TOKEN })).suggestions).toBe(false)
-    const state = parsePushState(JSON.stringify({ receiptsFor: null, fullSyncId: null, lastSuccessAt: null, lastAttemptAt: null, lastError: null }))
-    expect(state).toMatchObject({ inboxLastSuccessAt: null, inboxLastError: null })
+    expect(parseInboxState(null)).toEqual({ lastSuccessAt: null, lastError: null })
+    expect(parseInboxState('{kaputt')).toEqual({ lastSuccessAt: null, lastError: null })
+  })
+
+  it('ein gleichzeitiger Push überschreibt den Zustand des Briefkastens nicht', async () => {
+    const storage = on()
+    const stale = storage.loadState() // Push liest zu Beginn …
+    const failing: PushNet = { timeoutMs: 1000, newId: () => 'x', fetch: async () => Promise.reject(new TypeError('offline')) }
+    await fetchInbox(storage, failing, NOW)
+    storage.saveState({ ...stale, lastError: 'Server nicht erreichbar' }) // … und schreibt am Ende zurück
+    expect(storage.loadInboxState().lastError).toBe('Server nicht erreichbar')
+    expect(storage.loadState()).toEqual({ ...DEFAULT_PUSH_STATE, lastError: 'Server nicht erreichbar' })
   })
 })
 
@@ -101,7 +111,7 @@ describe('fetchInbox', () => {
     expect(await fetchInbox(storage, net(ok([item(A)]), seen), NOW)).toBe('ok')
     expect(seen).toEqual([`GET ${URL_A}/v1/inbox Bearer ${TOKEN}`])
     expect((await db.inbox.toArray()).map((i) => i.id)).toEqual([A])
-    expect(storage.loadState()).toMatchObject({ inboxLastSuccessAt: NOW.toISOString(), inboxLastError: null })
+    expect(storage.loadInboxState()).toEqual({ lastSuccessAt: NOW.toISOString(), lastError: null })
   })
 
   it('Netzfehler behält den Briefkasten und merkt sich den Fehler', async () => {
@@ -110,13 +120,13 @@ describe('fetchInbox', () => {
     const failing: PushNet = { timeoutMs: 1000, newId: () => 'x', fetch: async () => Promise.reject(new TypeError('offline')) }
     expect(await fetchInbox(storage, failing, NOW)).toBe('failed')
     expect(await db.inbox.count()).toBe(1)
-    expect(storage.loadState().inboxLastError).toBe('Server nicht erreichbar')
+    expect(storage.loadInboxState().lastError).toBe('Server nicht erreichbar')
   })
 
   it('401 → Token wird nicht akzeptiert', async () => {
     const storage = on()
     await fetchInbox(storage, net(() => new Response('{}', { status: 401 })), NOW)
-    expect(storage.loadState().inboxLastError).toBe('Token wird nicht akzeptiert')
+    expect(storage.loadInboxState().lastError).toBe('Token wird nicht akzeptiert')
   })
 })
 

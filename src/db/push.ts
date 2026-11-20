@@ -13,8 +13,10 @@ import {
   allRecords,
   applyReceipts,
   chunk,
+  DEFAULT_INBOX_STATE,
   DEFAULT_PUSH_STATE,
   needsFullSync,
+  parseInboxState,
   parsePushConfig,
   parsePushState,
   pendingChanges,
@@ -23,6 +25,7 @@ import {
   pushEndpoint,
   pushErrorMessage,
   readyConfig,
+  type InboxState,
   type PushBody,
   type PushChange,
   type PushConfig,
@@ -43,10 +46,14 @@ export interface PushStorage {
   saveConfig(config: PushConfig): void
   loadState(): PushState
   saveState(state: PushState): void
+  /** Briefkasten (Phase 16), getrennt vom Push-Zustand */
+  loadInboxState(): InboxState
+  saveInboxState(state: InboxState): void
 }
 
 const CONFIG_KEY = 'kcalm.push.config'
 const STATE_KEY = 'kcalm.push.state'
+const INBOX_STATE_KEY = 'kcalm.inbox.state'
 
 /**
  * localStorage, jeder Zugriff abgesichert (privates Fenster, gesperrter Speicher).
@@ -72,6 +79,8 @@ export function browserPushStorage(): PushStorage {
     saveConfig: (config) => write(CONFIG_KEY, config),
     loadState: () => parsePushState(read(STATE_KEY)),
     saveState: (state) => write(STATE_KEY, state),
+    loadInboxState: () => parseInboxState(read(INBOX_STATE_KEY)),
+    saveInboxState: (state) => write(INBOX_STATE_KEY, state),
   }
 }
 
@@ -79,11 +88,14 @@ export function browserPushStorage(): PushStorage {
 export function memoryPushStorage(config?: Partial<PushConfig>, state?: Partial<PushState>): PushStorage {
   let c: PushConfig = { ...parsePushConfig(null), ...config }
   let s: PushState = { ...DEFAULT_PUSH_STATE, ...state }
+  let inbox: InboxState = DEFAULT_INBOX_STATE
   return {
     loadConfig: () => c,
     saveConfig: (next) => (c = next),
     loadState: () => s,
     saveState: (next) => (s = next),
+    loadInboxState: () => inbox,
+    saveInboxState: (next) => (inbox = next),
   }
 }
 

@@ -275,10 +275,18 @@ export interface PushState {
   lastSuccessAt: Timestamp | null
   lastAttemptAt: Timestamp | null
   lastError: string | null
-  /** Letztes erfolgreiches Abholen des Briefkastens (Phase 16) */
-  inboxLastSuccessAt: Timestamp | null
-  inboxLastError: string | null
 }
+
+/**
+ * Zustand des Briefkastens (Phase 16), eigener Speicherplatz: Push und Abholen laufen gleichzeitig und
+ * schreiben ihren Zustand am Ende zurück; getrennt überschreibt keiner den anderen.
+ */
+export interface InboxState {
+  lastSuccessAt: Timestamp | null
+  lastError: string | null
+}
+
+export const DEFAULT_INBOX_STATE: InboxState = { lastSuccessAt: null, lastError: null }
 
 export const DEFAULT_PUSH_CONFIG: PushConfig = { enabled: false, serverUrl: '', token: '', suggestions: false }
 
@@ -288,8 +296,6 @@ export const DEFAULT_PUSH_STATE: PushState = {
   lastSuccessAt: null,
   lastAttemptAt: null,
   lastError: null,
-  inboxLastSuccessAt: null,
-  inboxLastError: null,
 }
 
 const configSchema = z.object({ enabled: z.boolean(), serverUrl: z.string(), token: z.string(), suggestions: z.boolean().default(false) })
@@ -300,10 +306,8 @@ const stateSchema = z.object({
   lastSuccessAt: nullableText,
   lastAttemptAt: nullableText,
   lastError: nullableText,
-  // Ab Phase 16; ältere gespeicherte Zustände haben sie noch nicht
-  inboxLastSuccessAt: nullableText.default(null),
-  inboxLastError: nullableText.default(null),
 })
+const inboxStateSchema = z.object({ lastSuccessAt: nullableText, lastError: nullableText })
 
 function parseStored<T>(text: string | null, schema: z.ZodType<T>, fallback: T): T {
   if (text === null) return fallback
@@ -318,6 +322,10 @@ function parseStored<T>(text: string | null, schema: z.ZodType<T>, fallback: T):
 /** Kaputtes oder fehlendes Gespeichertes → Push aus */
 export function parsePushConfig(text: string | null): PushConfig {
   return parseStored(text, configSchema, DEFAULT_PUSH_CONFIG)
+}
+
+export function parseInboxState(text: string | null): InboxState {
+  return parseStored(text, inboxStateSchema, DEFAULT_INBOX_STATE)
 }
 
 /** Kaputtes oder fehlendes Gespeichertes → Vollabgleich beim nächsten Mal (sichere Richtung) */

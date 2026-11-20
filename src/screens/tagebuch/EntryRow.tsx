@@ -1,5 +1,6 @@
 // Eintragszeile nach Kern.dc.html: Name + Menge (muted), kcal rechts; Tipp = bearbeiten;
-// nach links wischen zeigt „Löschen“ (SwipeRow).
+// nach links wischen zeigt „Löschen“ (SwipeRow). Einträge aus geschätzten Vorschlägen (Fitboard, Phase 16)
+// tragen klein „geschätzt“.
 import { SwipeRow } from '../../components/ui/SwipeRow.tsx'
 import type { Entry } from '../../db/types.ts'
 import { formatAmount, formatNumber } from '../../logic/format.ts'
@@ -26,7 +27,7 @@ export function EntryRow({ entry, flash, swiped, anySwiped, onSwipe, onTap, onDe
       onTap={onTap}
       onAction={onDelete}
       actionLabel="Löschen"
-      label={`${entry.nameSnapshot}${amount ? `, ${amount}` : ''}, ${formatNumber(entry.nutrients.kcal)} kcal, bearbeiten`}
+      label={`${entry.nameSnapshot}${amount ? `, ${amount}` : ''}${entry.estimated ? ', geschätzt' : ''}, ${formatNumber(entry.nutrients.kcal)} kcal, bearbeiten`}
     >
       <div
         className={`text-label flex min-h-10 items-center justify-between gap-3 rounded-[8px] pr-3 ${flash ? 'flash-new' : ''}`}
@@ -34,6 +35,7 @@ export function EntryRow({ entry, flash, swiped, anySwiped, onSwipe, onTap, onDe
         <span className="min-w-0">
           {entry.nameSnapshot}
           {amount && <span className="text-muted"> {amount}</span>}
+          {entry.estimated && <span className="text-tiny text-muted"> · geschätzt</span>}
         </span>
         <span className="text-muted whitespace-nowrap">{formatNumber(entry.nutrients.kcal)}</span>
       </div>

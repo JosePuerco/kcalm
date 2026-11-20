@@ -4,7 +4,7 @@
 import type { Timestamp } from '../db/types.ts'
 import { daysBetween, toLocalDate } from './dates.ts'
 import { formatNumber, formatTime } from './format.ts'
-import { readyConfig, type PushConfig, type PushState } from './push.ts'
+import { readyConfig, type InboxState, type PushConfig, type PushState } from './push.ts'
 
 export interface RowMeta {
   text: string
@@ -35,6 +35,13 @@ export function pushRowMeta(config: PushConfig, state: PushState, pending: numbe
 
 export function lastSuccessText(state: PushState, now = new Date()): string {
   return relativeTime(state.lastSuccessAt, now) ?? 'Noch nie'
+}
+
+/** Zeile „Vorschläge“ im Push-Screen (Phase 16): Fehler vor letztem Abholen */
+export function inboxStatus(state: InboxState, now = new Date()): RowMeta {
+  if (state.lastError !== null) return { text: state.lastError, warn: true }
+  const last = relativeTime(state.lastSuccessAt, now)
+  return { text: last === null ? 'Noch nie abgeholt' : `Abgeholt ${last}`, warn: false }
 }
 
 export function pendingText(n: number): string {
