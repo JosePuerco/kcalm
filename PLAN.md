@@ -15,7 +15,7 @@ Kcalm ist eine minimalistische Offline-PWA fürs iPhone, mit der Jan Kalorien un
 | --- | --- | --- |
 | Plattform | PWA, nur iPhone als Testgerät | Kostenlos, kein Mac nötig, bewährt bei Mixli |
 | Daten | Lokal auf dem Gerät (IndexedDB), sync-fähiges Datenmodell | Offline, kein Login; Pi-Sync später nachrüstbar |
-| Hosting | Cloudflare Workers (nur statische Dateien) unter `kcalm.dunkleschokola.de`, öffentliches Repo `kcalm`; bis 1.5.0 GitHub Pages | Kostenlos, Deploy per Push, eigene Domain neben Push-Server und Dashboard |
+| Hosting | Container `kcalm-web` (nginx, nur statische Dateien) auf dem Pi hinter dem Cloudflare-Tunnel unter `kcalm.dunkleschokola.de`, öffentliches Repo `kcalm`; bis 1.5.0 GitHub Pages | Gleicher Weg wie Setlog, Fitboard und Push-Server; eigene Domain; die installierte App läuft auch ohne Pi aus dem Cache |
 | Nutzer | Nur Jan, keine Accounts | Persönliche App |
 | Produktdaten | Open Food Facts per Barcode, BLS 4.0 offline eingebaut, eigene Produkte | Markenprodukte + Grundlebensmittel |
 | Bilder | Keine (weder OFF noch eigene) | Ruhe und Minimalismus |
@@ -190,7 +190,7 @@ Der Stack entspricht Mixli, ergänzt um Scanner, Diagramme und ein Build-Skript 
 ### Entwicklung und Hosting
 
 - Entwicklung lokal auf dem Windows-Laptop mit Claude Code, Projektordner `C:\Users\Jan\Documents\Claude Projekte\kcalm`
-- Cloudflare Workers mit statischen Dateien (`wrangler.jsonc`, Custom Domain `kcalm.dunkleschokola.de`), Deploy per GitHub Actions bei Push auf `main`: Job `build` (Tag, Test, Lint, Build), dann `cloudflare/wrangler-action`; Secrets `CLOUDFLARE_API_TOKEN` und `CLOUDFLARE_ACCOUNT_ID`
+- Container `kcalm-web` auf dem Pi (`Dockerfile`: node baut, nginx liefert aus; `compose.yaml` im Netz `cloudflare-tunnel`, ohne Port), Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80`. Deploy per `bash scripts/deploy.sh` nach dem Push: prüft Tag, `origin/main`, Test und Lint, überträgt `HEAD` per `git archive` und baut auf dem Pi (Details in `docs/ops.md`)
 - Wurzelpfad: Vite `base: '/'`, Manifest `id`, `scope` und `start_url` = `/` (bis 1.5.0 Unterpfad `/kcalm/` auf GitHub Pages)
 - Test auf dem iPhone 16e: installieren, Flugmodus-Test, Scanner-Test im Supermarkt
 - Feste App-Hülle gegen Gummiband-Scrollen und Zoomen (Lehre aus Mixli)
@@ -384,15 +384,18 @@ Mit Jan abgestimmt am 12.11.2026. Einweg-Push iPhone → Raspberry Pi, damit ein
 - [x] 14f Betrieb auf dem Pi: `~/kcalm-server` per Deploy-Key (nur lesen), Token nur in `.env` (600), Container `kcalm-api` im Netz `cloudflare-tunnel` ohne offenen Port, Route `kcalm-api.dunkleschokola.de` im Tunnel (ohne Access), Backup 03:15 per `VACUUM INTO` mit Prüfung (14 Tage, Log `~/kcalm-backup.log`), Wiederherstellung geprobt; von außen geprüft: Health, CORS nur für `josepuerco.github.io`, 401 ohne/mit falschem Token, Push mit Token 200, kein Bot-Schutz im Weg
 - [x] 14g Version 1.5.0 deployt (12.11.2026) und iPhone-Test bestanden (Checkliste `docs/iphone-test.md` Teil E): Erst-Upload, anlegen, ändern, löschen, Flugmodus → wieder online, Neustart behält Adresse und Token; Backup ohne Token, Server-Adresse und Quittungsliste geprüft; Anzahl Einträge iPhone = Pi (74)
 
-### Phase 15 – Umzug zu Cloudflare (Version 2.0.0)
+### Phase 15 – Umzug auf eigene Domain, Hosting auf dem Pi (Version 2.0.0)
 
 Mit Jan abgestimmt am 15.11.2026 (Design `docs/superpowers/specs/2026-11-15-cloudflare-umzug-design.md`, Umsetzungsplan `docs/superpowers/plans/2026-11-15-cloudflare-umzug.md`). Kcalm zieht von `josepuerco.github.io/kcalm/` nach `https://kcalm.dunkleschokola.de/`. Neue Domain = neue IndexedDB, daher Umzug per Backup. Keine Änderung an Funktionen, Datenmodell oder Backup-Format.
 
+**Geändert am 20.11.2026 (Jan):** Statt Cloudflare Workers läuft Kcalm wie Setlog als Container (`kcalm-web`, nginx) auf dem Pi hinter dem Cloudflare-Tunnel; Deploy per `scripts/deploy.sh`, nicht mehr über GitHub Actions. Keine Tokens, keine Secrets.
+
 - [x] 15a App auf Wurzelpfad `/`: Vite `base`, `index.html`, Kamera-Anleitung in App und `docs/kamera-erlaubnis.md`; im Headless-Chrome unter `/` geprüft (Service Worker, Icons, Startbilder, offline neu laden, `bls.json` offline aus dem Cache)
-- [x] 15b `wrangler.jsonc` (Worker `kcalm` nur mit Assets, `single-page-application`, Custom Domain, `workers_dev: false`) und Deploy-Workflow (`upload-artifact`/`download-artifact`, `wrangler-action` mit fester Wrangler-Version); `wrangler deploy --dry-run` ohne Fehler
+- [x] ~~15b `wrangler.jsonc` und Deploy-Workflow für Cloudflare Workers~~ (am 20.11.2026 ersetzt durch 15b2)
+- [ ] 15b2 Container und Deploy: `Dockerfile` (node → nginx), `deploy/nginx.conf` (SPA-Fallback, Caching, `.wasm`, Health-Check), `compose.yaml` (Netz `cloudflare-tunnel`, ohne Port), `scripts/deploy.sh` (wie Setlog, Tag-Prüfung hart, `HEAD` in `origin/main`, Test und Lint vorher), `wrangler.jsonc` und `deploy.yml` entfernen; Container lokal gebaut und geprüft
 - [x] 15c `kcalm-server`: CORS-Standard `https://kcalm.dunkleschokola.de`, Test „alte Adresse bekommt keine Freigabe“
-- [x] 15d Doku: PLAN.md, `CLAUDE.md`, `docs/iphone-test.md` Teil G „Umzug“
-- [ ] 15e Rollout: API-Token und Secrets (Jan), Version 2.0.0 pushen, neue Adresse von außen prüfen (Seite, Manifest, `sw.js`/`index.html` ohne langes Caching, Neu laden auf Unterpfad), Server-CORS auf dem Pi umstellen
+- [x] 15d Doku: PLAN.md, `CLAUDE.md`, `docs/iphone-test.md` Teil G „Umzug“ (für den Pi-Weg in 15b2 nachziehen: `CLAUDE.md` Plattform/Versionen/Deploy-Prüfung, neu `docs/ops.md`)
+- [ ] 15e Rollout: Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80` (Jan), Version 2.0.0 pushen und deployen, neue Adresse von außen prüfen (Seite, Manifest, `sw.js`/`index.html` ohne Caching auch bei Cloudflare, Neu laden auf Unterpfad), Server-CORS auf dem Pi umstellen
 - [ ] 15f Umzug auf dem iPhone (Checkliste `docs/iphone-test.md` Teil G), Anzahl Einträge iPhone = Pi, keine Datensätze fälschlich gelöscht
 - [ ] 15g GitHub Pages abschalten (nach Jans OK), Release v2.0.0
 
@@ -474,7 +477,7 @@ Festgehalten am 19.11.2026 aus Fitboard Plan 6 (Fitboard v0.6.0). Kommt nach Pha
 | Push: Prinzip | Einweg iPhone → Pi, iPhone maßgeblich, kein Download, keine Konfliktlösung, ein Nutzer, ein Gerät. Rohdaten aller Tabellen außer `pendingScans` und `settings`, inkl. Löschmarker; Wasser bleibt gestrichen (Jan, 12.11.2026) |
 | Push: was ausstehend ist | Quittungsliste `pushState` (Tabelle, id, Prüfsumme des zuletzt bestätigten Stands) statt `updatedAt`-Cursor: erfasst auch Backup-Import, Migrationen und Uhrsprünge. Lokal fehlende, aber quittierte Datensätze werden als „entfernt“ gemeldet. Quittiert wird erst nach Antwort 200 (Jan, 12.11.2026) |
 | Push: Server | Upsert je (Tabelle, id) ohne `updatedAt`-Vergleich, damit auch „Alles ersetzen“ mit älterem Backup ankommt; doppelt gesendet = überschrieben. Nur aktueller Stand, keine Historie. Entfernte Datensätze bekommen `deletedAt`. Eigene SQLite-Datenbank, eigenes privates Repo `kcalm-server`, API unter `kcalm-api.dunkleschokola.de` über den bestehenden Cloudflare Tunnel, ohne Cloudflare Access (Jan, 12.11.2026) |
-| Hosting: Workers statt Pages | Kcalm läuft als Cloudflare Worker mit statischen Dateien (kein Worker-Code), deployt aus GitHub Actions. Workers statt Pages, weil Cloudflare Workers für neue Projekte empfiehlt und Pages kaum noch neue Funktionen bekommt; Deploy aus Actions statt Git-Anbindung, damit Tag, Tests und Lint weiter vor jedem Deploy stehen. Wrangler nicht in `package.json`. Pi-Server erlaubt per CORS nur noch die neue Domain, keine Übergangszeit mit zwei (Jan, 15.11.2026) |
+| Hosting auf dem Pi | Kcalm läuft wie Setlog als Container auf dem Pi hinter dem Cloudflare-Tunnel, deployt per Skript vom Laptop (nur committeter, getaggter und gepushter Stand, Test und Lint vorher). Ersetzt am 20.11.2026 den Plan vom 15.11. (Cloudflare Workers aus GitHub Actions mit API-Token und Secrets), weil das ein Sonderweg im Ökosystem war. Kein Test-Workflow auf GitHub. Pi-Server erlaubt per CORS nur noch die neue Domain, keine Übergangszeit mit zwei (Jan, 15. und 20.11.2026) |
 | Push: Tagesziele | Bewusste Ausnahme von „nur Rohdaten“: Zusätzlich zu Profilen und Zuweisungen sendet Kcalm je Tag die berechneten Ziele (Profilversion, Wochenbudget, festes und dynamisches Tagesziel, Makroziele in g), damit das Dashboard die Rechnung nicht nachbauen muss. Lokal wird nichts davon gespeichert (Jan, 12.11.2026) |
 | Push: Token und Einstellungen | Server-URL, Token, Schalter und Status nur in `localStorage`, nicht in `settings` und nicht im Backup; nach Neuinstallation neu eingeben. Token nie im Code oder Build (Repo öffentlich) (Jan, 12.11.2026) |
 | Push: Datenbank-Backup | Nächtlich per SQLite-Backup, 14 Tage, vorerst nur lokal auf dem Pi; notfalls lässt sich alles per Neu-Upload vom iPhone wiederherstellen (Jan, 12.11.2026) |
@@ -487,6 +490,8 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**20.11.2026 · Phase 15: Hosting auf dem Pi statt Cloudflare Workers** – auf Jans Wunsch, gleicher Weg wie Setlog (Container hinter dem Tunnel, Deploy per Skript). Design und Plan angepasst. Nächster Schritt: 15b2 Container und Deploy-Skript.
 
 **19.11.2026 · Phase 15 (Umzug zu Cloudflare), 15a–15d erledigt** – je ein Commit (App auf `/`, `wrangler.jsonc` + Workflow, Doku; Server-Repo `kcalm-server` Commit „CORS: nur noch kcalm.dunkleschokola.de“, nicht gepusht). 1101 Tests grün, Build und Lint sauber, Server 54 Tests grün, `wrangler deploy --dry-run` ohne Fehler, Headless-Chrome unter `/` inkl. offline geprüft. Nächster Schritt: 15e – Jan legt API-Token an und setzt die Secrets `CLOUDFLARE_API_TOKEN` und `CLOUDFLARE_ACCOUNT_ID`, dann Version 2.0.0 nach Jans OK pushen.
 

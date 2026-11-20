@@ -1,6 +1,6 @@
 # Phase 15 – Umzug zu Cloudflare (Design)
 
-Stand 15.11.2026, mit Jan abgestimmt.
+Stand 15.11.2026, mit Jan abgestimmt. **Geändert am 20.11.2026 (Jan):** Hosting auf dem Pi wie Setlog (Ansatz D) statt Cloudflare Workers; Abschnitte „Ansätze“, „Hosting auf dem Pi“, „Deploy“ und „Reihenfolge“ entsprechend neu.
 
 ## Absicht
 
@@ -30,11 +30,12 @@ Kcalm zieht von `https://josepuerco.github.io/kcalm/` nach `https://kcalm.dunkle
 
 | Ansatz | Abwägung |
 | --- | --- |
-| **A – Workers mit statischen Dateien, Deploy aus GitHub Actions (gewählt)** | GitHub Actions bleibt das Tor (Tag, Tests, Lint, Build), danach `wrangler deploy`. Von Cloudflare für neue Projekte empfohlen. Weicht wörtlich von „Cloudflare Pages“ im Plan ab. |
-| B – Pages, Deploy aus GitHub Actions | Gleicher Ablauf, `wrangler pages deploy`. Wörtlich wie geplant, aber Pages bekommt kaum noch neue Funktionen. |
-| C – Pages mit Git-Anbindung | Cloudflare baut selbst bei jedem Push, an Tag- und Testprüfung vorbei. Bricht „jeder Push = eine geprüfte Version“. Verworfen. |
+| A – Workers mit statischen Dateien, Deploy aus GitHub Actions | GitHub Actions bleibt das Tor (Tag, Tests, Lint, Build), danach `wrangler deploy`. Braucht API-Token und zwei Repo-Secrets. Am 15.11. gewählt, am 20.11. verworfen (zu umständlich, Sonderweg im Ökosystem). |
+| B – Pages, Deploy aus GitHub Actions | Gleicher Ablauf, `wrangler pages deploy`. Pages bekommt kaum noch neue Funktionen. Verworfen. |
+| C – Pages/Workers mit Git-Anbindung | Cloudflare baut selbst bei jedem Push; Tag-Prüfung fällt weg. Verworfen. |
+| **D – Container auf dem Pi hinter dem Cloudflare-Tunnel, Deploy per Skript wie Setlog (gewählt)** | Gleicher Weg wie Setlog, Fitboard und kcalm-server. Keine Tokens, keine Secrets. Fällt der Pi aus, gehen nur Neuinstallation und Updates nicht; die installierte App läuft aus dem Cache weiter (offline-first). |
 
-Jan hat A gewählt (15.11.2026).
+Jan hat D gewählt (20.11.2026).
 
 ## Entscheidungen
 
@@ -44,17 +45,22 @@ Jan hat A gewählt (15.11.2026).
 - Alle übrigen Stellen mit der alten Adresse anpassen: `CameraGuideSheet.tsx`, `docs/kamera-erlaubnis.md`, `docs/iphone-test.md`, `PLAN.md` (§1, §3), `CLAUDE.md` (Plattform-Regel und Deploy-Prüfung), Kommentar in `deploy.yml`.
 - Kein Code in `src/logic/` betroffen; die Push-Logik bemerkt den neuen Ursprung als leere Quittungsliste und macht einen Vollabgleich (bestehendes Verhalten aus 14a/14d).
 
-### Cloudflare
-- Neue Datei `wrangler.jsonc`: Worker `kcalm`, nur `assets` mit `directory: ./dist`, `not_found_handling: "single-page-application"`, Route `kcalm.dunkleschokola.de` als `custom_domain: true` (Cloudflare legt DNS-Eintrag und Zertifikat selbst an). `workers_dev: false`, damit es keine zweite Adresse gibt.
-- Ab dann gilt laut Jans globaler Regel für dieses Repo Wrangler statt `cf`.
-- Wrangler kommt **nicht** in `package.json`: Deploy über die offizielle Action `cloudflare/wrangler-action` (feste Version), lokal bei Bedarf per `npx wrangler@<Version>`.
-- Cache-Verhalten: Standard von Workers Assets (HTML und `sw.js` werden revalidiert); vor dem Abschluss mit `curl -I` prüfen, dass `sw.js` und `index.html` nicht lange gecacht werden.
+### Hosting auf dem Pi
+- Eigener Container `kcalm-web`, getrennt von `kcalm-api` (App und Server bleiben unabhängig). Im Docker-Netz `cloudflare-tunnel`, **ohne** `ports:`; erreichbar nur über den Tunnel.
+- `Dockerfile` zweistufig, gebaut auf dem Pi: `node:24` (`npm ci`, `npm run build`) → `nginx:alpine` liefert nur `dist` aus.
+- `deploy/nginx.conf`: unbekannte Pfade → `index.html` (Neu laden auf jeder Seite); `index.html`, `sw.js`, `manifest.webmanifest` mit `Cache-Control: no-cache`; `/assets/*` ein Jahr `immutable`; `.wasm` als `application/wasm`; Health-Check im Container.
+- `compose.yaml` im kcalm-Repo; auf dem Pi unter `~/kcalm-web/src`.
+- Tunnel-Route im Cloudflare-Dashboard (Jan, einmalig): `kcalm.dunkleschokola.de` → `http://kcalm-web:80`.
+- `wrangler.jsonc` und `.github/workflows/deploy.yml` entfallen; ein Push auf GitHub deployt nichts mehr. Kein Test-Workflow auf GitHub (Jan, 20.11.2026): das Skript prüft vor jedem Deploy.
+- Vor dem Abschluss mit `curl -I` prüfen, dass `sw.js` und `index.html` nicht gecacht werden (auch nicht von Cloudflare: `cf-cache-status`).
 
-### Deploy-Workflow
-- Job `build` bleibt (Tag, `npm ci`, Test, Lint, Build), lädt `dist` als normales Artefakt hoch.
-- Job `deploy` statt Pages: `wrangler-action` mit `apiToken` = Secret `CLOUDFLARE_API_TOKEN` und `accountId` = Secret `CLOUDFLARE_ACCOUNT_ID`.
-- Pages-Rechte (`pages: write`, `id-token: write`) und Umgebung `github-pages` entfallen; `concurrency` bleibt.
-- API-Token legt Jan im Cloudflare-Dashboard an, mit minimalen Rechten: Konto „Workers Scripts: Bearbeiten“, Zone `dunkleschokola.de` „Workers Routes: Bearbeiten“ (für die Custom Domain nötig; genaue Liste beim Umsetzen gegen die Cloudflare-Doku prüfen). Jan trägt Token und Konto-ID selbst per `gh secret set` ein.
+### Deploy
+- `scripts/deploy.sh` nach dem Vorbild von Setlog, Aufruf `bash scripts/deploy.sh`, Ziel `jan@pi.local` (überschreibbar per `PI_HOST`).
+- Bricht ab, wenn: Änderungen nicht committet sind; Tag `v<Version>` nicht auf `HEAD` zeigt (hart, nicht nur Warnung); `HEAD` nicht in `origin/main` enthalten ist (was live läuft, steht auch auf GitHub).
+- Dann `npm test` und `npm run lint` auf dem Laptop, `git archive HEAD` per SSH nach `~/kcalm-web/src`, `docker compose up -d --build`, warten bis der Container gesund ist (sonst Logs zeigen, Abbruch).
+- Kein Backup nötig (der Container hat keine Daten).
+- Zurückrollen: alten Tag auschecken, Skript erneut starten.
+- Nach Jans OK: Claude pusht (Commit + Tag) und startet direkt danach das Skript.
 
 ### Pi-Server (`kcalm-server`)
 - `ALLOWED_ORIGIN` in `~/kcalm-server/.env` auf dem Pi auf `https://kcalm.dunkleschokola.de` umstellen, Container neu starten.
@@ -62,9 +68,9 @@ Jan hat A gewählt (15.11.2026).
 - Standardwert im Code (`josepuerco.github.io`) im Server-Repo auf die neue Domain ändern, Tests anpassen.
 
 ### Reihenfolge des Umzugs
-1. Code-Änderungen (App, `wrangler.jsonc`, Workflow, Texte) lokal, Tests/Lint/Build grün, im Headless-Chrome unter `/` geprüft.
-2. Jan legt API-Token an und setzt die beiden Secrets.
-3. Push als neue Version → erster Deploy auf Cloudflare. GitHub Pages bleibt dabei unverändert auf 1.5.0 stehen (der Workflow deployt nicht mehr dorthin), die alte App funktioniert weiter.
+1. Code-Änderungen (App, Container, Skript, Texte) lokal, Tests/Lint/Build grün, im Headless-Chrome unter `/` geprüft.
+2. Jan legt die Tunnel-Route `kcalm.dunkleschokola.de` → `http://kcalm-web:80` an.
+3. Push als neue Version, dann `scripts/deploy.sh` → erster Deploy auf den Pi. GitHub Pages bleibt dabei unverändert auf 1.5.0 stehen (es gibt keinen Workflow mehr, der dorthin deployt), die alte App funktioniert weiter.
 4. Prüfen von außen: Seite, Manifest, `sw.js`, Offline, Header.
 5. Server-CORS auf neue Domain umstellen (ab jetzt kann die alte App nicht mehr pushen).
 6. Jan auf dem iPhone, Checkliste: alte App → Push aus, Backup teilen → neue Adresse in Safari, Kamera erlauben, zum Home-Bildschirm → „Aus Backup laden“ → Push mit Adresse und Token einschalten → Vollabgleich, Anzahl Einträge iPhone = Pi → Theme, Profile, Gewichte stichprobenartig → alte App vom Home-Bildschirm löschen.
@@ -74,6 +80,5 @@ Jan hat A gewählt (15.11.2026).
 - Vorschlag **2.0.0**: Laut `CHANGELOG.md` ist MAJOR „alte Daten werden nicht mehr automatisch übernommen“. Genau das passiert (Umzug per Backup von Hand). Alternative 1.6.0, wenn man nur auf Datenformat/Funktionen schaut.
 
 ## Für die Umsetzung offen
-- Exakte `wrangler-action`- und Wrangler-Version (aktuell, mind. zwei Wochen alt).
-- Genaue Token-Rechte gegen die Cloudflare-Doku prüfen.
-- Ob `%BASE_URL%` in `index.html` oder feste `/`-Pfade (beides geht; Builder entscheidet, Hauptsache kein `/kcalm/` mehr).
+- Exakte Versionen der Images `node` und `nginx` (fest, nicht `latest`).
+- Ob `%BASE_URL%` in `index.html` oder feste `/`-Pfade (erledigt in 15a).
