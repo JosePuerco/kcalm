@@ -8,6 +8,14 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 2.2.0 – 21.11.2026
+
+- Neu: Gewicht kommt automatisch aus Garmin. Fitboard schickt deine Garmin-Wiegungen ab 01.09.2026 an deinen Server, Kcalm übernimmt sie beim Abholen – auch Korrekturen und Löschungen in Garmin. Je Tag zählt die erste Wiegung
+- Die bisherigen Kurzbefehl-Gewichte werden durch Garmins Werte ersetzt; fehlende Tage kommen dazu
+- Entfällt: „Gewichte einfügen“ (Kurzbefehl aus Apple Health) und „Manuell eintragen“. Neue Wiegungen trägst du nur noch in Garmin ein
+- Der Schalter unter Server-Push heißt jetzt „Daten aus Fitboard“ (Essensvorschläge und Gewicht); die Verbrauchsschätzung zeigt „Gewicht aus Garmin · zuletzt …“
+- Ohne Server kommen keine neuen Gewichte; alles andere läuft wie bisher auch offline. Datenbank und Backup-Format unverändert
+
 ## 2.1.0 – 21.11.2026
 
 - Neu: Vorschläge aus Fitboard. Claude kann über Fitboard Einträge vorschlagen (z. B. aus einem Teller-Foto, „wie immer Magerquark“ oder zum Nachtragen); Kcalm holt sie von deinem Server ab. Nichts landet ohne deinen Tipp im Tagebuch
