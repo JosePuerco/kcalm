@@ -145,14 +145,14 @@ function PushBody() {
       <Group title="Fitboard">
         <Card padded={false}>
           <ToggleRow
-            label="Vorschläge aus Fitboard"
-            sub="Was Claude über Fitboard vorschlägt, erscheint im Tagebuch. Eingetragen wird nur, was du übernimmst."
+            label="Daten aus Fitboard"
+            sub="Essensvorschläge und Gewicht aus Garmin"
             checked={config.suggestions && config.enabled}
             onChange={setSuggestions}
           />
           {config.suggestions && config.enabled && (
             <div className="px-card-padding border-line border-t">
-              <StatusRow label="Vorschläge" value={inbox.text} warn={inbox.warn} />
+              <StatusRow label="Fitboard" value={inbox.text} warn={inbox.warn} />
             </div>
           )}
         </Card>

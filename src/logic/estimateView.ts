@@ -11,9 +11,7 @@ import {
   type EstimateDay,
   type EstimateReady,
 } from './estimate.ts'
-import { formatNumber, formatTime } from './format.ts'
-import { parseKeypadValue } from './keypad.ts'
-import { MAX_KG, MIN_KG } from './weightImport.ts'
+import { formatNumber } from './format.ts'
 
 /** Die Spanne wird auf 10 kcal gerundet angezeigt; genauer ist sie nicht */
 const SPREAD_STEP = 10
@@ -145,26 +143,12 @@ export function collectingView(e: EstimateCollecting, days: readonly EstimateDay
   }
 }
 
-/** „Heute 07:12 · 74,8 kg“; manuell ohne Uhrzeit: „Gestern · 74,8 kg“ */
-export function lastWeightText(weight: Pick<Weight, 'date' | 'kg' | 'measuredAt' | 'source'> | undefined, today: LocalDate): string {
-  if (!weight) return 'Noch keins'
-  const label = dayLabel(weight.date, today)
-  const day = label.relative ?? label.date
-  const time = weight.source === 'health' ? ` ${formatTime(new Date(weight.measuredAt))}` : ''
-  return `${day}${time} · ${formatNumber(weight.kg, 1)} kg`
-}
-
-/** Toast nach dem Import: „60 Werte gelesen · 1 neu · 0 doppelt“ */
-export function importMessage(r: { read: number; created: number; updated: number; duplicates: number }): string {
-  return `${formatNumber(r.read)} ${r.read === 1 ? 'Wert' : 'Werte'} gelesen · ${formatNumber(r.created + r.updated)} neu · ${formatNumber(r.duplicates)} doppelt`
-}
-
-/** Eingabe im Ziffernblock prüfen; null = in Ordnung */
-export function manualWeightError(value: string): string | null {
-  const kg = parseKeypadValue(value)
-  if (kg === null) return 'Gewicht eingeben'
-  if (kg < MIN_KG || kg > MAX_KG) return `Zwischen ${MIN_KG} und ${MAX_KG} kg`
-  return null
+/** Letzte Wiegung aus Garmin: „zuletzt heute, 77,7 kg“, „zuletzt 19.10., 77,2 kg“ (anderes Jahr mit Jahr), sonst „noch keine Wiegung“ */
+export function lastWeightText(weight: Pick<Weight, 'date' | 'kg'> | undefined, today: LocalDate): string {
+  if (!weight) return 'noch keine Wiegung'
+  const relative = dayLabel(weight.date, today).relative
+  const date = `${weight.date.slice(8, 10)}.${weight.date.slice(5, 7)}.${weight.date.slice(0, 4) === today.slice(0, 4) ? '' : weight.date.slice(0, 4)}`
+  return `zuletzt ${relative ? relative.toLowerCase() : date}, ${formatNumber(weight.kg, 1)} kg`
 }
 
 /** Link in der Gewichtskarte der Statistik: „Verbrauch 2.585 ± 150 kcal“ bzw. „Sammelt Daten“ */

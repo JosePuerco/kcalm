@@ -6,9 +6,7 @@ import {
   budgetView,
   collectingView,
   estimateLinkText,
-  importMessage,
   lastWeightText,
-  manualWeightError,
   resultView,
 } from './estimateView.ts'
 
@@ -146,37 +144,15 @@ describe('collectingView', () => {
 })
 
 describe('lastWeightText', () => {
-  it('noch keins', () => {
-    expect(lastWeightText(undefined, today)).toBe('Noch keins')
+  it('noch keine Wiegung', () => {
+    expect(lastWeightText(undefined, today)).toBe('noch keine Wiegung')
   })
 
-  it('aus Health mit Uhrzeit, manuell ohne', () => {
-    const measuredAt = new Date(2026, 9, 22, 7, 12).toISOString()
-    expect(lastWeightText({ date: today, kg: 74.8, measuredAt, source: 'health' }, today)).toBe('Heute 07:12 · 74,8 kg')
-    expect(lastWeightText({ date: '2026-10-21', kg: 75, measuredAt, source: 'manual' }, today)).toBe('Gestern · 75,0 kg')
-    expect(lastWeightText({ date: '2026-10-19', kg: 75, measuredAt, source: 'manual' }, today)).toBe('Mo 19.10. · 75,0 kg')
-  })
-})
-
-describe('importMessage', () => {
-  it('wie im Prototyp', () => {
-    expect(importMessage({ read: 60, created: 1, updated: 0, duplicates: 0 })).toBe('60 Werte gelesen · 1 neu · 0 doppelt')
-  })
-
-  it('aktualisierte Tage zählen als neu; Einzahl', () => {
-    expect(importMessage({ read: 1, created: 0, updated: 1, duplicates: 0 })).toBe('1 Wert gelesen · 1 neu · 0 doppelt')
-  })
-})
-
-describe('manualWeightError', () => {
-  it.each([
-    ['', 'Gewicht eingeben'],
-    ['7,4', 'Zwischen 20 und 300 kg'],
-    ['301', 'Zwischen 20 und 300 kg'],
-    ['74,8', null],
-    ['74,', null],
-  ])('„%s“ → %s', (value, error) => {
-    expect(manualWeightError(value)).toBe(error)
+  it('heute, gestern, sonst Datum; kg auf 0,1 gerundet', () => {
+    expect(lastWeightText({ date: today, kg: 77.68 }, today)).toBe('zuletzt heute, 77,7 kg')
+    expect(lastWeightText({ date: '2026-10-21', kg: 75 }, today)).toBe('zuletzt gestern, 75,0 kg')
+    expect(lastWeightText({ date: '2026-10-19', kg: 77.239 }, today)).toBe('zuletzt 19.10., 77,2 kg')
+    expect(lastWeightText({ date: '2025-12-30', kg: 76 }, today)).toBe('zuletzt 30.12.2025, 76,0 kg')
   })
 })
 

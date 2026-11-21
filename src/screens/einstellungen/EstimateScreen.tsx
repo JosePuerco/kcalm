@@ -1,28 +1,23 @@
 // Verbrauchsschätzung nach Schaetzung.dc.html: Ergebnis (Zahl ± Spanne, Leiste mit Budget-Strich, Vergleich
-// zum Budget, Grundlagen) oder „Sammelt Daten“ (Raster), darunter Gewicht: einfügen, manuell, Anleitung.
+// zum Budget, Grundlagen) oder „Sammelt Daten“ (Raster), darunter die letzte Wiegung aus Garmin (Phase 16.2:
+// Gewichte kommen nur noch über Fitboard, kein Einfügen und kein manuelles Eintragen mehr).
 // Ohne die Demo-Umschaltung des Prototyps; der Zustand ergibt sich aus den Daten.
-import { useState } from 'react'
 import { useToday } from '../../app/diaryState.ts'
+import { usePushView } from '../../app/pushSync.ts'
 import { href } from '../../app/router.ts'
 import { IconBack } from '../../components/icons/icons.tsx'
 import { Card } from '../../components/ui/Card.tsx'
-import { useToast } from '../../components/ui/toastContext.ts'
 import { loadEstimate, type EstimateData } from '../../db/estimate.ts'
 import { useLiveQuery } from '../../db/live.ts'
-import { importWeights } from '../../db/weights.ts'
 import type { EstimateCollecting, EstimateReady } from '../../logic/estimate.ts'
 import {
   budgetView,
   collectingView,
-  importMessage,
   lastWeightText,
   resultView,
   type CollectCell,
 } from '../../logic/estimateView.ts'
 import { formatNumber } from '../../logic/format.ts'
-import { GuideSheet } from './schaetzung/GuideSheet.tsx'
-import { ManualWeightSheet } from './schaetzung/ManualWeightSheet.tsx'
-import { PasteSheet } from './schaetzung/PasteSheet.tsx'
 
 const back = href('einstellungen')
 
@@ -46,35 +41,9 @@ export function EstimateScreen() {
 }
 
 function EstimateBody({ data, today }: { data: EstimateData; today: string }) {
-  const toast = useToast()
-  const [sheet, setSheetState] = useState<null | 'paste' | 'manual' | 'guide'>(null)
-  // Neuer key je Öffnen: Sheets starten ohne alte Eingaben
-  const [sheetKey, setSheetKey] = useState(0)
-  const setSheet = (next: typeof sheet) => {
-    if (next) setSheetKey((k) => k + 1)
-    setSheetState(next)
-  }
-  const [pasteError, setPasteError] = useState<string | null>(null)
+  const push = usePushView()
+  const on = push.config.enabled && push.config.suggestions
   const e = data.estimate
-
-  const paste = async () => {
-    let text: string
-    try {
-      text = await navigator.clipboard.readText()
-    } catch {
-      // Lesen verweigert oder nicht möglich: Text selbst einfügen lassen
-      setPasteError(null)
-      setSheet('paste')
-      return
-    }
-    const result = await importWeights(text)
-    if (result.ok) {
-      toast(importMessage(result))
-    } else {
-      setPasteError(result.error)
-      setSheet('paste')
-    }
-  }
 
   return (
     <>
@@ -87,45 +56,16 @@ function EstimateBody({ data, today }: { data: EstimateData; today: string }) {
       <h2 className="text-small text-muted px-1 pt-2 tracking-[0.6px] uppercase">Gewicht</h2>
       <Card className="flex flex-col gap-2.5 py-3.5">
         <div className="text-label flex items-center justify-between gap-3">
-          <span className="text-muted">Letztes Gewicht</span>
-          <span className="font-semibold">{lastWeightText(data.weights.at(-1), today)}</span>
+          <span className="text-muted shrink-0">Gewicht aus Garmin</span>
+          <span className="text-right font-semibold">{lastWeightText(data.weights.at(-1), today)}</span>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => void paste()}
-            className="press rounded-field bg-accent text-on-accent text-label min-h-12 text-center font-semibold"
-          >
-            Gewichte einfügen
-          </button>
-          <button
-            type="button"
-            onClick={() => setSheet('manual')}
-            className="press rounded-field bg-bg text-label min-h-12 text-center font-semibold"
-          >
-            Manuell eintragen
-          </button>
-        </div>
-        <p className="text-small text-muted leading-[1.45]">
-          Erst den Kurzbefehl „Kcalm Gewichte“ ausführen, dann hier einfügen.{' '}
-          <button type="button" onClick={() => setSheet('guide')} className="text-accent-text font-medium">
-            Kurzbefehl einrichten
-          </button>
-        </p>
+        {!on && (
+          <p className="text-small text-muted leading-[1.45]">
+            Gewichte kommen aus Garmin. Einschalten unter Einstellungen › Daten › Server-Push › Daten aus Fitboard.
+          </p>
+        )}
+        {on && push.inbox.lastError && <p className="text-small text-warn-text leading-[1.45]">{push.inbox.lastError}</p>}
       </Card>
-
-      <PasteSheet
-        key={`p${sheetKey}`}
-        open={sheet === 'paste'}
-        initialError={pasteError}
-        onClose={() => setSheet(null)}
-        onImported={(message) => {
-          setSheet(null)
-          toast(message)
-        }}
-      />
-      <ManualWeightSheet key={`m${sheetKey}`} open={sheet === 'manual'} onClose={() => setSheet(null)} weights={data.weights} today={today} />
-      <GuideSheet open={sheet === 'guide'} onClose={() => setSheet(null)} />
     </>
   )
 }
