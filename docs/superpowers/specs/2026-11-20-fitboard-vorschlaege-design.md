@@ -16,7 +16,7 @@ Je Schritt eine eigene Kcalm-Version und ein iPhone-Test. Dieses Dokument beschr
 | --- | --- | --- |
 | **16.1 Fundament** | Briefkasten in `kcalm-server`, Abholen in Kcalm, Tagebuch-Vorschläge (Verweis oder freie Werte), Gruppen pro Foto/Nachricht, Übernehmen/Ablehnen | Teller-Foto, das Übliche, Sprache, Nachtragen, Planen |
 | 16.2 Gewicht von Garmin | Fitboard liefert Garmin-Gewichte über den Briefkasten. Danach entfallen in Kcalm Kurzbefehl-Import **und** manuelles Eintragen ganz; Garmin ist die einzige Quelle (Jan: „Single Source of Truth“, manuell trägt er in Garmin ein) | Gewicht |
-| 16.3 Neues anlegen | Vorschläge für neue eigene Lebensmittel (Nährwerttabelle) und Rezepte (ein großes Rezept wird ein gespeichertes Kcalm-Rezept); öffnen die vorhandenen Formulare vorbefüllt | Nährwerttabelle, Rezept |
+| ~~16.3 Neues anlegen~~ (gestrichen, Jan 21.11.2026) | Vorschläge für neue eigene Lebensmittel (Nährwerttabelle) und Rezepte (ein großes Rezept wird ein gespeichertes Kcalm-Rezept); öffnen die vorhandenen Formulare vorbefüllt | Nährwerttabelle, Rezept |
 | 16.4 Preise | Preise vom Kassenbon als Vorschlag für vorhandene Lebensmittel | Kassenbon |
 
 Nachtragen und Planen brauchen in Kcalm nichts Eigenes: Sie sind Tagebuch-Vorschläge mit anderem Datum. Die Arbeit liegt bei Claude/Fitboard (Werkzeugbeschreibungen, Restbudget liest Claude schon über `fitboard_days`).
