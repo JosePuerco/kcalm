@@ -486,6 +486,12 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
+**21.11.2026 · Stand nach Phase 16: alles ausgerollt, nichts offen** – Kcalm 2.2.1, Fitboard 0.8.1 und `kcalm-server` (`9ce82d6`) laufen auf dem Pi, alle drei Repos mit GitHub abgeglichen, je nur Branch `main` (alte Fitboard-Branches gelöscht, alle waren in `main`). Phase 16 abgeschlossen (16.1 Vorschläge, 16.2 Gewicht aus Garmin; 16.3 und 16.4 gestrichen). Neu in `CLAUDE.md`: reine Doku-Commits dürfen nach Jans OK ohne Version gepusht werden.
+
+- Offen nur Wartung bei Bedarf (Abschnitt „Offen (Wartung …)“ unten): Build-Warnungen `glob`/`deepmerge`, dunkles Startbild für weitere Geräte.
+- Hinweis für Jan: Claude-Vorschläge im Alltag in einem neuen Chat nutzen, damit der Fitboard-Connector die aktuellen Werkzeuge kennt.
+- Nächster Schritt: Kcalm im Alltag benutzen; neue Funktionen nur bei echtem Bedarf, vorher mit Jan abstimmen (App nicht überladen).
+
 **21.11.2026 · Feinschliff nach Phase 16 (Kcalm 2.2.1, Fitboard 0.8.1), ausgerollt** – Kcalm: Fehler beim Gewicht mit „Gewicht:“ davor. Fitboard (Branch `fix-0.8.1`): Ablehnungsgrund auch ohne JSON-Antwort, `cli.ts sync` schickt die Gewichte mit, Log mit Fehlertext. `kcalm-server`: nur echte Kalendertage in `/v1/weights`. Damit erledigt: alle Punkte unter „Offen (klein, später)“ aus 16.1/16.2 außer dem Rückfall auf `latestWeight` in Fitboard (bewusst gelassen, Garmin liefert `allWeightMetrics`). Ausgerollt: `kcalm-server` `9ce82d6`, Fitboard 0.8.1 (`937ad09`, `cli.ts sync` auf dem Pi geprüft: „Gewicht an Kcalm unverändert“), Kcalm 2.2.1 (`ec5220e`, Release v2.2.1). Kein iPhone-Test nötig (Bedienung unverändert). Nächster Schritt: Kcalm im Alltag benutzen; neue Funktionen nur, wenn sich ein echter Bedarf zeigt (Jan: App nicht überladen).
 
 **21.11.2026 · Phase 16.2 (Gewicht von Garmin) abgeschlossen, Version 2.2.0** – Ausgerollt Server (`kcalm-server` `1bcade6`, Schema 4) → Fitboard 0.8.0 (`6c02c7c`, Sicherung `data/fitboard-vor-0.8.0.sqlite`) → Kcalm 2.2.0 (`616347f`, Release v2.2.0). Fitboard schickte 53 Tage ab 01.09.; Kcalm übernahm sie (20 Tage neu, 12.10. von 77,2 auf 77,239 kg, nichts gelöscht). iPhone-Test Teil I bestanden (Jan, 21.11.2026), inkl. Test-Wiegung in Garmin angelegt → in Kcalm sichtbar → in Garmin gelöscht → in Kcalm gelöscht. Auf dem Pi geprüft: Kcalm-Gewichte (Push-Kopie) = `garmin_weights`, 53 = 53, alle `source garmin`.
