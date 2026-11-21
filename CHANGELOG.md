@@ -8,6 +8,10 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 2.2.1 – 21.11.2026
+
+- Ein Fehler beim Abholen des Gewichts steht jetzt als „Gewicht: …“ da, damit er sich von einem Fehler bei den Vorschlägen unterscheiden lässt
+
 ## 2.2.0 – 21.11.2026
 
 - Neu: Gewicht kommt automatisch aus Garmin. Fitboard schickt deine Garmin-Wiegungen ab 01.09.2026 an deinen Server, Kcalm übernimmt sie beim Abholen – auch Korrekturen und Löschungen in Garmin. Je Tag zählt die erste Wiegung
