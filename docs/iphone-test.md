@@ -45,7 +45,7 @@ Vorher einmal mit Netz öffnen, damit alles im Cache liegt. Dann Flugmodus an (W
 ## E. Server-Push (ab 1.5.0)
 
 Token vorher auf dem Laptop holen (PowerShell) und aufs iPhone bringen, z. B. über eine Notiz auf icloud.com, die du danach löschst:
-`ssh jan@pi.local "grep -oP '(?<=KCALM_API_TOKEN=).*' ~/kcalm-server/.env" | Set-Clipboard`
+`ssh pi "grep -oP '(?<=KCALM_API_TOKEN=).*' ~/kcalm-server/.env" | Set-Clipboard`
 
 - [ ] Einstellungen › Daten: Zeile „Server-Push“ zeigt „Aus“; unter „Über“ steht „alle Daten bleiben auf diesem Gerät“
 - [ ] Server-Push öffnen: Adresse `https://kcalm-api.dunkleschokola.de`, Token einfügen, „Sichern“ → Hinweis „Gesichert“ (iOS zoomt beim Tippen nicht)

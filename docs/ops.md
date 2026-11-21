@@ -29,7 +29,7 @@ Das Skript (`scripts/deploy.ts`) bricht ab, wenn
 
 Dann überträgt es `HEAD` per `git archive` und SSH nach `~/kcalm-web/src`, baut dort mit `docker compose up -d --build` und wartet, bis der Container gesund ist. Sonst zeigt es die letzten Logzeilen.
 
-Anderes Ziel als `jan@pi.local`: `$env:PI_HOST = 'jan@<adresse>'; npm run deploy`.
+Ziel ist das SSH-Kürzel `pi` aus `~/.ssh/config` (über Tailscale, zu Hause und unterwegs). Anderes Ziel, z. B. im Heimnetz ohne Tailscale: `$env:PI_HOST = 'pi-lan'; npm run deploy`.
 
 Danach prüfen:
 
@@ -48,7 +48,7 @@ git checkout main
 ## Auf dem Pi nachsehen
 
 ```bash
-ssh jan@pi.local
+ssh pi
 docker ps --filter name=kcalm-web
 docker logs -f kcalm-web
 ```

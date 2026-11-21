@@ -1,5 +1,5 @@
 // Deployt Kcalm auf den Pi (Container kcalm-web hinter dem Cloudflare-Tunnel).
-// Aufruf: npm run deploy   (anderes Ziel: $env:PI_HOST = 'jan@…'; npm run deploy)
+// Aufruf: npm run deploy   (anderes Ziel: $env:PI_HOST = 'pi-lan'; npm run deploy)
 //
 // Ausgeliefert wird nur der committete Stand (HEAD), und nur wenn er getaggt (v<Version>)
 // und auf GitHub ist und Tests und Lint grün sind. Vorbild: setlog/scripts/deploy.sh.
@@ -7,7 +7,7 @@ import { execFileSync, spawn } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-const piHost = process.env.PI_HOST ?? 'jan@pi.local'
+const piHost = process.env.PI_HOST ?? 'pi' // SSH-Kürzel aus ~/.ssh/config (Tailscale)
 const container = 'kcalm-web'
 const remoteDir = '~/kcalm-web/src'
 
