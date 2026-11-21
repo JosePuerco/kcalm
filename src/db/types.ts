@@ -186,7 +186,7 @@ export interface ProfileAssignment extends SyncFields {
 export interface Weight extends SyncFields {
   date: LocalDate
   kg: number
-  source: 'health' | 'manual'
+  source: 'health' | 'manual' | 'garmin'
   measuredAt: Timestamp
 }
 

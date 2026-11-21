@@ -200,7 +200,7 @@ const weight = z.object({
   ...sync,
   date: localDate,
   kg: z.number(),
-  source: z.enum(['health', 'manual']),
+  source: z.enum(['health', 'manual', 'garmin']),
   measuredAt: timestamp,
 })
 

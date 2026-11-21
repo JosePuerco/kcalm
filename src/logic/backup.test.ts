@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { newRecord, softDelete, touch, unknownNutrients } from '../db/records.ts'
-import type { BlsPref, Day, Entry, InboxDecision, Product, ProductOverride, Setting } from '../db/types.ts'
+import type { BlsPref, Day, Entry, InboxDecision, Product, ProductOverride, Setting, Weight } from '../db/types.ts'
 import {
   backupFileName,
   backupStatus,
@@ -112,6 +112,13 @@ describe('buildBackup / serializeBackup', () => {
 
   it('ein leeres Backup ist gültig', () => {
     expect(parseBackup(serializeBackup(buildBackup(emptyTables(), T2))).ok).toBe(true)
+  })
+
+  it('Gewicht mit source garmin übersteht den Weg Datei → Einlesen', () => {
+    const tables = emptyTables()
+    tables.weights = [newRecord<Weight>({ date: '2026-10-12', kg: 77.239, source: 'garmin', measuredAt: '2026-10-12T05:53:00.000Z' }, T0)]
+    const backup = buildBackup(tables, T2)
+    expect(parseBackup(serializeBackup(backup))).toEqual({ ok: true, backup })
   })
 })
 

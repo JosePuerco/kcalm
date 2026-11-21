@@ -14,9 +14,8 @@ import { toLocalDate } from './dates.ts'
 import { firstPerDay, type WeightSample } from './estimate.ts'
 
 export const WEIGHT_HEADER = 'kcalm-gewichte 1'
-/** Plausible Grenzen; alles außerhalb ist ein Tippfehler oder eine falsche Einheit */
-export const MIN_KG = 20
-export const MAX_KG = 300
+import { MAX_KG, MIN_KG } from './garminWeights.ts'
+export { MAX_KG, MIN_KG } from './garminWeights.ts'
 const KG_PER_LB = 0.45359237
 
 const sampleSchema = z.object({
