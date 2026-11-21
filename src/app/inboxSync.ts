@@ -1,7 +1,9 @@
-// Vorschläge aus Fitboard abholen (Phase 16): beim Start, wenn das Netz zurückkommt und beim Zurückkehren in
-// die App, wie die gemerkten Scans. Nur mit eingeschaltetem Schalter; Fehler stehen still im Push-Screen.
+// Vorschläge und Gewicht aus Fitboard abholen (Phase 16, 16.2): beim Start, wenn das Netz zurückkommt und beim
+// Zurückkehren in die App, wie die gemerkten Scans. Nur mit eingeschaltetem Schalter; Fehler stehen still im
+// Push-Screen. Ein Fehler beim einen hält das andere nicht auf.
 
 import { useEffect } from 'react'
+import { fetchWeights } from '../db/garminWeights.ts'
 import { fetchInbox } from '../db/inbox.ts'
 import { getPushStorage, refreshPushView } from './pushSync.ts'
 
@@ -12,9 +14,16 @@ export async function runInboxFetch(): Promise<void> {
   if (running) return
   running = true
   try {
-    await fetchInbox(getPushStorage())
-  } catch (error) {
-    console.error('Vorschläge abholen fehlgeschlagen', error)
+    try {
+      await fetchInbox(getPushStorage())
+    } catch (error) {
+      console.error('Vorschläge abholen fehlgeschlagen', error)
+    }
+    try {
+      await fetchWeights(getPushStorage())
+    } catch (error) {
+      console.error('Gewicht abholen fehlgeschlagen', error)
+    }
   } finally {
     running = false
     refreshPushView()

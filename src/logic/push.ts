@@ -215,6 +215,10 @@ export function inboxEndpoint(serverUrl: string): string {
   return `${serverUrl}/v1/inbox`
 }
 
+export function weightsEndpoint(serverUrl: string): string {
+  return `${serverUrl}/v1/weights`
+}
+
 export const MIN_TOKEN_LENGTH = 16
 
 export function checkToken(input: string): Checked {

@@ -16,10 +16,11 @@ import { defaultPushNet, type PushNet, type PushStorage } from './push.ts'
 import { newRecord } from './records.ts'
 import type { Entry, InboxDecision, LocalDate } from './types.ts'
 
-async function get(net: PushNet, serverUrl: string, token: string): Promise<{ json: unknown } | PushFailure> {
+/** GET mit Token an kcalm-server; auch für die Gewichte aus Garmin (garminWeights.ts) */
+export async function getJson(net: PushNet, url: string, token: string): Promise<{ json: unknown } | PushFailure> {
   let response: Response
   try {
-    response = await net.fetch(inboxEndpoint(serverUrl), {
+    response = await net.fetch(url, {
       method: 'GET',
       headers: { Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(net.timeoutMs),
@@ -45,7 +46,7 @@ export async function fetchInbox(storage: PushStorage, net: PushNet = defaultPus
   const ready = readyConfig(config)
   if (!config.suggestions || !ready || !ready.ok) return 'off'
 
-  const result = await get(net, ready.serverUrl, ready.token)
+  const result = await getJson(net, inboxEndpoint(ready.serverUrl), ready.token)
   if ('kind' in result) {
     storage.saveInboxState({ ...storage.loadInboxState(), lastError: pushErrorMessage(result) })
     return 'failed'
