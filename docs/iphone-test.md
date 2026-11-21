@@ -86,6 +86,18 @@ Vorher: Claude legt über Fitboard einen Testvorschlag für heute an (Gruppe aus
 - [x] Flugmodus an, App öffnen → keine Fehlermeldung im Tagebuch; Push-Screen zeigt „Server nicht erreichbar“ bei „Vorschläge“
 - [x] Claude prüft auf dem Pi bzw. mit `fitboard_meal_suggestions`: übernommen = `accepted`, abgelehnt = `rejected`
 
+## I. Gewicht aus Garmin (2.2.0)
+
+Vorher: Fitboard 0.8.0 hat die Liste geschickt (Claude prüft `garmin_weights` auf dem Pi).
+
+- [ ] App öffnen (zweimal, bis 2.2.0 läuft) → Einstellungen › Verbrauchsschätzung: „Gewicht aus Garmin · zuletzt …“ mit der letzten Garmin-Wiegung; keine Knöpfe „Gewichte einfügen“ / „Manuell eintragen“
+- [ ] Server-Push: Schalter heißt „Daten aus Fitboard“, Zeile „Fitboard“ zeigt „Abgeholt …“
+- [ ] Statistik › 3 Monate: Gewichtskarte zeigt Wiegungen bis gestern, ohne die Lücken vom Oktober (z. B. 14.10. vorhanden)
+- [ ] Neue Wiegung auf der Waage → nach Fitboards nächstem Abruf (bis 1 h, Garmin-Intervall) und App öffnen in Kcalm sichtbar
+- [ ] Eine Test-Wiegung in Garmin von Hand anlegen, warten, in Kcalm sichtbar; in Garmin löschen → nach dem nächsten Abruf in Kcalm weg
+- [ ] Flugmodus → keine Fehlermeldung außerhalb von Push- und Schätzungs-Screen
+- [ ] Claude prüft auf dem Pi: Kcalm-Gewichte (Push-Kopie) = `garmin_weights`, alle `source garmin`
+
 ## F. Ergebnis
 
 Alles abgehakt → Claude Code Bescheid geben; dann wird Phase 11 abgeschlossen und Version 1.0.0 veröffentlicht. Auffälligkeiten mit Schritt und Bildschirmfoto melden.

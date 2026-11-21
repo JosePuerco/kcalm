@@ -15,7 +15,7 @@ Kcalm ist eine minimalistische Kalorien-Tracking-PWA fürs iPhone. Alle Daten bl
 ### Produkt
 - Oberfläche auf Deutsch, Du-Form. Zahlen im deutschen Format (1.273 · 2,5), Eingabe mit Dezimalkomma. Nur kcal, kein kJ.
 - Keine Gamification: keine Streaks, Abzeichen, Maskottchen, Motivationstexte.
-- Kein Login, kein Tracking, keine Analytics. Netzzugriff nur auf: Open Food Facts (Lesen, mit `app_name`, `app_version`, `app_uuid`) und ab Phase 14 Jans eigenen Server auf dem Pi (Push, nur wenn eingeschaltet, Token nur auf dem Gerät; ab Phase 16 zusätzlich Lesen des Briefkastens mit Vorschlägen aus Fitboard, nur wenn eingeschaltet – von Jan freigegeben am 20.11.2026). Kcalm muss ohne Server vollständig funktionieren.
+- Kein Login, kein Tracking, keine Analytics. Netzzugriff nur auf: Open Food Facts (Lesen, mit `app_name`, `app_version`, `app_uuid`) und ab Phase 14 Jans eigenen Server auf dem Pi (Push, nur wenn eingeschaltet, Token nur auf dem Gerät; ab Phase 16 zusätzlich Lesen des Briefkastens mit Vorschlägen aus Fitboard und ab 16.2 der Gewichte aus Garmin, nur wenn eingeschaltet – von Jan freigegeben am 20./21.11.2026). Kcalm muss ohne Server vollständig funktionieren – außer neuen Gewichten, die seit 16.2 nur aus Garmin über den eigenen Server kommen (von Jan so entschieden).
 - Offline-first: alles außer der OFF-Abfrage funktioniert im Flugmodus, auch der Barcode-Scanner (Decoder-WASM selbst hosten und cachen) und die BLS-Suche.
 
 ### Daten und Rechnen

@@ -22,7 +22,7 @@ Kcalm ist eine minimalistische Offline-PWA fürs iPhone, mit der Jan Kalorien un
 | Ziele | kcal als Wochenbudget (Woche ab Montag), Makros pro Tag | Passt zum Ernährungsplan inkl. Essen außer Haus |
 | Nährwerte | kcal, Fett, gesättigte Fettsäuren, Kohlenhydrate, Zucker, Ballaststoffe, Eiweiß, Salz | EU-Pflichtangaben + Ballaststoffe; nur kcal, kein kJ |
 | Essbarer Anteil | Kein Feature, Jan wiegt netto | Einfachheit |
-| Verbrauchsschätzung | Optional, Gewicht per Kurzbefehl aus Apple Health | Getrennt vom Ziel |
+| Verbrauchsschätzung | Optional, Gewicht automatisch aus Garmin über Fitboard (seit 16.2; davor Kurzbefehl aus Apple Health) | Getrennt vom Ziel |
 | Backup | Teilen-Menü → iCloud Drive, Ersatz per Download | Kein Server nötig |
 | Export | CSV (international) + JSON, frei einstellbar | Monatsauswertung mit Claude + universell |
 | Bewusst nicht | Gamification, Yazio-/Mixli-Import, kJ, Excel/PDF, Mikronährstoffe, Wasser-Tracking, Schritte, Android-Tests | Minimalismus |
@@ -96,7 +96,7 @@ Der wichtigste Ablauf ist: beim Essen App öffnen, Slot wählen, Produkt scannen
 
 ### Verbrauchsschätzung (optional)
 
-- Gewichte per iOS-Kurzbefehl aus Apple Health in die Zwischenablage → in der App „Gewichte einfügen“; Ersatz: manuelle Eingabe
+- Gewichte kommen automatisch aus Garmin über Fitboard und den eigenen Server (Phase 16.2); kein Einfügen, kein manuelles Eintragen in Kcalm
 - Mehrere Wiegungen an einem Tag: die erste des Tages zählt
 - Ergebnis frühestens nach 14 vollständigen Tagen, nur aus vollständig getrackten Tagen, mit Spanne; davor Zustand „Sammelt Daten“ mit Fortschritt
 - Bleibt getrennt vom Ziel; die App zeigt den Abstand zum Budget und die rechnerische Gewichtsänderung pro Woche
@@ -149,7 +149,7 @@ Der Stack entspricht Mixli, ergänzt um Scanner, Diagramme und ein Build-Skript 
 | Animation | Motion (motion/react) | Übergänge, Sheets, animierte Zahlen |
 | Lokale Datenbank | Dexie.js (IndexedDB) | Alle Daten auf dem Gerät |
 | PWA/Offline | vite-plugin-pwa (Workbox) | Installierbar, offline, Updates |
-| Validierung | Zod | Eingaben, OFF-Antworten, Backup-Import, Gewichte einfügen |
+| Validierung | Zod | Eingaben, OFF-Antworten, Backup-Import, Antworten des eigenen Servers |
 | Tests | Vitest | Rechenlogik, Parser, Backup |
 | Barcode | barcode-detector (ZXing als WebAssembly), Decoder-Datei selbst gehostet | Scannen auf iOS, auch offline |
 | Diagramme | Schlanke Bibliothek oder eigenes SVG (Entscheidung in Phase 8 mit Begründung) | Statistiken |
@@ -181,11 +181,11 @@ Der Stack entspricht Mixli, ergänzt um Scanner, Diagramme und ein Build-Skript 
 - Formate: EAN-13, EAN-8, UPC-A, UPC-E
 - Taschenlampe falls verfügbar, manuelle Code-Eingabe als Ersatz
 
-### Gewicht aus Apple Health
+### Gewicht aus Garmin (seit Phase 16.2)
 
-- iOS-Kurzbefehl liest Gewichtsproben (z. B. letzte 60 Tage) und kopiert sie als Text
-- App liest die Zwischenablage nach Tipp auf „Gewichte einfügen“; Ersatz: Textfeld zum Einfügen
-- Format wird mit Zod geprüft; doppelte Tage werden zusammengeführt (erste Messung zählt)
+- Garmin ist die einzige Quelle (Waage oder von Hand in Garmin). Fitboard schickt nach jedem Garmin-Abruf die Liste „Tag → erste Wiegung“ ab 01.09.2026 an `kcalm-server` (`PUT /v1/weights`)
+- Kcalm holt sie mit den Vorschlägen ab (`GET /v1/weights`, Schalter „Daten aus Fitboard“) und spiegelt sie: neu, geändert, in Garmin gelöscht; leere oder nie geschriebene Liste ändert nichts
+- Bis 2.1.0: iOS-Kurzbefehl aus Apple Health per Zwischenablage und manuelles Eintragen (entfallen)
 
 ### Entwicklung und Hosting
 
@@ -411,9 +411,9 @@ Fälle (alle von Jan aufgenommen): großes Rezept, Sprache, das Übliche („wie
   - [x] Teil C Kcalm: Datenmodell (DB 8, Backup 7), Rechenlogik, Abholen/Entscheiden, Oberfläche, Doku
   - [x] Teil D Ausrollen (Server → Fitboard → Kcalm 2.1.0), Ende-zu-Ende, iPhone-Test Teil H
 - [ ] 16.2 Gewicht von Garmin (Version 2.2.0): Fitboard liefert Garmin-Gewichte ab 01.09.2026 als Liste an `kcalm-server` (`/v1/weights`, nicht über den Briefkasten – mit Jan abgestimmt), Kcalm übernimmt sie automatisch und spiegelt Garmin (auch Korrekturen und Löschungen); Kurzbefehl-Import **und** manuelles Eintragen entfallen (Jan: Garmin ist die einzige Quelle). Design `docs/superpowers/specs/2026-11-21-garmin-gewicht-design.md`, Umsetzungsplan `docs/superpowers/plans/2026-11-21-garmin-gewicht-16-2.md`.
-  - [ ] Teil A `kcalm-server`: Tabelle `garmin_weights`, `PUT`/`GET /v1/weights`
-  - [ ] Teil B Fitboard 0.8.0: Liste bilden und senden
-  - [ ] Teil C Kcalm: Abgleich, Abholen, Oberfläche, Kurzbefehl/Manuell entfernen, Doku
+  - [x] Teil A `kcalm-server`: Tabelle `garmin_weights`, `PUT`/`GET /v1/weights`
+  - [x] Teil B Fitboard 0.8.0: Liste bilden und senden
+  - [x] Teil C Kcalm: Abgleich, Abholen, Oberfläche, Kurzbefehl/Manuell entfernen, Doku
   - [ ] Teil D Ausrollen (Server → Fitboard → Kcalm 2.2.0), iPhone-Test Teil I
 - [ ] 16.3 Neues anlegen: Vorschläge für neue eigene Lebensmittel (Nährwerttabelle) und Rezepte (großes Rezept = gespeichertes Kcalm-Rezept), öffnen die vorhandenen Formulare vorbefüllt. Vorher eigenes kurzes Design.
 - [ ] 16.4 Preise: Preise vom Kassenbon als Vorschlag für vorhandene Lebensmittel. Vorher eigenes kurzes Design.
@@ -459,7 +459,7 @@ Fälle (alle von Jan aufgenommen): großes Rezept, Sprache, das Übliche („wie
 | Spanne | 1,96 × Standardfehler der Steigung einer Ausgleichsgeraden durch die Wiegungen × 7.700 (≈ 95 %); bei ±0,4 kg Streuung nach 14 Tagen ca. ±290, nach 21 Tagen ca. ±160 kcal (Jan, 22.10.2026) |
 | Sammelt Daten: Legende | „vollständig“ statt „vollständig + gewogen“; ein Tag zählt ohne Wiegung (Jan, 22.10.2026) |
 | g/kg-Makros vergangener Tage | Trendgewicht an diesem Tag; ändert sich, wenn später ältere Gewichte nachgetragen werden (berechneter Wert) (Jan, 22.10.2026) |
-| Format Kurzbefehl | Kopfzeile `kcalm-gewichte 1`, je Zeile `Zeitpunkt ISO 8601;Gewicht;Einheit` (Komma oder Punkt, kg oder lb). Tag = Kalendertag laut Zeitzone im Text. Streng: eine kaputte Zeile → nichts übernommen, Fehler nennt die Zeile. 20–300 kg. Zusammenführen: früheste Messung pro Tag gewinnt, auch gegen gespeicherte; gelöschter Tag kommt mit derselben Messung nicht zurück |
+| Format Kurzbefehl (bis 2.1.0, entfallen) | Kopfzeile `kcalm-gewichte 1`, je Zeile `Zeitpunkt ISO 8601;Gewicht;Einheit` (Komma oder Punkt, kg oder lb). Tag = Kalendertag laut Zeitzone im Text. Streng: eine kaputte Zeile → nichts übernommen, Fehler nennt die Zeile. 20–300 kg. Zusammenführen: früheste Messung pro Tag gewinnt, auch gegen gespeicherte; gelöschter Tag kommt mit derselben Messung nicht zurück |
 | Versionsnummern | Semantic Versioning `MAJOR.MINOR.PATCH` aus `package.json`, angezeigt unter Einstellungen › Über. Jeder Push auf `main` = eine Version mit Tag `vX.Y.Z`, Abschnitt in `CHANGELOG.md` und GitHub Release; der Deploy bricht ohne passenden Tag ab. Vor 1.0.0 `0.<Phase>.<n>`, frühere Phasen nachträglich als `v0.0.0`–`v0.10.0` getaggt (Commit „Phase N abgeschlossen/deployt“). 1.0.0 nach bestandenem iPhone-Test (Jan, 25.10.2026) |
 | Tage vor dem ersten Profil | Kein Ziel: Ring leer, „kcal gegessen“; bleibt so, kein Rückgriff aufs erste Profil (Jan nach iPhone-Test, 25.10.2026) |
 | Willkommensbildschirm | Schritt 0 der Ersteinrichtung (kein Prototyp): Icon mit sich zeichnendem Ring, „Neu einrichten“ oder „Aus Backup laden“ (direkt ins Tagebuch); Import aus Schritt 4 entfernt (Jan, 25.10.2026) |

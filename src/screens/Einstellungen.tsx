@@ -71,7 +71,7 @@ function Overview() {
         <Card padded={false}>
           <ToggleRow
             label="Verbrauchsschätzung"
-            sub="Gewicht per Kurzbefehl aus Apple Health"
+            sub="Gewicht aus Garmin über Fitboard"
             checked={estimate === true}
             onChange={(on) => {
               setEstimateEnabled(on).catch((error: unknown) => console.error('Einstellung nicht gespeichert', error))

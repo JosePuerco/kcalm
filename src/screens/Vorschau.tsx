@@ -148,7 +148,7 @@ export function Vorschau() {
           <div className="flex min-h-[60px] items-center gap-2.5 px-4">
             <span className="flex flex-1 flex-col gap-0.5">
               <span className="text-body">Verbrauchsschätzung</span>
-              <span className="text-small text-muted">Gewicht per Kurzbefehl aus Apple Health</span>
+              <span className="text-small text-muted">Gewicht aus Garmin über Fitboard</span>
             </span>
             <Switch label="Verbrauchsschätzung" checked={estimate} onChange={setEstimate} />
           </div>

@@ -80,7 +80,7 @@ export function Setup() {
         <Card padded={false}>
           <ToggleRow
             label="Verbrauchsschätzung"
-            sub="Gewicht per Kurzbefehl aus Apple Health"
+            sub="Gewicht aus Garmin über Fitboard"
             checked={estimate}
             onChange={setEstimate}
           />
