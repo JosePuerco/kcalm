@@ -486,6 +486,11 @@ Offen nur noch:
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
 
+**21.11.2026 · Phase 16.2 (Gewicht von Garmin): Teile A–C fertig, nichts gepusht** – Design und Umsetzungsplan von Jan freigegeben. `kcalm-server` `1bcade6` (Tabelle `garmin_weights`, `PUT`/`GET /v1/weights`, 99 Tests), Fitboard Branch `garmin-gewicht` bis `688f6be` (Liste bilden und senden, Schutz: Garmin-Historie ab `from` und bis heute − 7 geholt; Hinweis „Gewicht an Kcalm: …“; 306 Tests), Kcalm `7aad8d7`–`eb32db1` (Abgleich, Abholen mit den Vorschlägen, Oberfläche, Kurzbefehl/Manuell entfernt, Doku; 1133 Tests, Headless-Chrome 390 px hell/dunkel). Abschlussprüfung durch einen frischen Prüfer: 0 kritisch, 1 wichtig (behoben). Nächster Schritt: Teil D nach Jans OK – Server → Fitboard 0.8.0 → Kcalm 2.2.0, iPhone-Test Teil I.
+
+- Eigene Entscheidungen: Statuszeile im Push-Screen heißt „Fitboard“; leerer Zustand „noch keine Wiegung“; Untertitel in Einstellungen/Ersteinrichtung „Gewicht aus Garmin über Fitboard“; eigener Status-Schlüssel `kcalm_weights` in Fitboard.
+- Offen (klein, später): Server prüft Tage nur per Regex (Kcalm strenger), Fehlertext beim Gewicht ohne Präfix, Fitboard-Log nennt nur den Fehlernamen, `buildWeightList` ohne Rückfall auf `latestWeight`.
+
 **21.11.2026 · Phase 16.1 (Vorschläge aus Fitboard, Fundament) abgeschlossen, Version 2.1.0** – Ausgerollt in der Reihenfolge Server → Fitboard → Kcalm: `kcalm-server` mit Briefkasten (`/v1/inbox`, eigener Token `KCALM_INBOX_TOKEN` in `~/kcalm-server/.env` und `~/fitboard/.env`), Fitboard 0.7.0 (Tabelle `meal_suggestions` entfernt, Sicherung `data/fitboard-vor-0.7.0.sqlite`), Kcalm 2.1.0 deployt (1148 Tests grün), Release v2.1.0. iPhone-Test Teil H bestanden (Jan, 21.11.2026): Abholen, Teil bearbeiten, „Stattdessen … nehmen“, „Alle übernehmen“ mit Slot-Frage, Menge eines geschätzten Eintrags ändern, Ablehnen per Wischen, Flugmodus ohne Fehler. Auf dem Pi geprüft: übernommen = `accepted` mit Eintrags-Ids, abgelehnt = `rejected`, Fitboard zeigt denselben Stand (Abgleich alle 10 min). Testeinträge löscht Jan in der App.
 
 - Panne beim Ausrollen: Token beim ersten Anlegen über PowerShell-SSH verstümmelt (Anführungszeichen weg, `
