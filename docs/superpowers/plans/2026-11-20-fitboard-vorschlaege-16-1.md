@@ -222,7 +222,7 @@
 
 ### Task D1: Ende-zu-Ende und Version 2.1.0 (jeder Push nur nach Jans OK)
 
-- [ ] **Step 1:** `kcalm-server`: Push; auf dem Pi `KCALM_INBOX_TOKEN` erzeugen (`openssl rand -base64 32`) in `~/kcalm-server/.env`, `git pull && docker compose up -d --build`; `GET /v1/health` gesund; `curl` ohne Token auf `/v1/inbox` → 401.
+- [x] **Step 1:** `kcalm-server`: Push; auf dem Pi `KCALM_INBOX_TOKEN` erzeugen (`openssl rand -base64 32`) in `~/kcalm-server/.env`, `git pull && docker compose up -d --build`; `GET /v1/health` gesund; `curl` ohne Token auf `/v1/inbox` → 401.
 - [ ] **Step 2:** Fitboard: denselben Token als `KCALM_INBOX_TOKEN` in Fitboards `.env`, deployen nach Fitboards Regeln; mit `fitboard_meal_suggest` einen Testvorschlag (morgen, Gruppe aus zwei Teilen) anlegen; `fitboard_meal_suggestions` zeigt `open`.
 - [ ] **Step 3:** Kcalm: Version 2.1.0 nach `CLAUDE.md` (CHANGELOG, Tag, Push, `npm run deploy`, `curl -I`, Release).
 - [ ] **Step 4:** Jan: iPhone-Test Teil H (Schalter an, Vorschlag erscheint, Gruppe übernehmen, ablehnen, Flugmodus ohne Fehler im Tagebuch). Claude prüft danach auf dem Pi: `inbox.status` `accepted`/`rejected`, `fitboard_meal_suggestions` zeigt den Stand, Testeinträge auf Jans Wunsch löschen.
