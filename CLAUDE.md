@@ -57,7 +57,7 @@ Kcalm ist eine minimalistische Kalorien-Tracking-PWA fürs iPhone. Alle Daten bl
 ### Versionen
 
 - Semantic Versioning `MAJOR.MINOR.PATCH`, einzige Quelle ist `version` in `package.json`; die App zeigt sie unter Einstellungen › Über. Regeln stehen oben in `CHANGELOG.md` (PATCH = Fehler/Feinschliff, MINOR = neue Funktion, MAJOR = Umbruch bei Daten oder Bedienung). Vor 1.0.0: `0.<Phase>.<n>`.
-- Jeder Push auf `main` ist genau eine Version. Vorher, nach Jans OK zum Push:
+- Jeder Push auf `main` ist genau eine Version (Ausnahme unten: reine Doku-Commits). Vorher, nach Jans OK zum Push:
   1. `npm version X.Y.Z --no-git-tag-version` (ändert `package.json` und `package-lock.json`)
   2. Abschnitt `## X.Y.Z – TT.MM.JJJJ` oben in `CHANGELOG.md`, kurz und auf Deutsch
   3. Commit „Version X.Y.Z“, dann `git tag -a vX.Y.Z -m "Version X.Y.Z"`
@@ -65,6 +65,7 @@ Kcalm ist eine minimalistische Kalorien-Tracking-PWA fürs iPhone. Alle Daten bl
   5. `npm run deploy`
   6. Nach erfolgreichem Deploy `gh release create vX.Y.Z --title "Version X.Y.Z" --notes "<Abschnitt aus CHANGELOG.md>"`
 - Das Deploy-Skript bricht ab, wenn es nicht committete Änderungen gibt, der Tag `v<Version>` nicht auf `HEAD` zeigt, `HEAD` nicht auf GitHub ist oder Tests bzw. Lint fehlschlagen. Lokale Commits zwischen zwei Versionen bekommen keine eigene Nummer. Bestehende Tags nie verschieben.
+- Ausnahme (Jan, 21.11.2026): Reine Doku-Commits (nur `PLAN.md`, `CHANGELOG.md`-freie Doku unter `docs/`, `CLAUDE.md`) dürfen nach Jans OK ohne Version gepusht werden; kein Deploy, kein Tag, kein Release. Der nächste Deploy setzt wie immer eine neue Version auf `HEAD`.
 - Nach dem Deploy Jan Version und Ergebnis nennen.
 - Erledigte Punkte in `PLAN.md` abhaken. Beim Pausieren den Zwischenstand in Abschnitt 8 von `PLAN.md` eintragen und lokal committen.
 - Befehle für Windows PowerShell angeben. Pfade mit Leerzeichen in Anführungszeichen.
