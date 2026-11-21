@@ -8,6 +8,14 @@ Alle Versionen von Kcalm. Nummern nach [Semantic Versioning](https://semver.org/
 
 Jeder Push auf `main` ist genau eine Version mit Git-Tag `vX.Y.Z` und GitHub Release. Vor 1.0.0 (App noch nicht in Nutzung) steht die mittlere Zahl für die Phase aus `PLAN.md`.
 
+## 2.1.0 – 21.11.2026
+
+- Neu: Vorschläge aus Fitboard. Claude kann über Fitboard Einträge vorschlagen (z. B. aus einem Teller-Foto, „wie immer Magerquark“ oder zum Nachtragen); Kcalm holt sie von deinem Server ab. Nichts landet ohne deinen Tipp im Tagebuch
+- Einschalten unter Einstellungen › Daten › Server-Push › „Vorschläge aus Fitboard“ (braucht den Server-Push)
+- Im Tagebuch erscheint über den Slots eine Zeile mit offenen Vorschlägen: einzeln oder mit „Alle übernehmen“ eintragen, Mengen vorher anpassen, nach links wischen lehnt ab. Passt ein Lebensmittel aus deiner Liste, kannst du es statt der Schätzung nehmen
+- Übernommene Schätzungen tragen im Tagebuch klein „geschätzt“; ihre Menge lässt sich wie bei Lebensmitteln ändern
+- Datenbank-Version 8 und Backup-Format 7 mit automatischer Übernahme; vorhandene Daten bleiben unverändert
+
 ## 2.0.0 – 20.11.2026
 
 - Neue Adresse: Kcalm liegt jetzt unter https://kcalm.dunkleschokola.de/ (auf dem eigenen Pi) statt unter josepuerco.github.io/kcalm/
