@@ -410,7 +410,11 @@ Fälle (alle von Jan aufgenommen): großes Rezept, Sprache, das Übliche („wie
   - [x] Teil B Fitboard (Branch `kcalm-briefkasten`): Schreibclient, Werkzeuge über den Briefkasten, `fitboard_kcalm_foods`, `meal_suggestions` entfernt
   - [x] Teil C Kcalm: Datenmodell (DB 8, Backup 7), Rechenlogik, Abholen/Entscheiden, Oberfläche, Doku
   - [x] Teil D Ausrollen (Server → Fitboard → Kcalm 2.1.0), Ende-zu-Ende, iPhone-Test Teil H
-- [ ] 16.2 Gewicht von Garmin: Fitboard liefert Garmin-Gewichte über den Briefkasten; danach entfallen in Kcalm Kurzbefehl-Import **und** manuelles Eintragen (Jan: Garmin ist die einzige Quelle, manuell trägt er in Garmin ein). Vorher eigenes kurzes Design.
+- [ ] 16.2 Gewicht von Garmin (Version 2.2.0): Fitboard liefert Garmin-Gewichte ab 01.09.2026 als Liste an `kcalm-server` (`/v1/weights`, nicht über den Briefkasten – mit Jan abgestimmt), Kcalm übernimmt sie automatisch und spiegelt Garmin (auch Korrekturen und Löschungen); Kurzbefehl-Import **und** manuelles Eintragen entfallen (Jan: Garmin ist die einzige Quelle). Design `docs/superpowers/specs/2026-11-21-garmin-gewicht-design.md`, Umsetzungsplan `docs/superpowers/plans/2026-11-21-garmin-gewicht-16-2.md`.
+  - [ ] Teil A `kcalm-server`: Tabelle `garmin_weights`, `PUT`/`GET /v1/weights`
+  - [ ] Teil B Fitboard 0.8.0: Liste bilden und senden
+  - [ ] Teil C Kcalm: Abgleich, Abholen, Oberfläche, Kurzbefehl/Manuell entfernen, Doku
+  - [ ] Teil D Ausrollen (Server → Fitboard → Kcalm 2.2.0), iPhone-Test Teil I
 - [ ] 16.3 Neues anlegen: Vorschläge für neue eigene Lebensmittel (Nährwerttabelle) und Rezepte (großes Rezept = gespeichertes Kcalm-Rezept), öffnen die vorhandenen Formulare vorbefüllt. Vorher eigenes kurzes Design.
 - [ ] 16.4 Preise: Preise vom Kassenbon als Vorschlag für vorhandene Lebensmittel. Vorher eigenes kurzes Design.
 
