@@ -14,7 +14,7 @@ export async function fetchWeights(storage: PushStorage, net: PushNet = defaultP
   if (!config.suggestions || !ready || !ready.ok) return 'off'
 
   const fail = (failure: PushFailure) => {
-    storage.saveInboxState({ ...storage.loadInboxState(), lastError: pushErrorMessage(failure) })
+    storage.saveInboxState({ ...storage.loadInboxState(), lastError: `Gewicht: ${pushErrorMessage(failure)}` })
     return 'failed' as const
   }
   const result = await getJson(net, weightsEndpoint(ready.serverUrl), ready.token)

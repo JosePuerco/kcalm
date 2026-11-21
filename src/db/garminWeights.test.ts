@@ -86,14 +86,14 @@ describe('fetchWeights', () => {
       'failed',
     )
     expect(await db.weights.toArray()).toEqual([before])
-    expect(storage.loadInboxState().lastError).toBe('Unerwartete Antwort vom Server')
+    expect(storage.loadInboxState().lastError).toBe('Gewicht: Unerwartete Antwort vom Server')
   })
 
   it('Fehler beim Gewicht überschreibt nicht lastSuccessAt der Vorschläge', async () => {
     const storage = on()
     storage.saveInboxState({ lastSuccessAt: '2026-11-21T09:00:00.000Z', lastError: null })
     await fetchWeights(storage, net(() => new Response('{}', { status: 401 })), NOW)
-    expect(storage.loadInboxState()).toEqual({ lastSuccessAt: '2026-11-21T09:00:00.000Z', lastError: 'Token wird nicht akzeptiert' })
+    expect(storage.loadInboxState()).toEqual({ lastSuccessAt: '2026-11-21T09:00:00.000Z', lastError: 'Gewicht: Token wird nicht akzeptiert' })
   })
 
   it('Erfolg beim Gewicht löscht keinen lastError der Vorschläge', async () => {
