@@ -208,5 +208,5 @@ Texte (fest):
 - [x] **Step 1:** `kcalm-server`: Push; auf dem Pi `git pull && docker compose up -d --build` (vorher `bash scripts/backup.sh`); `GET /v1/health` 200; `GET /v1/weights` ohne Token 401.
 - [x] **Step 2:** Fitboard 0.8.0 wie 0.7.0 (Versions-Commit, Merge `--no-ff` nach `main`, Tag, Push, auf dem Pi Sicherung `VACUUM INTO`, `git pull`, `docker compose up -d --build`). Log zeigt „Gewicht an Kcalm gesendet“. Auf dem Pi prüfen: `garmin_weights` ab 2026-09-01, 12.10. = 77,239, letzter Tag = letzte Garmin-Wiegung.
 - [x] **Step 3:** Kcalm 2.2.0 nach `CLAUDE.md` (CHANGELOG, Tag, Push, `npm run deploy`, `curl -I`, Release).
-- [ ] **Step 4:** Jan: iPhone-Test Teil I. Claude prüft danach auf dem Pi: Kcalm-Gewichte (Push-Kopie, Ansicht `weights`) = `garmin_weights`, alle `source garmin`; Test-Wiegung in Garmin gelöscht → nach Fitboard-Abruf und App-Öffnen auch in Kcalm gelöscht.
-- [ ] **Step 5:** `PLAN.md` abhaken, Zwischenstand, Commit.
+- [x] **Step 4:** Jan: iPhone-Test Teil I. Claude prüft danach auf dem Pi: Kcalm-Gewichte (Push-Kopie, Ansicht `weights`) = `garmin_weights`, alle `source garmin`; Test-Wiegung in Garmin gelöscht → nach Fitboard-Abruf und App-Öffnen auch in Kcalm gelöscht.
+- [x] **Step 5:** `PLAN.md` abhaken, Zwischenstand, Commit.
