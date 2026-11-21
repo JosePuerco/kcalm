@@ -76,15 +76,15 @@ Einmalig beim Umzug von `josepuerco.github.io/kcalm/`. Die alte und die neue App
 
 Vorher: Claude legt über Fitboard einen Testvorschlag für heute an (Gruppe aus zwei Teilen, einer davon ein Verweis auf ein eigenes Lebensmittel) und einen Einzelvorschlag.
 
-- [ ] Einstellungen › Daten › Server-Push › „Vorschläge aus Fitboard“ einschalten → Zeile „Vorschläge: Abgeholt heute, …“, kein Fehler
-- [ ] Tagebuch: Zeile „3 Vorschläge aus Fitboard“ über den Slots; Tipp öffnet das Sheet mit Gruppe und Einzelvorschlag
-- [ ] Teil der Gruppe antippen → Mengen-Schritt, Menge ändern, „Fertig“ → zurück in der Gruppe, nichts eingetragen
-- [ ] Bei einer Schätzung: „Stattdessen … nehmen“ erscheint, wenn es einen passenden Treffer gibt
-- [ ] „Alle übernehmen“ → ggf. Slot wählen → Einträge als Gruppe im Tagebuch, Schätzungen mit „geschätzt“
-- [ ] Geschätzten Eintrag antippen → Menge ändern → kcal ändern sich mit
-- [ ] Einzelvorschlag nach links wischen → abgelehnt, Zeile verschwindet
-- [ ] Flugmodus an, App öffnen → keine Fehlermeldung im Tagebuch; Push-Screen zeigt „Server nicht erreichbar“ bei „Vorschläge“
-- [ ] Claude prüft auf dem Pi bzw. mit `fitboard_meal_suggestions`: übernommen = `accepted`, abgelehnt = `rejected`
+- [x] Einstellungen › Daten › Server-Push › „Vorschläge aus Fitboard“ einschalten → Zeile „Vorschläge: Abgeholt heute, …“, kein Fehler
+- [x] Tagebuch: Zeile „3 Vorschläge aus Fitboard“ über den Slots; Tipp öffnet das Sheet mit Gruppe und Einzelvorschlag
+- [x] Teil der Gruppe antippen → Mengen-Schritt, Menge ändern, „Fertig“ → zurück in der Gruppe, nichts eingetragen
+- [x] Bei einer Schätzung: „Stattdessen … nehmen“ erscheint, wenn es einen passenden Treffer gibt
+- [x] „Alle übernehmen“ → ggf. Slot wählen → Einträge als Gruppe im Tagebuch, Schätzungen mit „geschätzt“
+- [x] Geschätzten Eintrag antippen → Menge ändern → kcal ändern sich mit
+- [x] Einzelvorschlag nach links wischen → abgelehnt, Zeile verschwindet
+- [x] Flugmodus an, App öffnen → keine Fehlermeldung im Tagebuch; Push-Screen zeigt „Server nicht erreichbar“ bei „Vorschläge“
+- [x] Claude prüft auf dem Pi bzw. mit `fitboard_meal_suggestions`: übernommen = `accepted`, abgelehnt = `rejected`
 
 ## F. Ergebnis
 

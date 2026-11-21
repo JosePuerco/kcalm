@@ -405,11 +405,11 @@ Mit Jan abgestimmt am 20.11.2026 (Design `docs/superpowers/specs/2026-11-20-fitb
 
 Fälle (alle von Jan aufgenommen): großes Rezept, Sprache, das Übliche („wie immer Magerquark“), Teller-Foto, Nährwerttabelle, Rezept-Foto, Kassenbon, Nachtragen, Planen, Gewicht von Garmin.
 
-- [ ] 16.1 Fundament (Version 2.1.0): Briefkasten (`kcalm-server`), Fitboard-Werkzeuge schreiben dorthin (Verweis auf Kcalm-Lebensmittel/Mahlzeiten/Rezepte oder freie Werte, Gruppe je Foto/Nachricht, `fitboard_kcalm_foods` zum Nachschlagen), Kcalm: Schalter, Abholen, Zeile und Sheet im Tagebuch mit „Alle übernehmen“, Teile bearbeiten, Treffer statt Schätzung, „geschätzt“ im Tagebuch. Deckt Teller-Foto, das Übliche, Sprache, Nachtragen, Planen ab.
+- [x] 16.1 Fundament (Version 2.1.0): Briefkasten (`kcalm-server`), Fitboard-Werkzeuge schreiben dorthin (Verweis auf Kcalm-Lebensmittel/Mahlzeiten/Rezepte oder freie Werte, Gruppe je Foto/Nachricht, `fitboard_kcalm_foods` zum Nachschlagen), Kcalm: Schalter, Abholen, Zeile und Sheet im Tagebuch mit „Alle übernehmen“, Teile bearbeiten, Treffer statt Schätzung, „geschätzt“ im Tagebuch. Deckt Teller-Foto, das Übliche, Sprache, Nachtragen, Planen ab.
   - [x] Teil A `kcalm-server`: Tabelle `inbox`, `/v1/inbox` mit getrennten Tokens, Entscheidungen aus dem Push
   - [x] Teil B Fitboard (Branch `kcalm-briefkasten`): Schreibclient, Werkzeuge über den Briefkasten, `fitboard_kcalm_foods`, `meal_suggestions` entfernt
   - [x] Teil C Kcalm: Datenmodell (DB 8, Backup 7), Rechenlogik, Abholen/Entscheiden, Oberfläche, Doku
-  - [ ] Teil D Ausrollen (Server → Fitboard → Kcalm 2.1.0), Ende-zu-Ende, iPhone-Test Teil H
+  - [x] Teil D Ausrollen (Server → Fitboard → Kcalm 2.1.0), Ende-zu-Ende, iPhone-Test Teil H
 - [ ] 16.2 Gewicht von Garmin: Fitboard liefert Garmin-Gewichte über den Briefkasten; danach entfallen in Kcalm Kurzbefehl-Import **und** manuelles Eintragen (Jan: Garmin ist die einzige Quelle, manuell trägt er in Garmin ein). Vorher eigenes kurzes Design.
 - [ ] 16.3 Neues anlegen: Vorschläge für neue eigene Lebensmittel (Nährwerttabelle) und Rezepte (großes Rezept = gespeichertes Kcalm-Rezept), öffnen die vorhandenen Formulare vorbefüllt. Vorher eigenes kurzes Design.
 - [ ] 16.4 Preise: Preise vom Kassenbon als Vorschlag für vorhandene Lebensmittel. Vorher eigenes kurzes Design.
@@ -481,6 +481,14 @@ Offen nur noch:
 ## 8. Zwischenstand
 
 Hier trägt Claude Code beim Pausieren mitten in einer Phase ein, was erledigt ist und was als Nächstes kommt.
+
+**21.11.2026 · Phase 16.1 (Vorschläge aus Fitboard, Fundament) abgeschlossen, Version 2.1.0** – Ausgerollt in der Reihenfolge Server → Fitboard → Kcalm: `kcalm-server` mit Briefkasten (`/v1/inbox`, eigener Token `KCALM_INBOX_TOKEN` in `~/kcalm-server/.env` und `~/fitboard/.env`), Fitboard 0.7.0 (Tabelle `meal_suggestions` entfernt, Sicherung `data/fitboard-vor-0.7.0.sqlite`), Kcalm 2.1.0 deployt (1148 Tests grün), Release v2.1.0. iPhone-Test Teil H bestanden (Jan, 21.11.2026): Abholen, Teil bearbeiten, „Stattdessen … nehmen“, „Alle übernehmen“ mit Slot-Frage, Menge eines geschätzten Eintrags ändern, Ablehnen per Wischen, Flugmodus ohne Fehler. Auf dem Pi geprüft: übernommen = `accepted` mit Eintrags-Ids, abgelehnt = `rejected`, Fitboard zeigt denselben Stand (Abgleich alle 10 min). Testeinträge löscht Jan in der App.
+
+- Panne beim Ausrollen: Token beim ersten Anlegen über PowerShell-SSH verstümmelt (Anführungszeichen weg, `
+` → `n`), Hono lehnte ihn mit 400 ab; in beiden `.env` korrigiert. Lehre: mehrzeilige Pi-Befehle nur über Bash-Heredoc.
+- SSH zum Pi jetzt über das Tailscale-Kürzel `pi` (`pi.local` löste nicht auf); `npm run deploy` nutzt es als Standard, Doku in kcalm, fitboard und kcalm-server angepasst (je ein lokaler Commit, Fitboard und kcalm-server noch nicht gepusht).
+- Offen für später: Fitboard meldet einen 400 ohne JSON-Grund nur als „ungültige Anfrage“; der Fitboard-Connector in claude.ai zeigt nach dem Update erst in einem neuen Chat die neuen Werkzeuge (`fitboard_kcalm_foods`, Verweise, Gruppenname).
+- Nächster Schritt: 16.2 (Gewicht von Garmin) – vorher eigenes kurzes Design mit Jan.
 
 **20.11.2026 · Phase 15 (Umzug auf eigene Domain, Hosting auf dem Pi) abgeschlossen, Version 2.0.0** – Jan ist auf dem iPhone umgezogen (Backup, Push wieder an). Auf dem Pi geprüft: Vollabgleich mit allen 190 Datensätzen, nichts als entfernt markiert, 75 Einträge (74 vom 12.11. + 1 vom 19.11.; einzige Löschung beim Umzug war ein Testeintrag von Jan). Stichproben (Darstellung, Profile, Gewichte, Schätzung, BLS offline) von Jan bestätigt. GitHub Pages und Umgebung `github-pages` gelöscht, `josepuerco.github.io/kcalm/` gibt 404. Nächster Schritt: Phase 16 (Vorschläge aus Fitboard) mit Jan abstimmen.
 
